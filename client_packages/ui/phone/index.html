@@ -2,560 +2,757 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<title>Phone</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeonSyndicate — Phone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --pink:   #FF2D78;
-    --cyan:   #00D4FF;
-    --green:  #00FF88;
-    --bg:     #0a0a18;
-    --bg2:    #0d0d20;
-    --border: rgba(255,45,120,0.3);
-    --text:   #e8e8f0;
-    --dim:    #5a5a7a;
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     background: transparent;
-    width: 100vw; height: 100vh;
-    display: flex; align-items: center; justify-content: flex-end;
-    padding-right: 40px;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
     font-family: 'Rajdhani', sans-serif;
-    color: var(--text);
+    color: #e0e0f0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 24px;
+    pointer-events: none;
   }
 
-  /* ── Phone shell ── */
-  .phone {
-    width: 320px; height: 600px;
-    background: var(--bg);
-    border-radius: 32px;
-    border: 2px solid rgba(255,45,120,0.5);
-    box-shadow:
-      0 0 40px rgba(255,45,120,0.2),
-      0 0 80px rgba(255,45,120,0.06),
-      inset 0 0 20px rgba(255,45,120,0.03);
-    display: flex; flex-direction: column;
+  /* Phone shell */
+  #phone-shell {
+    pointer-events: all;
+    width: 300px;
+    height: 560px;
+    background: #07070f;
+    border: 2px solid rgba(255,45,120,0.45);
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
-    animation: phoneIn 0.4s cubic-bezier(.16,1,.3,1);
+    box-shadow:
+      0 0 30px rgba(255,45,120,0.18),
+      0 0 60px rgba(0,0,0,0.6),
+      inset 0 0 20px rgba(0,0,0,0.4);
+    animation: phoneIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
     position: relative;
   }
-  @keyframes phoneIn { from{opacity:0;transform:translateY(30px) scale(0.9)} to{opacity:1;transform:none} }
+
+  #phone-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 28px;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.01) 3px, rgba(255,255,255,0.01) 6px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  @keyframes phoneIn {
+    from { opacity:0; transform: translateY(40px) scale(0.92); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
 
   /* Notch */
-  .notch {
-    width: 100px; height: 24px;
-    background: #050510;
-    border-radius: 0 0 16px 16px;
-    margin: 0 auto;
-    position: relative; z-index: 10;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+  #notch {
+    height: 28px;
+    background: #07070f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+    position: relative;
+    border-bottom: 1px solid rgba(255,45,120,0.1);
   }
-  .notch-dot { width: 8px; height: 8px; border-radius: 50%; background: #1a1a2e; }
-  .notch-dot.cam { background: rgba(0,212,255,0.3); box-shadow: 0 0 4px var(--cyan); }
+  #notch-pill {
+    width: 80px; height: 10px;
+    background: #111;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
 
   /* Status bar */
-  .status-bar {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 4px 20px 8px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.6rem; letter-spacing: 1px; color: var(--dim);
+  #status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 14px;
+    background: rgba(5,5,16,0.8);
     flex-shrink: 0;
+    border-bottom: 1px solid rgba(255,45,120,0.08);
   }
-  .status-time { color: var(--text); }
-  .status-right { display: flex; gap: 6px; align-items: center; }
-  .signal-bar { width: 3px; background: var(--pink); border-radius: 1px; box-shadow: 0 0 4px var(--pink); }
-
-  /* Screen content */
-  .screen { flex: 1; overflow: hidden; position: relative; }
-
-  /* ── Home screen ── */
-  .home-screen {
-    height: 100%; display: flex; flex-direction: column;
-    padding: 16px;
-  }
-  .home-wallpaper {
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 50% 30%, rgba(255,45,120,0.08), transparent 60%);
-  }
-  .home-time {
-    text-align: center; margin-top: 16px; position: relative; z-index: 1;
-  }
-  .home-clock {
+  #sb-time {
     font-family: 'Orbitron', sans-serif;
-    font-size: 2.4rem; font-weight: 700; letter-spacing: 4px;
-    color: var(--text); text-shadow: 0 0 20px rgba(255,45,120,0.3);
+    font-size: 10px;
+    font-weight: 700;
+    color: #00D4FF;
+    text-shadow: 0 0 6px rgba(0,212,255,0.5);
   }
-  .home-date { font-size: 0.75rem; color: var(--dim); letter-spacing: 3px; margin-top: 4px; }
+  #sb-signal {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+  }
+  .sig-bar {
+    background: #00FF88;
+    width: 3px;
+    border-radius: 1px;
+    box-shadow: 0 0 4px rgba(0,255,136,0.4);
+  }
+
+  /* Screen */
+  #phone-screen {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .phone-view {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+  }
+  .phone-view.active { display: flex; }
+
+  /* ── HOME SCREEN ── */
+  #view-home {
+    background: radial-gradient(ellipse at 50% 30%, rgba(255,45,120,0.08) 0%, transparent 70%),
+                linear-gradient(180deg, #07070f 0%, #0a0814 100%);
+    align-items: center;
+    padding: 16px;
+    gap: 10px;
+  }
+
+  #home-clock {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 36px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255,45,120,0.4);
+    letter-spacing: 2px;
+    margin-top: 8px;
+  }
+  #home-date {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(224,224,240,0.45);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
 
   /* App grid */
-  .app-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 12px; padding: 20px 10px;
-    position: relative; z-index: 1;
-    margin-top: auto;
+  #app-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+    padding: 8px 4px;
   }
-  .app {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 6px;
-    cursor: pointer;
-    transition: transform 0.15s;
-  }
-  .app:hover { transform: scale(1.1); }
   .app-icon {
-    width: 52px; height: 52px; border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem;
-    border: 1px solid transparent;
-    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 10px 4px;
+    border-radius: 12px;
+    transition: background 0.15s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .app:hover .app-icon { border-color: var(--pink); box-shadow: 0 0 12px rgba(255,45,120,0.3); }
-  .app-name { font-size: 0.65rem; letter-spacing: 1px; color: var(--dim); text-transform: uppercase; }
-  .app-badge {
-    position: absolute; top: -4px; right: -4px;
-    background: var(--pink); color: #fff;
-    font-family: 'Orbitron', sans-serif; font-size: 0.55rem;
-    width: 18px; height: 18px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 8px rgba(255,45,120,0.5);
+  .app-icon:hover { background: rgba(255,45,120,0.1); transform: scale(1.05); }
+  .app-icon:active { transform: scale(0.95); }
+  .app-emoji { font-size: 28px; }
+  .app-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: rgba(224,224,240,0.65);
+    text-align: center;
   }
 
-  /* ── SMS Screen ── */
-  .sms-screen { height: 100%; display: none; flex-direction: column; }
-  .sms-screen.active { display: flex; }
-
-  .screen-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 10px;
+  /* ── SHARED HEADER ── */
+  .view-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(5,5,16,0.85);
+    border-bottom: 1px solid rgba(255,45,120,0.15);
     flex-shrink: 0;
   }
-  .back-btn {
-    width: 28px; height: 28px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--pink); font-size: 1rem;
-    transition: transform 0.1s;
+  .view-back {
+    font-size: 16px;
+    color: #FF2D78;
+    cursor: pointer;
+    transition: color 0.15s;
+    padding: 2px 6px;
+    border: none;
+    background: none;
   }
-  .back-btn:hover { transform: translateX(-2px); }
-  .screen-title {
+  .view-back:hover { color: #ff6699; }
+  .view-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 0.7rem; letter-spacing: 3px; color: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #FF2D78;
+    flex: 1;
+    text-shadow: 0 0 6px rgba(255,45,120,0.4);
   }
 
-  /* Contacts list */
-  .contact-list { flex: 1; overflow-y: auto; }
-  .contact-list::-webkit-scrollbar { width: 3px; }
-  .contact-list::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.3); }
-
-  .contact-item {
-    padding: 12px 16px; cursor: pointer;
-    border-bottom: 1px solid rgba(255,45,120,0.08);
-    display: flex; align-items: center; gap: 12px;
-    transition: background 0.1s;
+  /* ── SMS ── */
+  #view-sms {
+    background: #07070f;
   }
-  .contact-item:hover { background: rgba(255,45,120,0.06); }
-  .contact-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: rgba(255,45,120,0.15);
-    border: 1px solid rgba(255,45,120,0.3);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem; color: var(--pink);
-    font-family: 'Orbitron', sans-serif;
+  #sms-content { display: flex; flex: 1; overflow: hidden; }
+
+  /* Contact list (left of SMS) */
+  #conv-list {
+    width: 110px;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255,45,120,0.1);
+    overflow-y: auto;
+    scrollbar-width: none;
+    background: rgba(5,5,16,0.5);
+  }
+  .conv-item {
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  .conv-item:hover, .conv-item.active { background: rgba(255,45,120,0.08); }
+  .conv-name  { font-size: 11px; font-weight: 700; color: #e0e0f0; }
+  .conv-preview { font-size: 9px; color: rgba(224,224,240,0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Chat area */
+  #chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #chat-contact-name {
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #00D4FF;
+    background: rgba(5,5,16,0.6);
+    border-bottom: 1px solid rgba(0,212,255,0.1);
     flex-shrink: 0;
   }
-  .contact-info { flex: 1; min-width: 0; }
-  .contact-name { font-size: 0.85rem; font-weight: 600; }
-  .contact-cnp  { font-size: 0.65rem; color: var(--dim); letter-spacing: 1px; }
-  .contact-unread { width: 8px; height: 8px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 6px var(--pink); flex-shrink: 0; }
-
-  /* Conversation */
-  .conv-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
-  .conv-messages::-webkit-scrollbar { width: 3px; }
-  .conv-messages::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.3); }
-
+  #messages-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,45,120,0.2) transparent;
+  }
   .msg-bubble {
-    max-width: 75%; padding: 8px 12px; border-radius: 10px;
-    font-size: 0.85rem; line-height: 1.4;
+    max-width: 80%;
+    padding: 6px 10px;
+    border-radius: 2px;
+    font-size: 11px;
+    line-height: 1.4;
   }
   .msg-bubble.sent {
     align-self: flex-end;
-    background: rgba(255,45,120,0.2);
-    border: 1px solid rgba(255,45,120,0.3);
-    border-bottom-right-radius: 2px;
+    background: rgba(255,45,120,0.15);
+    border: 1px solid rgba(255,45,120,0.25);
+    color: #ffd0de;
   }
   .msg-bubble.recv {
     align-self: flex-start;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-bottom-left-radius: 2px;
+    background: rgba(8,8,24,0.8);
+    border: 1px solid rgba(0,212,255,0.15);
+    color: rgba(224,224,240,0.8);
   }
-  .msg-time { font-size: 0.6rem; color: var(--dim); margin-top: 3px; text-align: right; }
 
-  /* Message input */
-  .msg-input-row {
-    padding: 10px 12px;
-    border-top: 1px solid var(--border);
-    display: flex; gap: 8px;
+  #sms-input-wrap {
+    display: flex;
+    gap: 5px;
+    padding: 8px;
+    border-top: 1px solid rgba(255,45,120,0.1);
+    flex-shrink: 0;
+    background: rgba(5,5,16,0.7);
+  }
+  .phone-input {
+    flex: 1;
+    background: rgba(5,5,16,0.8);
+    border: 1px solid rgba(255,45,120,0.18);
+    color: #e0e0f0;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    padding: 6px 10px;
+    outline: none;
+    border-radius: 2px;
+  }
+  .phone-input:focus { border-color: rgba(255,45,120,0.5); }
+  .phone-send-btn {
+    background: rgba(255,45,120,0.15);
+    border: 1px solid rgba(255,45,120,0.35);
+    color: #FF2D78;
+    font-size: 14px;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .phone-send-btn:hover { background: rgba(255,45,120,0.28); }
+
+  /* ── CONTACTS ── */
+  #view-contacts { background: #07070f; }
+  #contacts-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,45,120,0.2) transparent;
+  }
+  .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .contact-row:hover { background: rgba(255,45,120,0.06); }
+  .contact-avatar { font-size: 20px; width: 32px; text-align: center; }
+  .contact-info { flex: 1; }
+  .contact-name { font-size: 13px; font-weight: 700; color: #e0e0f0; }
+  .contact-num  { font-size: 10px; color: rgba(224,224,240,0.4); }
+  .contact-del  {
+    background: none; border: none; color: rgba(255,45,120,0.4);
+    font-size: 14px; cursor: pointer; padding: 4px; transition: color 0.15s;
+  }
+  .contact-del:hover { color: #FF2D78; }
+
+  #add-contact-form {
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255,45,120,0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(5,5,16,0.7);
     flex-shrink: 0;
   }
-  .msg-input {
-    flex: 1; background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,45,120,0.25);
-    border-radius: 20px; padding: 8px 14px;
-    color: var(--text); font-family: 'Rajdhani', sans-serif;
-    font-size: 0.85rem; outline: none;
+  .add-form-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(0,212,255,0.5);
+    text-transform: uppercase;
+    margin-bottom: 2px;
   }
-  .msg-input:focus { border-color: var(--pink); }
-  .msg-send {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: var(--pink); border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.9rem; transition: all 0.15s;
-    box-shadow: 0 0 10px rgba(255,45,120,0.4);
-    align-self: center;
-  }
-  .msg-send:hover { transform: scale(1.1); box-shadow: 0 0 16px rgba(255,45,120,0.6); }
+  .add-form-row { display: flex; gap: 5px; }
 
-  /* Contacts app */
-  .add-contact-btn {
-    margin: 10px; padding: 8px;
-    border: 1px dashed rgba(255,45,120,0.3);
-    background: transparent; color: var(--dim);
-    cursor: pointer; font-size: 0.75rem; letter-spacing: 2px;
-    text-transform: uppercase; transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+  /* ── BANK ── */
+  #view-bank { background: #07070f; align-items: center; padding: 20px 16px; gap: 14px; }
+  #bank-balance-card {
+    width: 100%;
+    background: rgba(5,5,16,0.8);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-top: 2px solid #00D4FF;
+    padding: 16px;
+    text-align: center;
   }
-  .add-contact-btn:hover { border-color: var(--pink); color: var(--pink); }
+  #bank-balance-label { font-size: 10px; letter-spacing: 3px; color: rgba(0,212,255,0.5); text-transform: uppercase; margin-bottom: 6px; }
+  #bank-balance-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #00D4FF;
+    text-shadow: 0 0 12px rgba(0,212,255,0.5);
+  }
+  .bank-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .bank-form-label { font-size: 10px; letter-spacing: 2px; color: rgba(224,224,240,0.4); text-transform: uppercase; }
+  .bank-btn {
+    padding: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: #00D4FF;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+  .bank-btn:hover { background: rgba(0,212,255,0.2); }
 
-  /* Add contact form */
-  .add-form { padding: 12px 16px; display: none; flex-direction: column; gap: 8px; }
-  .add-form.visible { display: flex; }
-  .add-field {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,45,120,0.25);
-    padding: 8px 12px; color: var(--text);
-    font-family: 'Rajdhani', sans-serif; font-size: 0.9rem;
-    outline: none; border-radius: 2px;
+  /* ── MAP ── */
+  #view-map {
+    background: #07070f;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
   }
-  .add-field:focus { border-color: var(--pink); }
-  .add-confirm {
-    padding: 8px; background: var(--pink); border: none;
-    color: #fff; font-family: 'Orbitron', sans-serif;
-    font-size: 0.65rem; letter-spacing: 2px; cursor: pointer;
-    border-radius: 2px; transition: opacity 0.15s;
+  #map-placeholder {
+    font-size: 48px;
+    opacity: 0.3;
   }
-  .add-confirm:hover { opacity: 0.85; }
+  #map-msg {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(224,224,240,0.35);
+    text-align: center;
+    letter-spacing: 0.5px;
+    padding: 0 24px;
+    line-height: 1.6;
+  }
 
-  /* Bottom home bar */
-  .home-bar {
-    height: 28px; display: flex; align-items: center; justify-content: center;
+  /* ── GANG ── */
+  #view-gang {
+    background: #07070f;
+    align-items: center;
+    justify-content: center;
+  }
+  #gang-placeholder { font-size: 11px; color: rgba(224,224,240,0.3); letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ── BOTTOM NAV (home button) ── */
+  #home-btn-bar {
+    height: 44px;
+    background: rgba(5,5,16,0.9);
+    border-top: 1px solid rgba(255,45,120,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 20px;
     flex-shrink: 0;
   }
-  .home-indicator {
-    width: 100px; height: 4px; border-radius: 2px;
-    background: rgba(255,255,255,0.15);
-    cursor: pointer; transition: background 0.15s;
+  .nav-btn {
+    background: none;
+    border: none;
+    color: rgba(224,224,240,0.35);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: color 0.15s, background 0.15s;
   }
-  .home-indicator:hover { background: rgba(255,45,120,0.5); }
-
-  /* Error toast */
-  .phone-toast {
-    position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
-    background: rgba(255,68,68,0.9); color: #fff;
-    padding: 6px 14px; border-radius: 4px;
-    font-size: 0.75rem; white-space: nowrap;
-    display: none; animation: toastIn 0.2s ease;
-  }
-  .phone-toast.visible { display: block; }
-  @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(6px)} to{opacity:1;transform:translateX(-50%)} }
+  .nav-btn:hover { color: #FF2D78; background: rgba(255,45,120,0.08); }
 </style>
 </head>
 <body>
-<div class="phone">
-  <div class="notch">
-    <div class="notch-dot cam"></div>
-    <div class="notch-dot"></div>
-  </div>
+<div id="phone-shell">
+  <!-- Notch -->
+  <div id="notch"><div id="notch-pill"></div></div>
 
-  <div class="status-bar">
-    <span class="status-time" id="statusTime">00:00</span>
-    <div class="status-right">
-      <div class="signal-bar" style="height:8px"></div>
-      <div class="signal-bar" style="height:6px"></div>
-      <div class="signal-bar" style="height:4px"></div>
-      <span>📶</span>
+  <!-- Status bar -->
+  <div id="status-bar">
+    <span id="sb-time">00:00</span>
+    <div id="sb-signal">
+      <div class="sig-bar" style="height:4px"></div>
+      <div class="sig-bar" style="height:7px"></div>
+      <div class="sig-bar" style="height:10px"></div>
+      <div class="sig-bar" style="height:13px"></div>
     </div>
   </div>
 
-  <div class="screen">
+  <!-- Screen -->
+  <div id="phone-screen">
+
     <!-- HOME -->
-    <div id="homeScreen" class="home-screen">
-      <div class="home-wallpaper"></div>
-      <div class="home-time">
-        <div class="home-clock" id="homeClock">00:00</div>
-        <div class="home-date" id="homeDate">---</div>
-      </div>
-      <div class="app-grid">
-        <div class="app" onclick="openApp('sms')">
-          <div style="position:relative">
-            <div class="app-icon" style="background:rgba(255,45,120,0.15)">💬</div>
-            <div class="app-badge" id="smsBadge" style="display:none">0</div>
-          </div>
-          <span class="app-name">Mesaje</span>
+    <div class="phone-view active" id="view-home">
+      <div id="home-clock">00:00</div>
+      <div id="home-date">SAT, 01 JAN 2026</div>
+      <div id="app-grid">
+        <div class="app-icon" onclick="openApp('sms')">
+          <span class="app-emoji">💬</span>
+          <span class="app-label">Mesaje</span>
         </div>
-        <div class="app" onclick="openApp('contacts')">
-          <div class="app-icon" style="background:rgba(0,212,255,0.12)">👥</div>
-          <span class="app-name">Contacte</span>
+        <div class="app-icon" onclick="openApp('contacts')">
+          <span class="app-emoji">👥</span>
+          <span class="app-label">Contacte</span>
         </div>
-        <div class="app" onclick="openApp('bank')">
-          <div class="app-icon" style="background:rgba(0,255,136,0.1)">🏦</div>
-          <span class="app-name">Banca</span>
+        <div class="app-icon" onclick="openApp('bank')">
+          <span class="app-emoji">🏦</span>
+          <span class="app-label">Banca</span>
         </div>
-        <div class="app" onclick="openApp('map')">
-          <div class="app-icon" style="background:rgba(155,68,255,0.15)">🗺️</div>
-          <span class="app-name">Harta</span>
+        <div class="app-icon" onclick="openApp('map')">
+          <span class="app-emoji">🗺️</span>
+          <span class="app-label">Harta</span>
         </div>
-        <div class="app" onclick="openApp('gang')">
-          <div class="app-icon" style="background:rgba(255,45,120,0.1)">⚡</div>
-          <span class="app-name">Org.</span>
+        <div class="app-icon" onclick="openApp('gang')">
+          <span class="app-emoji">⚡</span>
+          <span class="app-label">Gang</span>
         </div>
-        <div class="app" onclick="closePhone()">
-          <div class="app-icon" style="background:rgba(255,100,0,0.12)">🔒</div>
-          <span class="app-name">Inchide</span>
+        <div class="app-icon" onclick="doClose()">
+          <span class="app-emoji">🔒</span>
+          <span class="app-label">Blocare</span>
         </div>
       </div>
     </div>
 
-    <!-- SMS / MESSAGES -->
-    <div id="smsScreen" class="sms-screen" style="display:none">
-      <div id="smsConvList" style="height:100%;display:flex;flex-direction:column">
-        <div class="screen-header">
-          <div class="back-btn" onclick="openApp('home')">←</div>
-          <div class="screen-title">Mesaje</div>
-        </div>
-        <div class="contact-list" id="msgContactList"></div>
+    <!-- SMS -->
+    <div class="phone-view" id="view-sms">
+      <div class="view-header">
+        <button class="view-back" onclick="goHome()">◄</button>
+        <span class="view-title">MESAJE</span>
       </div>
-
-      <div id="convView" style="height:100%;display:none;flex-direction:column">
-        <div class="screen-header">
-          <div class="back-btn" onclick="showElement('smsConvList');hideElement('convView')">←</div>
-          <div class="screen-title" id="convTitle">---</div>
-        </div>
-        <div class="conv-messages" id="convMessages"></div>
-        <div class="msg-input-row">
-          <input type="text" class="msg-input" id="msgInput" placeholder="Scrie un mesaj..." maxlength="512">
-          <button class="msg-send" onclick="sendSMS()">➤</button>
+      <div id="sms-content">
+        <div id="conv-list" id="conv-list"></div>
+        <div id="chat-area">
+          <div id="chat-contact-name">— Selecteaza o conversatie —</div>
+          <div id="messages-scroll"></div>
+          <div id="sms-input-wrap">
+            <input class="phone-input" id="sms-inp" placeholder="Scrie un mesaj..." type="text"
+              onkeydown="if(event.key==='Enter') sendSMS()">
+            <button class="phone-send-btn" onclick="sendSMS()">➤</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- CONTACTS -->
-    <div id="contactsScreen" style="height:100%;display:none;flex-direction:column">
-      <div class="screen-header">
-        <div class="back-btn" onclick="openApp('home')">←</div>
-        <div class="screen-title">Contacte</div>
+    <div class="phone-view" id="view-contacts">
+      <div class="view-header">
+        <button class="view-back" onclick="goHome()">◄</button>
+        <span class="view-title">CONTACTE</span>
       </div>
-      <div class="contact-list" id="contactList"></div>
-      <button class="add-contact-btn" onclick="toggleAddForm()">+ Adauga Contact</button>
-      <div class="add-form" id="addForm">
-        <input type="text" class="add-field" id="addCnp"  placeholder="CNP Tinta" maxlength="8">
-        <input type="text" class="add-field" id="addName" placeholder="Nume Afisat" maxlength="32">
-        <button class="add-confirm" onclick="addContact()">Salveaza</button>
+      <div id="contacts-list"></div>
+      <div id="add-contact-form">
+        <div class="add-form-title">+ Adauga contact</div>
+        <input class="phone-input" id="add-name" placeholder="Nume contact" type="text">
+        <div class="add-form-row">
+          <input class="phone-input" id="add-num" placeholder="Numar telefon" type="text" style="flex:1">
+          <button class="phone-send-btn" onclick="doAddContact()">+</button>
+        </div>
       </div>
     </div>
 
-    <!-- Placeholder screens -->
-    <div id="bankScreen"  style="height:100%;display:none;flex-direction:column">
-      <div class="screen-header">
-        <div class="back-btn" onclick="openApp('home')">←</div>
-        <div class="screen-title">Banca</div>
+    <!-- BANK -->
+    <div class="phone-view" id="view-bank">
+      <div class="view-header" style="width:100%;flex-shrink:0">
+        <button class="view-back" onclick="goHome()">◄</button>
+        <span class="view-title">BANCA NEON</span>
       </div>
-      <div style="padding:30px;text-align:center;color:var(--dim);font-size:0.9rem">Acceseaza un ATM sau sucursala bancara.</div>
-    </div>
-    <div id="mapScreen"   style="height:100%;display:none;flex-direction:column">
-      <div class="screen-header">
-        <div class="back-btn" onclick="openApp('home')">←</div>
-        <div class="screen-title">Harta</div>
+      <div id="bank-balance-card">
+        <div id="bank-balance-label">Sold disponibil</div>
+        <div id="bank-balance-val">$0</div>
       </div>
-      <div style="padding:30px;text-align:center;color:var(--dim);font-size:0.9rem">Foloseste minimap-ul in joc.</div>
-    </div>
-    <div id="gangScreen"  style="height:100%;display:none;flex-direction:column">
-      <div class="screen-header">
-        <div class="back-btn" onclick="openApp('home')">←</div>
-        <div class="screen-title">Organizatie</div>
+      <div class="bank-form">
+        <div class="bank-form-label">Transfer fonduri</div>
+        <input class="phone-input" id="transfer-to" placeholder="Numar destinatar" type="text">
+        <input class="phone-input" id="transfer-amt" placeholder="Suma ($)" type="number" min="1">
+        <button class="bank-btn" onclick="doTransfer()">TRIMITE TRANSFER</button>
       </div>
-      <div style="padding:30px;text-align:center;color:var(--dim);font-size:0.9rem">Nu esti intr-o organizatie.</div>
     </div>
+
+    <!-- MAP -->
+    <div class="phone-view" id="view-map">
+      <div class="view-header" style="width:100%;flex-shrink:0">
+        <button class="view-back" onclick="goHome()">◄</button>
+        <span class="view-title">HARTA</span>
+      </div>
+      <div id="map-placeholder">🗺️</div>
+      <div id="map-msg">Harta disponibila dupa cumparare.<br>Viziteaza un magazin electronic pentru a achizitiona GPS.</div>
+    </div>
+
+    <!-- GANG -->
+    <div class="phone-view" id="view-gang">
+      <div class="view-header" style="width:100%;flex-shrink:0">
+        <button class="view-back" onclick="goHome()">◄</button>
+        <span class="view-title">GANG</span>
+      </div>
+      <div id="gang-placeholder">NU ESTI INTR-UN GANG</div>
+    </div>
+
   </div>
 
-  <div class="home-bar">
-    <div class="home-indicator" onclick="openApp('home')"></div>
+  <!-- Bottom nav -->
+  <div id="home-btn-bar">
+    <button class="nav-btn" onclick="goHome()">⬤</button>
   </div>
-
-  <div class="phone-toast" id="phoneToast"></div>
 </div>
 
 <script>
-  let phoneData    = null;
-  let openConvCnp  = null;
-  const SCREENS    = ['home','sms','contacts','bank','map','gang'];
+  /* ── State ── */
+  let activeView    = 'home';
+  let contacts      = [];
+  let conversations = {};
+  let activeConv    = null;
+  let bankBalance   = 0;
 
-  // ── Clock ──
-  function tick() {
-    const now  = new Date();
-    const time = now.toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'});
-    const date = now.toLocaleDateString('ro-RO',{weekday:'long',day:'numeric',month:'long'});
-    document.getElementById('homeClock').textContent = time;
-    document.getElementById('homeDate').textContent  = date;
-    document.getElementById('statusTime').textContent = time;
+  /* ── Clock ── */
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const t = h + ':' + m;
+    document.getElementById('sb-time').textContent   = t;
+    document.getElementById('home-clock').textContent = t;
+
+    const days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const now2 = new Date();
+    document.getElementById('home-date').textContent =
+      days[now2.getDay()] + ', ' + String(now2.getDate()).padStart(2,'0') + ' ' + months[now2.getMonth()] + ' ' + now2.getFullYear();
   }
-  setInterval(tick, 1000); tick();
+  updateClock();
+  setInterval(updateClock, 10000);
 
-  function initPhone(data) {
-    phoneData = data;
-    renderContacts(data.contacts || []);
-    const badge = document.getElementById('smsBadge');
-    if (data.unread > 0) {
-      badge.textContent  = data.unread;
-      badge.style.display = 'flex';
+  /* ── Navigation ── */
+  function openApp(app) {
+    document.querySelectorAll('.phone-view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + app).classList.add('active');
+    activeView = app;
+    if (app === 'sms')      renderConvList();
+    if (app === 'contacts') renderContacts();
+  }
+
+  function goHome() {
+    document.querySelectorAll('.phone-view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-home').classList.add('active');
+    activeView = 'home';
+    activeConv = null;
+  }
+
+  /* ── SMS ── */
+  function renderConvList() {
+    const list = document.getElementById('conv-list');
+    list.innerHTML = '';
+    Object.keys(conversations).forEach(name => {
+      const msgs = conversations[name] || [];
+      const last = msgs[msgs.length - 1];
+      const item = document.createElement('div');
+      item.className = 'conv-item' + (name === activeConv ? ' active' : '');
+      item.innerHTML = `<div class="conv-name">${name}</div>
+        <div class="conv-preview">${last ? last.text : ''}</div>`;
+      item.onclick = () => openConv(name);
+      list.appendChild(item);
+    });
+    if (!Object.keys(conversations).length) {
+      list.innerHTML = '<div style="padding:12px 8px;font-size:10px;color:rgba(224,224,240,0.25)">Nicio conversatie</div>';
     }
   }
 
-  function openApp(app) {
-    SCREENS.forEach(s => {
-      const el = document.getElementById(s + 'Screen');
-      if (el) el.style.display = 'none';
+  function openConv(name) {
+    activeConv = name;
+    document.getElementById('chat-contact-name').textContent = name;
+    if (!conversations[name]) conversations[name] = [];
+    renderMessages();
+    renderConvList();
+    if (typeof mp !== 'undefined') mp.trigger('phone:browserGetConv', name);
+  }
+
+  function renderMessages() {
+    const scroll = document.getElementById('messages-scroll');
+    scroll.innerHTML = '';
+    const msgs = conversations[activeConv] || [];
+    msgs.forEach(msg => {
+      const el = document.createElement('div');
+      el.className = 'msg-bubble ' + (msg.sent ? 'sent' : 'recv');
+      el.textContent = msg.text;
+      scroll.appendChild(el);
     });
-    const target = document.getElementById(app + 'Screen');
-    if (target) { target.style.display = 'flex'; }
-    else { document.getElementById('homeScreen').style.display = 'flex'; }
-  }
-
-  function showElement(id) { document.getElementById(id).style.display = 'flex'; }
-  function hideElement(id) { document.getElementById(id).style.display = 'none'; }
-
-  // ── Contacts ──
-  function renderContacts(contacts) {
-    const list = document.getElementById('contactList');
-    const msgList = document.getElementById('msgContactList');
-    list.innerHTML = '';
-    msgList.innerHTML = '';
-
-    contacts.forEach(c => {
-      const initial = c.contact_name ? c.contact_name[0].toUpperCase() : '?';
-
-      const el1 = contactEl(c, initial, () => openConversation(c));
-      const el2 = contactEl(c, initial, () => openConversation(c));
-
-      list.appendChild(el1);
-      msgList.appendChild(el2);
-    });
-  }
-
-  function contactEl(c, initial, onclick) {
-    const el = document.createElement('div');
-    el.className = 'contact-item';
-    el.innerHTML = `
-      <div class="contact-avatar">${initial}</div>
-      <div class="contact-info">
-        <div class="contact-name">${c.contact_name}</div>
-        <div class="contact-cnp">CNP: ${c.contact_cnp}</div>
-      </div>`;
-    el.onclick = onclick;
-    return el;
-  }
-
-  function openConversation(contact) {
-    openConvCnp = contact.contact_cnp;
-    document.getElementById('convTitle').textContent = contact.contact_name;
-    hideElement('smsConvList');
-    showElement('convView');
-    mp.trigger('phone:browserGetConv', contact.contact_cnp);
-  }
-
-  function loadConversation(data) {
-    const cont = document.getElementById('convMessages');
-    cont.innerHTML = '';
-    data.messages.forEach(m => {
-      const isSent = m.sender_cnp === (phoneData ? phoneData.cnp : '');
-      const bubble = document.createElement('div');
-      bubble.className = `msg-bubble ${isSent ? 'sent' : 'recv'}`;
-      const t = new Date(m.sent_at).toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'});
-      bubble.innerHTML = `${m.message}<div class="msg-time">${t}</div>`;
-      cont.appendChild(bubble);
-    });
-    cont.scrollTop = cont.scrollHeight;
+    scroll.scrollTop = scroll.scrollHeight;
   }
 
   function sendSMS() {
-    if (!openConvCnp) return;
-    const input = document.getElementById('msgInput');
-    const msg   = input.value.trim();
-    if (!msg) return;
-    mp.trigger('phone:browserSendSMS', openConvCnp, msg);
-    input.value = '';
+    const inp = document.getElementById('sms-inp');
+    const text = inp.value.trim();
+    if (!text || !activeConv) return;
+    if (!conversations[activeConv]) conversations[activeConv] = [];
+    conversations[activeConv].push({ text, sent: true });
+    renderMessages();
+    inp.value = '';
+    if (typeof mp !== 'undefined') mp.trigger('phone:browserSendSMS', activeConv, text);
   }
 
-  function smsSent() {
-    if (openConvCnp) mp.trigger('phone:browserGetConv', openConvCnp);
+  /* Receive message from server: addMessage(from, text) */
+  function addMessage(from, text) {
+    if (!conversations[from]) conversations[from] = [];
+    conversations[from].push({ text, sent: false });
+    if (activeConv === from) renderMessages();
+    renderConvList();
   }
 
-  function receiveSMS(data) {
-    const badge = document.getElementById('smsBadge');
-    const cur   = parseInt(badge.textContent || '0') + 1;
-    badge.textContent  = cur;
-    badge.style.display = 'flex';
-    if (openConvCnp === data.from) {
-      mp.trigger('phone:browserGetConv', data.from);
+  /* ── Contacts ── */
+  function renderContacts() {
+    const list = document.getElementById('contacts-list');
+    list.innerHTML = '';
+    contacts.forEach((c, i) => {
+      const row = document.createElement('div');
+      row.className = 'contact-row';
+      row.innerHTML = `<span class="contact-avatar">👤</span>
+        <div class="contact-info">
+          <div class="contact-name">${c.name}</div>
+          <div class="contact-num">${c.number}</div>
+        </div>
+        <button class="contact-del" onclick="deleteContact(${i},event)">✕</button>`;
+      row.onclick = () => { openApp('sms'); openConv(c.name); };
+      list.appendChild(row);
+    });
+    if (!contacts.length) {
+      list.innerHTML = '<div style="padding:16px;font-size:11px;color:rgba(224,224,240,0.25);text-align:center">Niciun contact</div>';
     }
   }
 
-  // ── Add Contact ──
-  function toggleAddForm() {
-    const f = document.getElementById('addForm');
-    f.classList.toggle('visible');
+  function doAddContact() {
+    const name = document.getElementById('add-name').value.trim();
+    const num  = document.getElementById('add-num').value.trim();
+    if (!name || !num) return;
+    contacts.push({ name, number: num });
+    document.getElementById('add-name').value = '';
+    document.getElementById('add-num').value  = '';
+    renderContacts();
+    if (typeof mp !== 'undefined') mp.trigger('phone:browserAddContact', name, num);
   }
 
-  function addContact() {
-    const cnp  = document.getElementById('addCnp').value.trim();
-    const name = document.getElementById('addName').value.trim();
-    if (!cnp || !name) return phoneError('Completeaza toate campurile.');
-    mp.trigger('phone:browserAddContact', cnp, name);
+  function deleteContact(idx, e) {
+    e.stopPropagation();
+    const c = contacts.splice(idx, 1)[0];
+    renderContacts();
+    if (typeof mp !== 'undefined') mp.trigger('phone:browserDeleteContact', c.number);
   }
 
-  function contactAdded(contact) {
-    document.getElementById('addForm').classList.remove('visible');
-    document.getElementById('addCnp').value  = '';
-    document.getElementById('addName').value = '';
-    if (phoneData) {
-      phoneData.contacts.push({ contact_cnp: contact.cnp, contact_name: contact.name });
-      renderContacts(phoneData.contacts);
-    }
+  /* ── Bank ── */
+  function setBankBalance(amount) {
+    bankBalance = amount;
+    document.getElementById('bank-balance-val').textContent = '$' + Number(amount).toLocaleString();
   }
 
-  function contactDeleted(cnp) {
-    if (phoneData) {
-      phoneData.contacts = phoneData.contacts.filter(c => c.contact_cnp !== cnp);
-      renderContacts(phoneData.contacts);
-    }
+  function doTransfer() {
+    const to  = document.getElementById('transfer-to').value.trim();
+    const amt = parseInt(document.getElementById('transfer-amt').value);
+    if (!to || isNaN(amt) || amt <= 0) return;
+    /* mp event handled server-side */
+    document.getElementById('transfer-to').value  = '';
+    document.getElementById('transfer-amt').value = '';
   }
 
-  function phoneError(msg) {
-    const t = document.getElementById('phoneToast');
-    t.textContent = msg;
-    t.classList.add('visible');
-    setTimeout(() => t.classList.remove('visible'), 3000);
+  /* ── Close ── */
+  function doClose() {
+    if (typeof mp !== 'undefined') mp.trigger('phone:browserClose');
   }
 
-  function closePhone() {
-    mp.trigger('phone:browserClose');
+  /* ── setPhoneData(data) — called from client ── */
+  function setPhoneData(data) {
+    if (data.contacts) { contacts = data.contacts; }
+    if (data.bankBalance !== undefined) setBankBalance(data.bankBalance);
+    if (data.conversations) { conversations = data.conversations; }
   }
-
-  // Enter sends SMS
-  document.getElementById('msgInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') sendSMS();
-  });
 </script>
 </body>
 </html>

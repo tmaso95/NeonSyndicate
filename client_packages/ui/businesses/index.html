@@ -2,229 +2,580 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<title>Magazine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeonSyndicate — Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{width:100vw;height:100vh;background:rgba(0,0,0,0.82);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;color:#e0e0e0}
-  .shop{width:820px;height:580px;background:linear-gradient(135deg,rgba(10,8,22,0.98),rgba(14,12,28,0.98));border:1px solid #FF2D78;border-radius:6px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 45px rgba(255,45,120,0.25)}
-  .header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(255,45,120,0.08);border-bottom:1px solid rgba(255,45,120,0.35)}
-  .header h1{font-family:'Orbitron',sans-serif;font-size:15px;color:#FF2D78;letter-spacing:3px;text-transform:uppercase}
-  .header-meta{display:flex;align-items:center;gap:14px;font-size:12px}
-  .cash-display{color:#32ff64;font-weight:700;font-size:14px}
-  .cash-label{color:#555;font-size:11px}
-  .close-btn{background:none;border:1px solid #FF2D78;color:#FF2D78;width:26px;height:26px;cursor:pointer;border-radius:3px;font-size:14px;transition:all .2s}
-  .close-btn:hover{background:#FF2D78;color:#000}
-  .tabs{display:flex;padding:0 18px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,45,120,0.15)}
-  .tab{padding:10px 18px;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;color:#555;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase}
-  .tab.active,.tab:hover{color:#FF2D78;border-bottom-color:#FF2D78}
-  .body{display:flex;flex:1;overflow:hidden}
-  .items-grid{flex:1;padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;overflow-y:auto;align-content:start}
-  .detail-panel{width:240px;border-left:1px solid rgba(255,45,120,0.15);padding:16px;display:flex;flex-direction:column;background:rgba(0,0,0,0.2)}
-  /* Item card */
-  .item-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,45,120,0.15);border-radius:5px;padding:12px;cursor:pointer;transition:all .2s;position:relative}
-  .item-card:hover,.item-card.selected{border-color:#FF2D78;background:rgba(255,45,120,0.07);box-shadow:0 0 10px rgba(255,45,120,0.15)}
-  .item-icon{font-size:28px;text-align:center;margin-bottom:6px}
-  .item-name{font-size:12px;font-weight:700;color:#e0e0e0;text-align:center;margin-bottom:3px}
-  .item-price{font-size:13px;font-weight:700;color:#FF2D78;text-align:center}
-  .item-weight{font-size:10px;color:#556;text-align:center;margin-top:2px}
-  .item-qty{position:absolute;top:6px;right:6px;font-size:10px;color:#00D4FF;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);padding:1px 5px;border-radius:2px}
-  /* Detail panel */
-  h3{font-family:'Orbitron',sans-serif;font-size:11px;color:#FF2D78;margin-bottom:12px;padding-bottom:5px;border-bottom:1px solid rgba(255,45,120,0.2);letter-spacing:2px}
-  .detail-name{font-size:16px;font-weight:700;color:#e0e0e0;margin-bottom:4px}
-  .detail-desc{font-size:11px;color:#778;margin-bottom:10px;line-height:1.5}
-  .detail-kv{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px}
-  .detail-kv .k{color:#667}
-  .detail-kv .v{color:#e0e0e0;font-weight:600}
-  .qty-control{display:flex;align-items:center;gap:8px;margin:12px 0}
-  .qty-btn{width:28px;height:28px;background:rgba(255,45,120,0.15);border:1px solid rgba(255,45,120,0.35);color:#FF2D78;font-size:16px;cursor:pointer;border-radius:3px;transition:all .15s;font-family:'Rajdhani',sans-serif}
-  .qty-btn:hover{background:rgba(255,45,120,0.3)}
-  .qty-val{font-size:18px;font-weight:700;color:#e0e0e0;min-width:30px;text-align:center}
-  .buy-btn{width:100%;padding:10px;background:linear-gradient(135deg,#FF2D78,#cc0055);border:none;color:#fff;font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;cursor:pointer;border-radius:4px;transition:all .2s;margin-top:auto}
-  .buy-btn:hover{box-shadow:0 0 15px rgba(255,45,120,0.5);transform:translateY(-1px)}
-  .buy-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-  .total-cost{text-align:center;font-size:13px;color:#32ff64;font-weight:700;margin-bottom:8px}
-  .no-selection{display:flex;align-items:center;justify-content:center;flex:1;color:#334;font-size:13px;text-align:center;flex-direction:column;gap:8px}
-  /* Owner section */
-  .form-group{margin-bottom:10px}
-  .form-group label{display:block;font-size:11px;color:#778;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px}
-  .form-group input{width:100%;padding:7px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,45,120,0.25);border-radius:3px;color:#e0e0e0;font-family:'Rajdhani',sans-serif;font-size:12px;outline:none}
-  .form-group input:focus{border-color:#FF2D78}
-  .btn{padding:6px 14px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;transition:all .15s}
-  .btn-pink{background:rgba(255,45,120,0.2);color:#FF2D78;border:1px solid rgba(255,45,120,0.4)}
-  .btn-cyan{background:rgba(0,212,255,0.15);color:#00D4FF;border:1px solid rgba(0,212,255,0.4)}
-  .btn-green{background:rgba(50,255,100,0.1);color:#32ff64;border:1px solid rgba(50,255,100,0.3)}
-  .btn:hover{filter:brightness(1.3)}
-  .revenue-box{background:rgba(50,255,100,0.06);border:1px solid rgba(50,255,100,0.2);border-radius:4px;padding:16px;text-align:center;margin-bottom:14px}
-  .revenue-amount{font-family:'Orbitron',sans-serif;font-size:22px;color:#32ff64;font-weight:700}
-  .revenue-label{font-size:11px;color:#667;margin-top:4px}
-  .scrollbar::-webkit-scrollbar{width:4px}
-  .scrollbar::-webkit-scrollbar-track{background:transparent}
-  .scrollbar::-webkit-scrollbar-thumb{background:#FF2D78;border-radius:2px}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: transparent;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Rajdhani', sans-serif;
+    color: #e0e0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Main panel */
+  #shop-panel {
+    width: 780px;
+    max-height: 88vh;
+    background: rgba(8,8,24,0.95);
+    border: 1px solid rgba(255,45,120,0.28);
+    backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
+    animation: panelIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    position: relative;
+    overflow: hidden;
+  }
+  #shop-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #FF2D78, #9B44FF, transparent);
+  }
+
+  /* Header */
+  #shop-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    background: rgba(5,5,16,0.8);
+    border-bottom: 1px solid rgba(255,45,120,0.15);
+    flex-shrink: 0;
+  }
+  #shop-icon { font-size: 22px; }
+  #shop-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #FF2D78;
+    text-shadow: 0 0 10px rgba(255,45,120,0.5);
+    flex: 1;
+  }
+  #shop-type {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(0,212,255,0.55);
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid rgba(0,212,255,0.18);
+    background: rgba(0,212,255,0.04);
+  }
+  #shop-cash-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(5,5,16,0.6);
+    border: 1px solid rgba(0,212,255,0.18);
+  }
+  #shop-cash-label { font-size: 9px; color: rgba(0,212,255,0.45); letter-spacing: 2px; text-transform: uppercase; }
+  #shop-cash-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #00D4FF;
+    text-shadow: 0 0 6px rgba(0,212,255,0.5);
+  }
+  #shop-close {
+    width: 28px; height: 28px;
+    background: rgba(255,45,120,0.1);
+    border: 1px solid rgba(255,45,120,0.3);
+    color: #FF2D78;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  #shop-close:hover { background: rgba(255,45,120,0.25); }
+
+  /* Body */
+  #shop-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Left: Item grid */
+  #shop-left {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,45,120,0.3) transparent;
+    border-right: 1px solid rgba(255,45,120,0.1);
+  }
+  #shop-left::-webkit-scrollbar { width: 3px; }
+  #shop-left::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.3); }
+
+  #item-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .shop-item-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 8px;
+    background: rgba(5,5,16,0.65);
+    border: 1px solid rgba(255,45,120,0.1);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    position: relative;
+    text-align: center;
+  }
+  .shop-item-card:hover { border-color: rgba(255,45,120,0.35); background: rgba(255,45,120,0.05); }
+  .shop-item-card.selected { border-color: #FF2D78; background: rgba(255,45,120,0.1); box-shadow: 0 0 10px rgba(255,45,120,0.1); }
+  .shop-item-card:active { transform: scale(0.97); }
+
+  .shop-item-icon { font-size: 28px; line-height: 1; }
+  .shop-item-name { font-size: 11px; font-weight: 700; color: #e0e0f0; letter-spacing: 0.3px; }
+  .shop-item-price {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #00FF88;
+    text-shadow: 0 0 6px rgba(0,255,136,0.4);
+  }
+  .shop-item-price.expensive { color: #FF4466; text-shadow: 0 0 6px rgba(255,68,102,0.4); }
+  .stock-badge {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: rgba(0,212,255,0.15);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: #00D4FF;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 7px;
+    font-weight: 700;
+    padding: 1px 4px;
+  }
+  .stock-badge.out { background: rgba(255,45,120,0.1); border-color: rgba(255,45,120,0.3); color: #FF2D78; }
+
+  /* Right: Detail panel */
+  #shop-right {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: rgba(5,5,16,0.5);
+  }
+
+  #item-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+
+  #detail-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 10px;
+    color: rgba(224,224,240,0.2);
+  }
+  #detail-placeholder-icon { font-size: 36px; opacity: 0.25; }
+  #detail-placeholder-msg  { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; }
+
+  #detail-content { display: none; flex-direction: column; gap: 12px; }
+  #detail-content.visible { display: flex; }
+
+  #detail-icon { font-size: 52px; text-align: center; line-height: 1; }
+  #detail-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  #detail-type {
+    font-size: 10px;
+    color: rgba(0,212,255,0.5);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  #detail-desc {
+    font-size: 12px;
+    color: rgba(224,224,240,0.55);
+    line-height: 1.6;
+    padding: 8px 10px;
+    background: rgba(5,5,16,0.5);
+    border-left: 2px solid rgba(255,45,120,0.25);
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .detail-row-label { font-size: 11px; color: rgba(224,224,240,0.35); letter-spacing: 1px; text-transform: uppercase; }
+  .detail-row-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #00D4FF;
+  }
+  #detail-price-big {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    text-align: center;
+    text-shadow: 0 0 10px currentColor;
+  }
+  #detail-price-big.affordable { color: #00FF88; }
+  #detail-price-big.expensive  { color: #FF4466; }
+
+  /* Quantity selector */
+  #qty-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .qty-label { font-size: 10px; color: rgba(224,224,240,0.35); letter-spacing: 2px; text-transform: uppercase; }
+  #qty-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid rgba(255,45,120,0.2);
+  }
+  .qty-btn {
+    width: 36px; height: 36px;
+    background: rgba(255,45,120,0.08);
+    border: none;
+    color: #FF2D78;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+  .qty-btn:hover { background: rgba(255,45,120,0.2); }
+  #qty-val {
+    flex: 1;
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 8px;
+  }
+  #qty-total {
+    font-size: 11px;
+    color: rgba(224,224,240,0.35);
+    text-align: center;
+  }
+  #qty-total span {
+    font-family: 'Orbitron', sans-serif;
+    color: #00D4FF;
+    font-weight: 700;
+  }
+
+  /* Buy button */
+  #buy-btn {
+    padding: 13px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    background: linear-gradient(135deg, rgba(255,45,120,0.18), rgba(155,68,255,0.12));
+    border: 1px solid rgba(255,45,120,0.45);
+    color: #FF2D78;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-shadow: 0 0 8px rgba(255,45,120,0.4);
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  #buy-btn:hover {
+    border-color: #FF2D78;
+    box-shadow: 0 0 20px rgba(255,45,120,0.2);
+    color: #ff6699;
+  }
+  #buy-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  #buy-btn:active:not(:disabled) { transform: scale(0.98); }
+
+  /* Toast notifications */
+  #toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .toast {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border-left: 3px solid;
+    backdrop-filter: blur(8px);
+    background: rgba(8,8,24,0.95);
+    min-width: 280px;
+    text-align: center;
+    animation: toastIn 0.35s ease forwards;
+  }
+  .toast.success { border-color: #00FF88; color: #00FF88; }
+  .toast.error   { border-color: #FF2D78; color: #FF4466; }
+  .toast.out { animation: toastOut 0.3s ease forwards; }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes toastIn  { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes toastOut { to   { opacity:0; transform:translateY(-12px); max-height:0; padding:0; margin:0; } }
 </style>
 </head>
 <body>
-<div class="shop">
-  <div class="header">
-    <h1 id="shopName">Magazine</h1>
-    <div class="header-meta">
-      <div><div class="cash-label">BANI</div><div class="cash-display">$<span id="cashAmt">0</span></div></div>
-      <button class="close-btn" onclick="closeShop()">✕</button>
-    </div>
-  </div>
-  <div class="tabs" id="shopTabs">
-    <div class="tab active" onclick="showTab('buy')">CUMPARA</div>
-    <div class="tab owner-only" id="ownerTabs" style="display:none" onclick="showTab('owner')">PATRON</div>
-    <div class="tab for-sale" id="buyBizTab" style="display:none" onclick="showTab('buy-biz')">CUMPARA AFACERE</div>
-  </div>
-  <div class="body">
+<div class="scanlines"></div>
 
-    <!-- BUY TAB -->
-    <div id="tab-buy" style="display:flex;flex:1;overflow:hidden">
-      <div class="items-grid scrollbar" id="itemsGrid"></div>
-      <div class="detail-panel">
-        <h3>DETALII</h3>
-        <div id="itemDetail"><div class="no-selection">↑ Selecteaza un produs</div></div>
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<div id="shop-panel">
+  <!-- Header -->
+  <div id="shop-header">
+    <span id="shop-icon">🏪</span>
+    <span id="shop-name">MAGAZIN</span>
+    <span id="shop-type">GENERAL</span>
+    <div id="shop-cash-display">
+      <span id="shop-cash-label">CASH</span>
+      <span id="shop-cash-val">$0</span>
+    </div>
+    <button id="shop-close" onclick="doClose()">✕</button>
+  </div>
+
+  <div id="shop-body">
+    <!-- Item Grid -->
+    <div id="shop-left">
+      <div id="item-grid"></div>
+    </div>
+
+    <!-- Detail -->
+    <div id="shop-right">
+      <div id="item-detail">
+        <!-- Placeholder -->
+        <div id="detail-placeholder">
+          <div id="detail-placeholder-icon">🛒</div>
+          <div id="detail-placeholder-msg">Selecteaza un produs</div>
+        </div>
+
+        <!-- Content -->
+        <div id="detail-content">
+          <div id="detail-icon">📦</div>
+          <div id="detail-name">Item Name</div>
+          <div id="detail-type">misc</div>
+          <div id="detail-desc">Descriere produs.</div>
+          <div class="detail-row">
+            <span class="detail-row-label">Stoc</span>
+            <span class="detail-row-val" id="detail-stock">0</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-row-label">Greutate</span>
+            <span class="detail-row-val" id="detail-weight">0 kg</span>
+          </div>
+          <div id="detail-price-big" class="affordable">$0</div>
+
+          <div id="qty-section">
+            <div class="qty-label">Cantitate</div>
+            <div id="qty-row">
+              <button class="qty-btn" onclick="changeQty(-1)">−</button>
+              <input id="qty-val" type="number" min="1" max="10" value="1" readonly>
+              <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+            <div id="qty-total">Total: <span id="total-val">$0</span></div>
+          </div>
+
+          <button id="buy-btn" onclick="doBuy()" disabled>⚡ CUMPARA</button>
+        </div>
       </div>
     </div>
-
-    <!-- OWNER TAB -->
-    <div id="tab-owner" style="display:none;flex:1;padding:16px;overflow-y:auto" class="scrollbar">
-      <h3>VENITURI</h3>
-      <div class="revenue-box">
-        <div class="revenue-amount">$<span id="revAmt">0.00</span></div>
-        <div class="revenue-label">Balanta afacere</div>
-      </div>
-      <button class="btn btn-green" style="width:100%;padding:10px;margin-bottom:20px" onclick="withdrawRevenue()">RIDICA VENITURI</button>
-      <h3>SETEAZA PRET</h3>
-      <div class="form-group"><label>Produs</label><input id="price-item" placeholder="Nume produs"></div>
-      <div class="form-group"><label>Pret nou ($)</label><input id="price-val" type="number" placeholder="Pret"></div>
-      <button class="btn btn-pink" style="margin-bottom:16px" onclick="setPrice()">ACTUALIZEAZA PRET</button>
-      <h3>REAPROVIZIONARE</h3>
-      <div class="form-group"><label>Produs</label><input id="stock-item" placeholder="Nume produs"></div>
-      <div class="form-group"><label>Cantitate</label><input id="stock-qty" type="number" placeholder="Cantitate" value="10"></div>
-      <button class="btn btn-cyan" onclick="restock()">REAPROVIZIONARE</button>
-    </div>
-
-    <!-- BUY BUSINESS TAB -->
-    <div id="tab-buy-biz" style="display:none;flex:1;padding:24px;align-items:center;justify-content:center;flex-direction:column;text-align:center">
-      <div style="font-family:'Orbitron',sans-serif;font-size:13px;color:#FF2D78;margin-bottom:12px;letter-spacing:2px">ACHIZITIONARE AFACERE</div>
-      <div style="font-size:13px;color:#778;margin-bottom:20px">Pret: <span id="bizSalePrice" style="color:#32ff64;font-weight:700">$0</span></div>
-      <button class="btn btn-pink" style="padding:12px 30px;font-size:14px" onclick="buyBusiness()">CUMPARA AFACEREA</button>
-    </div>
-
   </div>
 </div>
 
 <script>
-let currentBiz = null;
-let selectedItem = null;
-let buyQty = 1;
+  /* ── State ── */
+  let shopData     = null;
+  let selectedItem = null;
+  let playerCash   = 0;
+  let qty          = 1;
 
-function showMenu(biz) {
-    currentBiz = biz;
-    document.getElementById('shopName').textContent = biz.name || 'Magazine';
-    if (biz.isOwner || biz.isStateOwned) {
-        document.getElementById('ownerTabs').style.display = biz.isOwner ? 'block' : 'none';
-        if (biz.isOwner) mp.trigger('business:browserGetRevenue', biz.id);
-    }
-    if (biz.forSale && !biz.isOwner) {
-        document.getElementById('buyBizTab').style.display = 'block';
-        document.getElementById('bizSalePrice').textContent = '$' + (biz.salePrice || 0).toLocaleString();
-    }
-}
+  const ITEM_ICONS = {
+    food:'🍔', drink:'💧', weapon:'🔫', armor:'🛡️', clothing:'👕',
+    bag:'🎒', drug:'💊', tool:'🔧', key:'🗝️', money:'💵',
+    phone:'📱', document:'📄', ammo:'🔴', misc:'📦', medical:'💊',
+    electronic:'💾', alcohol:'🍺', cigarette:'🚬', fish:'🐟', wood:'🪵'
+  };
 
-function loadStock(data) {
-    if (data.cash !== undefined) {
-        document.getElementById('cashAmt').textContent = data.cash.toLocaleString();
+  const TYPE_ICONS = {
+    grocery:'🏪', weapons:'🔫', pharmacy:'💊', electronics:'📱',
+    clothing:'👕', mechanic:'🔧', general:'🏪'
+  };
+
+  function getIcon(item) {
+    if (item.icon) return item.icon;
+    return ITEM_ICONS[item.type] || ITEM_ICONS[item.category] || '📦';
+  }
+
+  /* ── loadShop(data) ── */
+  function loadShop(data) {
+    shopData   = data;
+    playerCash = data.playerCash || data.cash || 0;
+    document.getElementById('shop-cash-val').textContent = '$' + Number(playerCash).toLocaleString();
+
+    if (data.business) {
+      const biz = data.business;
+      document.getElementById('shop-name').textContent = (biz.name || 'MAGAZIN').toUpperCase();
+      document.getElementById('shop-type').textContent = (biz.type || 'GENERAL').toUpperCase();
+      document.getElementById('shop-icon').textContent = TYPE_ICONS[(biz.type||'').toLowerCase()] || '🏪';
     }
-    const grid = document.getElementById('itemsGrid');
-    const stock = data.stock || [];
+
+    buildItemGrid(data.stock || []);
+    // Reset detail
+    selectedItem = null;
+    document.getElementById('detail-placeholder').style.display = 'flex';
+    document.getElementById('detail-content').classList.remove('visible');
+  }
+
+  function buildItemGrid(stock) {
+    const grid = document.getElementById('item-grid');
+    grid.innerHTML = '';
+    stock.forEach(item => {
+      const canAfford = playerCash >= item.price;
+      const outOfStock = (item.stock !== undefined && item.stock <= 0);
+      const card = document.createElement('div');
+      card.className = 'shop-item-card' + (outOfStock ? ' out-of-stock' : '');
+      card.innerHTML = `
+        <span class="stock-badge ${outOfStock ? 'out' : ''}">${outOfStock ? 'EPUIZAT' : item.stock !== undefined ? item.stock : '∞'}</span>
+        <span class="shop-item-icon">${getIcon(item)}</span>
+        <span class="shop-item-name">${item.displayName || item.name}</span>
+        <span class="shop-item-price ${canAfford ? 'affordable' : 'expensive'}">$${Number(item.price).toLocaleString()}</span>
+      `;
+      card.onclick = () => selectItem(item, card);
+      grid.appendChild(card);
+    });
     if (!stock.length) {
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#334;font-size:13px">Stoc gol</div>';
-        return;
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;font-size:13px;color:rgba(224,224,240,0.2)">Stoc epuizat</div>';
     }
-    grid.innerHTML = stock.map(item => `
-        <div class="item-card" onclick="selectItem(this, '${item.item_name}', ${item.sell_price}, ${item.quantity}, '${(item.display_name||item.item_name).replace(/'/g,"\\'")}', ${item.weight||0.1}, '${(item.description||'').replace(/'/g,"\\'")}', ${item.bag_capacity||0})">
-            <div class="item-qty">${item.quantity}</div>
-            <div class="item-icon">${getIcon(item.item_name)}</div>
-            <div class="item-name">${item.display_name || item.item_name}</div>
-            <div class="item-price">$${item.sell_price}</div>
-            <div class="item-weight">${item.weight || 0.1} kg</div>
-        </div>`
-    ).join('');
-}
+  }
 
-function selectItem(el, name, price, qty, displayName, weight, desc, bagCap) {
-    document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedItem = { name, price, qty, displayName, weight };
-    buyQty = 1;
-    renderDetail(displayName, price, qty, weight, desc, bagCap);
-}
+  /* ── Select item ── */
+  function selectItem(item, cardEl) {
+    selectedItem = item;
+    qty = 1;
+    document.getElementById('qty-val').value = 1;
 
-function renderDetail(dName, price, qty, weight, desc, bagCap) {
-    const total = price * buyQty;
-    document.getElementById('itemDetail').innerHTML = `
-        <div class="detail-name">${dName}</div>
-        <div class="detail-desc">${desc || 'Fara descriere'}</div>
-        <div class="detail-kv"><span class="k">Pret unitate</span><span class="v">$${price}</span></div>
-        <div class="detail-kv"><span class="k">Greutate</span><span class="v">${weight} kg</span></div>
-        ${bagCap > 0 ? `<div class="detail-kv"><span class="k">Capacitate geanta</span><span class="v">+${bagCap} kg</span></div>` : ''}
-        <div class="detail-kv"><span class="k">Stoc disponibil</span><span class="v">${qty}</span></div>
-        <div class="qty-control">
-            <button class="qty-btn" onclick="changeQty(-1)">−</button>
-            <div class="qty-val" id="qtyVal">1</div>
-            <button class="qty-btn" onclick="changeQty(1)">+</button>
-        </div>
-        <div class="total-cost">Total: $<span id="totalCost">${total}</span></div>
-        <button class="buy-btn" onclick="buyItem()">CUMPARA</button>`;
-}
+    document.querySelectorAll('.shop-item-card').forEach(c => c.classList.remove('selected'));
+    cardEl.classList.add('selected');
 
-function changeQty(delta) {
+    document.getElementById('detail-placeholder').style.display = 'none';
+    document.getElementById('detail-content').classList.add('visible');
+
+    document.getElementById('detail-icon').textContent    = getIcon(item);
+    document.getElementById('detail-name').textContent    = item.displayName || item.name;
+    document.getElementById('detail-type').textContent    = (item.type || 'misc').toUpperCase();
+    document.getElementById('detail-desc').textContent    = item.description || 'Nicio descriere disponibila.';
+    document.getElementById('detail-stock').textContent   = item.stock !== undefined ? item.stock : '∞';
+    document.getElementById('detail-weight').textContent  = (item.weight || 0) + ' kg';
+
+    updatePriceDisplay();
+  }
+
+  function updatePriceDisplay() {
     if (!selectedItem) return;
-    buyQty = Math.max(1, Math.min(selectedItem.qty, buyQty + delta));
-    document.getElementById('qtyVal').textContent = buyQty;
-    document.getElementById('totalCost').textContent = (selectedItem.price * buyQty).toLocaleString();
-}
+    const price      = selectedItem.price || 0;
+    const total      = price * qty;
+    const canAfford  = playerCash >= total;
+    const outOfStock = (selectedItem.stock !== undefined && selectedItem.stock <= 0);
 
-function buyItem() {
-    if (!selectedItem || !currentBiz) return;
-    mp.trigger('business:browserBuy', currentBiz.id, selectedItem.name, buyQty);
-}
+    const priceEl = document.getElementById('detail-price-big');
+    priceEl.textContent = '$' + Number(price).toLocaleString();
+    priceEl.className   = 'detail-price-big ' + (canAfford ? 'affordable' : 'expensive');
 
-function loadRevenue(data) {
-    document.getElementById('revAmt').textContent = (data.balance || 0).toFixed(2);
-}
+    document.getElementById('total-val').textContent = '$' + Number(total).toLocaleString();
 
-function showTab(name) {
-    document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    const el = document.getElementById('tab-' + name);
-    if (el) el.style.display = name === 'buy' ? 'flex' : 'block';
-    event.target.classList.add('active');
-    if (name === 'owner') mp.trigger('business:browserGetRevenue', currentBiz.id);
-}
+    const buyBtn = document.getElementById('buy-btn');
+    buyBtn.disabled = !canAfford || outOfStock;
+    buyBtn.textContent = outOfStock ? '❌ STOC EPUIZAT' : '⚡ CUMPARA';
+  }
 
-function setPrice()       { mp.trigger('business:browserSetPrice',       currentBiz.id, document.getElementById('price-item').value, document.getElementById('price-val').value); }
-function restock()        { mp.trigger('business:browserRestock',        currentBiz.id, document.getElementById('stock-item').value, document.getElementById('stock-qty').value); }
-function withdrawRevenue(){ mp.trigger('business:browserWithdrawRevenue',currentBiz.id); }
-function buyBusiness()    { mp.trigger('business:browserBuyBusiness',    currentBiz.id); }
-function closeShop()      { mp.trigger('business:browserClose'); }
+  function changeQty(delta) {
+    const max = selectedItem && selectedItem.stock !== undefined
+      ? Math.min(10, selectedItem.stock)
+      : 10;
+    qty = Math.max(1, Math.min(max, qty + delta));
+    document.getElementById('qty-val').value = qty;
+    updatePriceDisplay();
+  }
 
-function getIcon(name) {
-    const icons = {
-        sandwich:'🥪',water_bottle_l:'💧',energy_drink:'⚡',water:'🥤',protein_bar:'💪',
-        phone_basic:'📱',phone_mid:'📱',phone_high:'📱',sim_card:'💳',
-        bandage:'🩹',medkit:'🏥',
-        backpack_small:'🎒',backpack_large:'🎒',fanny_pack:'👜',suitcase:'🧳',
-        t_shirt_white:'👕',t_shirt_black:'👕',jeans_blue:'👖',jeans_black:'👖',
-        dress_red:'👗',dress_black:'👗',heels_red:'👠',sneakers_white:'👟',sneakers_black:'👟',
-        jacket_leather:'🧥',balaclava:'🎭'
-    };
-    for (const k of Object.keys(icons)) { if (name.startsWith(k.split('_')[0])) return icons[k]; }
-    return '📦';
-}
+  /* ── Buy ── */
+  function doBuy() {
+    if (!selectedItem || !shopData || !shopData.business) return;
+    const outOfStock = (selectedItem.stock !== undefined && selectedItem.stock <= 0);
+    const total      = (selectedItem.price || 0) * qty;
+    if (outOfStock || playerCash < total) return;
+
+    if (typeof mp !== 'undefined')
+      mp.trigger('shop:browserBuy', shopData.business.id, selectedItem.name, qty);
+
+    showToast('Cumparare trimisa!', 'success');
+  }
+
+  /* ── Toast ── */
+  function showToast(msg, type) {
+    const cont = document.getElementById('toast-container');
+    const el   = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.textContent = msg;
+    cont.appendChild(el);
+    setTimeout(() => {
+      el.classList.add('out');
+      setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 320);
+    }, 3000);
+  }
+
+  /* ── Close ── */
+  function doClose() {
+    if (typeof mp !== 'undefined') mp.trigger('shop:browserClose');
+  }
 </script>
 </body>
 </html>

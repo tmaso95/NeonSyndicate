@@ -2,446 +2,702 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<title>Inventar</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeonSyndicate — Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --pink:   #FF2D78;
-    --cyan:   #00D4FF;
-    --purple: #9B44FF;
-    --bg:     rgba(5,5,16,0.97);
-    --panel:  rgba(8,8,24,0.98);
-    --border: rgba(255,45,120,0.35);
-    --text:   #e8e8f0;
-    --dim:    #5a5a7a;
-    --slot-bg: rgba(255,45,120,0.04);
-    --slot-border: rgba(255,45,120,0.2);
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     background: transparent;
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    width: 100vw; height: 100vh;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-    gap: 20px;
+    font-family: 'Rajdhani', sans-serif;
+    color: #e0e0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* ── Left: Inventory grid ── */
-  .inv-panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    box-shadow: 0 0 40px rgba(255,45,120,0.12);
-    width: 600px;
-    display: flex; flex-direction: column;
-    animation: panelIn 0.35s cubic-bezier(.16,1,.3,1);
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
   }
-  @keyframes panelIn { from{opacity:0;transform:translateY(20px) scale(0.96)} to{opacity:1;transform:none} }
 
-  .panel-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid rgba(255,45,120,0.2);
-    display: flex; justify-content: space-between; align-items: center;
+  /* Main inventory panel */
+  #inv-panel {
+    display: flex;
+    flex-direction: column;
+    width: 820px;
+    max-height: 90vh;
+    background: rgba(8,8,24,0.95);
+    border: 1px solid rgba(255,45,120,0.28);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 0 60px rgba(0,0,0,0.7), 0 0 30px rgba(255,45,120,0.06);
+    animation: panelIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    position: relative;
   }
-  .panel-title {
+  #inv-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #FF2D78, #9B44FF, transparent);
+  }
+
+  /* Header */
+  #inv-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,45,120,0.15);
+    background: rgba(5,5,16,0.7);
+    flex-shrink: 0;
+  }
+  #inv-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase;
-    color: var(--pink); text-shadow: 0 0 12px rgba(255,45,120,0.5);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #FF2D78;
+    text-shadow: 0 0 8px rgba(255,45,120,0.5);
+    flex: 1;
   }
-  .weight-info { font-size: 0.7rem; color: var(--dim); letter-spacing: 1px; }
-  .weight-info span { color: var(--pink); }
+  #weight-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #weight-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(224,224,240,0.45);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  #weight-track {
+    width: 120px;
+    height: 4px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,45,120,0.15);
+    position: relative;
+  }
+  #weight-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00FF88, #FFD700, #FF2D78);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  #weight-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    color: #00D4FF;
+    white-space: nowrap;
+  }
+  #close-btn {
+    width: 28px; height: 28px;
+    background: rgba(255,45,120,0.1);
+    border: 1px solid rgba(255,45,120,0.3);
+    color: #FF2D78;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  #close-btn:hover { background: rgba(255,45,120,0.25); }
 
-  .inv-grid {
+  /* Body */
+  #inv-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Left: Grid */
+  #inv-left {
+    flex: 1;
+    padding: 16px;
+    border-right: 1px solid rgba(255,45,120,0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,45,120,0.3) transparent;
+  }
+  #inv-left::-webkit-scrollbar { width: 3px; }
+  #inv-left::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.3); }
+
+  .inv-section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: rgba(0,212,255,0.6);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  #slot-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px; padding: 18px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
   }
 
   .inv-slot {
+    width: 100%;
     aspect-ratio: 1;
-    background: var(--slot-bg);
-    border: 1px solid var(--slot-border);
-    border-radius: 2px;
-    cursor: pointer; transition: all 0.15s;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    background: rgba(5,5,16,0.7);
+    border: 1px solid rgba(255,45,120,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
     position: relative;
-    overflow: hidden;
-    min-height: 76px;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+    min-height: 72px;
   }
-  .inv-slot:hover {
-    border-color: var(--pink);
-    background: rgba(255,45,120,0.1);
-    box-shadow: 0 0 10px rgba(255,45,120,0.15);
-  }
-  .inv-slot.occupied:hover::after {
-    content: attr(data-tooltip);
-    position: absolute; bottom: calc(100% + 6px); left: 50%;
-    transform: translateX(-50%);
-    background: rgba(5,5,16,0.97);
-    border: 1px solid rgba(255,45,120,0.4);
-    padding: 6px 10px; font-size: 0.72rem;
-    white-space: nowrap; color: var(--text);
-    z-index: 100; pointer-events: none;
-  }
-  .slot-icon { font-size: 1.8rem; }
-  .slot-qty  {
-    position: absolute; bottom: 2px; right: 4px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.65rem; color: var(--pink);
-  }
+  .inv-slot:hover { border-color: rgba(255,45,120,0.35); background: rgba(255,45,120,0.04); }
+  .inv-slot.drag-over { border-color: #00FF88; background: rgba(0,255,136,0.06); box-shadow: inset 0 0 8px rgba(0,255,136,0.1); }
+  .inv-slot.dragging  { opacity: 0.4; border-color: rgba(0,212,255,0.4); }
+  .inv-slot.occupied  { border-color: rgba(255,45,120,0.2); }
+
+  .slot-icon { font-size: 22px; line-height: 1; pointer-events: none; }
   .slot-name {
-    font-size: 0.62rem; color: var(--dim);
-    text-align: center; padding: 0 2px;
-    text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%;
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(224,224,240,0.55);
+    text-align: center;
+    margin-top: 2px;
+    pointer-events: none;
+    letter-spacing: 0.3px;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
+  .slot-qty {
+    position: absolute;
+    top: 3px; right: 3px;
+    background: rgba(255,45,120,0.7);
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 4px;
+    line-height: 1.2;
+    pointer-events: none;
+  }
+  .slot-empty-label {
+    font-size: 9px;
+    color: rgba(224,224,240,0.1);
+    letter-spacing: 1px;
+    pointer-events: none;
+  }
+
+  /* Right: Silhouette + equipment */
+  #inv-right {
+    width: 280px;
+    flex-shrink: 0;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,45,120,0.3) transparent;
+  }
+
+  #silhouette-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #silhouette-figure {
+    font-size: 80px;
+    line-height: 1;
+    filter: drop-shadow(0 0 12px rgba(255,45,120,0.3));
+    opacity: 0.7;
+  }
+
+  .equip-slots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    width: 100%;
+  }
+
+  .equip-slot {
+    background: rgba(5,5,16,0.7);
+    border: 1px solid rgba(0,212,255,0.15);
+    padding: 8px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+    min-height: 60px;
+    justify-content: center;
+  }
+  .equip-slot:hover { border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.04); }
+  .equip-slot.drag-over { border-color: #00FF88; background: rgba(0,255,136,0.06); }
+  .equip-slot .slot-icon { font-size: 18px; }
+  .equip-slot-label {
+    font-size: 8px;
+    font-weight: 600;
+    color: rgba(0,212,255,0.45);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .equip-slot .slot-name { font-size: 8px; color: rgba(224,224,240,0.45); }
+
+  /* Bag section */
+  #bag-section {
+    border-top: 1px solid rgba(255,45,120,0.12);
+    padding-top: 10px;
+  }
+  #bag-slot-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #bag-slot {
+    flex: 1;
+    background: rgba(5,5,16,0.7);
+    border: 1px solid rgba(155,68,255,0.2);
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  #bag-slot:hover { border-color: rgba(155,68,255,0.45); }
+  #bag-icon { font-size: 20px; }
+  #bag-name { font-size: 12px; font-weight: 600; color: rgba(224,224,240,0.6); flex: 1; }
+  #unequip-bag-btn {
+    padding: 5px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+    background: rgba(155,68,255,0.1);
+    border: 1px solid rgba(155,68,255,0.3);
+    color: #9B44FF;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  #unequip-bag-btn:hover { background: rgba(155,68,255,0.2); border-color: #9B44FF; }
+  #unequip-bag-btn[hidden] { display: none; }
 
   /* Context menu */
-  .ctx-menu {
-    position: fixed; display: none;
-    background: rgba(5,5,16,0.98);
-    border: 1px solid rgba(255,45,120,0.4);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-    min-width: 140px; z-index: 200;
-    padding: 4px 0;
+  #ctx-menu {
+    position: fixed;
+    background: rgba(8,8,24,0.97);
+    border: 1px solid rgba(255,45,120,0.3);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    min-width: 140px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    display: none;
+    flex-direction: column;
   }
-  .ctx-menu.visible { display: block; animation: fadeCtx 0.15s ease; }
-  @keyframes fadeCtx { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:none} }
+  #ctx-menu.visible { display: flex; }
   .ctx-item {
-    padding: 9px 16px; cursor: pointer;
-    font-size: 0.82rem; transition: background 0.1s;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .ctx-item:hover { background: rgba(255,45,120,0.12); color: var(--pink); }
-  .ctx-divider { height: 1px; background: rgba(255,45,120,0.15); margin: 3px 0; }
-
-  /* ── Middle: Character silhouette ── */
-  .char-panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    box-shadow: 0 0 40px rgba(255,45,120,0.1);
-    width: 320px;
-    display: flex; flex-direction: column;
-    align-items: center;
-    animation: panelIn 0.35s cubic-bezier(.16,1,.3,1) 0.05s both;
-  }
-
-  .char-header {
-    padding: 14px 20px; width: 100%;
-    border-bottom: 1px solid rgba(255,45,120,0.2);
-  }
-  .char-name {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase;
-    color: var(--text); text-align: center;
-  }
-  .char-cash { font-size: 0.75rem; color: var(--pink); text-align: center; margin-top: 3px; }
-
-  .char-body {
-    position: relative; flex: 1;
-    width: 100%; padding: 20px;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  /* Character SVG silhouette */
-  .char-silhouette {
-    width: 80px;
-    opacity: 0.5;
-    filter: drop-shadow(0 0 8px rgba(255,45,120,0.3));
-  }
-
-  /* Clothing slot buttons positioned around silhouette */
-  .clothes-slots {
-    position: absolute; inset: 0;
-    pointer-events: none;
-  }
-
-  .cloth-slot {
-    position: absolute;
-    pointer-events: all;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(224,224,240,0.75);
     cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.1s, color 0.1s;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
   }
+  .ctx-item:last-child { border-bottom: none; }
+  .ctx-item:hover { background: rgba(255,45,120,0.1); color: #FF2D78; }
+  .ctx-item.danger:hover { background: rgba(255,45,120,0.15); color: #FF2D78; }
 
-  .cloth-slot-box {
-    width: 46px; height: 46px;
-    background: var(--slot-bg);
-    border: 1px solid var(--slot-border);
-    border-radius: 2px; transition: all 0.15s;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 2px;
-    position: relative;
-  }
-  .cloth-slot-box:hover {
-    border-color: var(--pink);
-    background: rgba(255,45,120,0.1);
-    box-shadow: 0 0 12px rgba(255,45,120,0.2);
-  }
-  .cloth-slot-box.equipped { border-color: rgba(0,212,255,0.5); background: rgba(0,212,255,0.06); }
-  .cloth-icon { font-size: 1.1rem; }
-  .cloth-lbl  { font-size: 0.45rem; letter-spacing: 1px; text-transform: uppercase; color: var(--dim); }
-
-  .cloth-line {
-    height: 1px; background: rgba(255,45,120,0.25);
-    flex-shrink: 0;
-  }
-
-  /* Left slots */
-  .slot-hat     { top: 10px; left: 14px; }
-  .slot-mask    { top: 56px; left: 14px; }
-  .slot-top     { top: 104px; left: 14px; }
-  .slot-vest    { top: 150px; left: 14px; }
-  .slot-gloves  { top: 196px; left: 14px; }
-
-  /* Right slots */
-  .slot-accessories { top: 10px; right: 14px; }
-  .slot-undershirt  { top: 56px; right: 14px; }
-  .slot-legs        { top: 104px; right: 14px; }
-  .slot-shoes       { top: 150px; right: 14px; }
-  .slot-bag         { top: 196px; right: 14px; }
-
-  /* ── Item tooltip ── */
-  .tooltip {
-    position: fixed; display: none;
-    background: rgba(5,5,16,0.98);
-    border: 1px solid rgba(255,45,120,0.4);
-    padding: 12px 14px; z-index: 300;
-    max-width: 200px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  /* Tooltip */
+  #tooltip {
+    position: fixed;
+    background: rgba(8,8,24,0.97);
+    border: 1px solid rgba(0,212,255,0.25);
+    padding: 10px 14px;
+    z-index: 9998;
     pointer-events: none;
+    display: none;
+    max-width: 200px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
   }
-  .tooltip.visible { display: block; }
-  .tt-name  { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 2px; color: var(--pink); }
-  .tt-type  { font-size: 0.65rem; color: var(--cyan); margin: 2px 0; letter-spacing: 1px; }
-  .tt-desc  { font-size: 0.75rem; color: var(--dim); margin-top: 4px; line-height: 1.4; }
-  .tt-weight { font-size: 0.65rem; color: var(--dim); margin-top: 6px; }
+  #tooltip.visible { display: block; }
+  #tt-name { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; color: #00D4FF; margin-bottom: 4px; }
+  #tt-type { font-size: 10px; color: rgba(224,224,240,0.4); margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
+  #tt-weight { font-size: 11px; color: rgba(224,224,240,0.55); margin-bottom: 4px; }
+  #tt-desc { font-size: 11px; color: rgba(224,224,240,0.65); line-height: 1.4; }
 
-  /* Close */
-  .btn-close-inv {
-    position: fixed; top: 20px; right: 20px;
-    width: 38px; height: 38px;
-    background: rgba(5,5,16,0.9); border: 1px solid rgba(255,45,120,0.4);
-    color: var(--dim); font-size: 1.1rem;
-    cursor: pointer; transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center;
+  /* Drag ghost */
+  #drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 99999;
+    opacity: 0.85;
+    display: none;
+    background: rgba(8,8,24,0.9);
+    border: 1px solid rgba(0,212,255,0.5);
+    padding: 6px 10px;
+    font-size: 20px;
+    align-items: center;
+    gap: 6px;
+    transform: translate(-50%, -50%);
   }
-  .btn-close-inv:hover { border-color: var(--pink); color: var(--pink); }
+  #drag-ghost.visible { display: flex; }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
 </style>
 </head>
 <body>
+<div class="scanlines"></div>
 
-<!-- Inventory Grid -->
-<div class="inv-panel">
-  <div class="panel-header">
-    <div class="panel-title">Inventar</div>
-    <div class="weight-info">Greutate: <span id="curWeight">0.0</span> / <span id="maxWeight">15.0</span> kg</div>
-  </div>
-  <div class="inv-grid" id="invGrid"></div>
-</div>
-
-<!-- Character Panel -->
-<div class="char-panel">
-  <div class="char-header">
-    <div class="char-name" id="charName">---</div>
-    <div class="char-cash" id="charCash">$0</div>
-  </div>
-  <div class="char-body">
-    <!-- Silhouette SVG -->
-    <svg class="char-silhouette" id="charSvg" viewBox="0 0 100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Head -->
-      <ellipse cx="50" cy="22" rx="18" ry="20" fill="rgba(255,45,120,0.15)" stroke="rgba(255,45,120,0.6)" stroke-width="1.5"/>
-      <!-- Neck -->
-      <rect x="44" y="40" width="12" height="12" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
-      <!-- Torso -->
-      <path d="M22 52 Q18 62 20 100 L80 100 Q82 62 78 52 Q65 44 50 43 Q35 44 22 52Z"
-            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.5)" stroke-width="1.5"/>
-      <!-- Arms -->
-      <path d="M22 55 Q10 70 12 100 Q14 106 18 106 Q22 106 22 100 L22 75Z"
-            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.4)" stroke-width="1.2"/>
-      <path d="M78 55 Q90 70 88 100 Q86 106 82 106 Q78 106 78 100 L78 75Z"
-            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.4)" stroke-width="1.2"/>
-      <!-- Hands -->
-      <ellipse cx="15" cy="108" rx="7" ry="9" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
-      <ellipse cx="85" cy="108" rx="7" ry="9" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
-      <!-- Hips/Legs junction -->
-      <path d="M20 100 Q20 115 30 118 L50 118 L70 118 Q80 115 80 100Z"
-            fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
-      <!-- Legs -->
-      <path d="M30 118 Q26 148 28 180 Q30 186 36 186 Q42 186 42 180 L44 118Z"
-            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.4)" stroke-width="1.2"/>
-      <path d="M70 118 Q74 148 72 180 Q70 186 64 186 Q58 186 58 180 L56 118Z"
-            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.4)" stroke-width="1.2"/>
-      <!-- Shoes -->
-      <ellipse cx="33" cy="188" rx="14" ry="8" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
-      <ellipse cx="67" cy="188" rx="14" ry="8" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
-      <!-- Glow dots -->
-      <circle cx="50" cy="22" r="2" fill="rgba(255,45,120,0.6)"/>
-      <circle cx="50" cy="70" r="2" fill="rgba(0,212,255,0.4)"/>
-    </svg>
-
-    <!-- Clothing slots -->
-    <div class="clothes-slots">
-      <div class="cloth-slot slot-hat"          onclick="openClothSlot('mask')">
-        <div class="cloth-slot-box" id="cs-mask"><div class="cloth-icon">🎭</div><div class="cloth-lbl">Masca</div></div>
-      </div>
-      <div class="cloth-slot slot-mask"         onclick="openClothSlot('top')">
-        <div class="cloth-slot-box" id="cs-top"><div class="cloth-icon">🧥</div><div class="cloth-lbl">Jacheta</div></div>
-      </div>
-      <div class="cloth-slot slot-top"          onclick="openClothSlot('undershirt')">
-        <div class="cloth-slot-box" id="cs-undershirt"><div class="cloth-icon">👕</div><div class="cloth-lbl">Tricou</div></div>
-      </div>
-      <div class="cloth-slot slot-vest"         onclick="openClothSlot('accessories')">
-        <div class="cloth-slot-box" id="cs-accessories"><div class="cloth-icon">📿</div><div class="cloth-lbl">Accesorii</div></div>
-      </div>
-      <div class="cloth-slot slot-gloves"       onclick="openClothSlot('arms')">
-        <div class="cloth-slot-box" id="cs-arms"><div class="cloth-icon">🧤</div><div class="cloth-lbl">Manusi</div></div>
-      </div>
-
-      <div class="cloth-slot slot-accessories"  onclick="openClothSlot('bags')">
-        <div class="cloth-slot-box" id="cs-bag"><div class="cloth-icon">🎒</div><div class="cloth-lbl">Rucsac</div></div>
-      </div>
-      <div class="cloth-slot slot-undershirt"   onclick="openClothSlot('armor')">
-        <div class="cloth-slot-box" id="cs-armor"><div class="cloth-icon">🛡️</div><div class="cloth-lbl">Vesta</div></div>
-      </div>
-      <div class="cloth-slot slot-legs"         onclick="openClothSlot('legs')">
-        <div class="cloth-slot-box" id="cs-legs"><div class="cloth-icon">👖</div><div class="cloth-lbl">Pantaloni</div></div>
-      </div>
-      <div class="cloth-slot slot-shoes"        onclick="openClothSlot('shoes')">
-        <div class="cloth-slot-box" id="cs-shoes"><div class="cloth-icon">👟</div><div class="cloth-lbl">Pantofi</div></div>
-      </div>
-      <div class="cloth-slot slot-bag"          onclick="openClothSlot('decals')">
-        <div class="cloth-slot-box" id="cs-decals"><div class="cloth-icon">🔱</div><div class="cloth-lbl">Decals</div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Context Menu -->
-<div class="ctx-menu" id="ctxMenu">
-  <div class="ctx-item" id="ctxUse"  onclick="ctxAction('use')"> <span>▶</span> Foloseste</div>
-  <div class="ctx-item" id="ctxEquip" onclick="ctxAction('equip')"><span>👔</span> Echipeaza</div>
-  <div class="ctx-divider"></div>
-  <div class="ctx-item" onclick="ctxAction('drop')" style="color:#ff6b6b"><span>🗑</span> Arunca</div>
+<!-- Drag Ghost -->
+<div id="drag-ghost">
+  <span id="ghost-icon"></span><span id="ghost-name" style="font-size:11px;color:#e0e0f0;"></span>
 </div>
 
 <!-- Tooltip -->
-<div class="tooltip" id="tooltip">
-  <div class="tt-name"   id="ttName">---</div>
-  <div class="tt-type"   id="ttType">---</div>
-  <div class="tt-desc"   id="ttDesc"></div>
-  <div class="tt-weight" id="ttWeight"></div>
+<div id="tooltip">
+  <div id="tt-name">Item Name</div>
+  <div id="tt-type">type</div>
+  <div id="tt-weight">0.0 kg</div>
+  <div id="tt-desc">Description here.</div>
 </div>
 
-<!-- Close -->
-<button class="btn-close-inv" onclick="closeInventory()">✕</button>
+<!-- Context Menu -->
+<div id="ctx-menu">
+  <div class="ctx-item" id="ctx-use"  onclick="ctxAction('use')">▶ Foloseste</div>
+  <div class="ctx-item" id="ctx-equip" onclick="ctxAction('equip')">⬆ Echipeaza</div>
+  <div class="ctx-item" id="ctx-bag"   onclick="ctxAction('bag')">🎒 Equip Bag</div>
+  <div class="ctx-item danger" onclick="ctxAction('drop')">🗑 Arunca</div>
+</div>
+
+<!-- Inventory Panel -->
+<div id="inv-panel">
+  <!-- Header -->
+  <div id="inv-header">
+    <span id="inv-title">INVENTAR</span>
+    <div id="weight-bar-wrap">
+      <span id="weight-label">GREUTATE</span>
+      <div id="weight-track"><div id="weight-fill"></div></div>
+      <span id="weight-text">0.0 / 30.0 kg</span>
+    </div>
+    <button id="close-btn" onclick="doClose()">✕</button>
+  </div>
+
+  <!-- Body -->
+  <div id="inv-body">
+
+    <!-- Left: Item grid -->
+    <div id="inv-left">
+      <div class="inv-section-title">Obiecte (30 sloturi)</div>
+      <div id="slot-grid"></div>
+    </div>
+
+    <!-- Right: Equipment silhouette -->
+    <div id="inv-right">
+      <div class="inv-section-title">Echipament</div>
+      <div id="silhouette-area">
+        <div id="silhouette-figure">🧍</div>
+        <div class="equip-slots">
+          <div class="equip-slot" id="equip-hat"    data-equip="hat">
+            <span class="slot-icon">🎩</span>
+            <span class="equip-slot-label">Palarie</span>
+            <span class="slot-name" id="equip-hat-name">Gol</span>
+          </div>
+          <div class="equip-slot" id="equip-mask"   data-equip="mask">
+            <span class="slot-icon">😷</span>
+            <span class="equip-slot-label">Masca</span>
+            <span class="slot-name" id="equip-mask-name">Gol</span>
+          </div>
+          <div class="equip-slot" id="equip-top"    data-equip="top">
+            <span class="slot-icon">👕</span>
+            <span class="equip-slot-label">Tricou</span>
+            <span class="slot-name" id="equip-top-name">Gol</span>
+          </div>
+          <div class="equip-slot" id="equip-jacket" data-equip="jacket">
+            <span class="slot-icon">🧥</span>
+            <span class="equip-slot-label">Jacheta</span>
+            <span class="slot-name" id="equip-jacket-name">Gol</span>
+          </div>
+          <div class="equip-slot" id="equip-pants"  data-equip="pants">
+            <span class="slot-icon">👖</span>
+            <span class="equip-slot-label">Pantaloni</span>
+            <span class="slot-name" id="equip-pants-name">Gol</span>
+          </div>
+          <div class="equip-slot" id="equip-shoes"  data-equip="shoes">
+            <span class="slot-icon">👟</span>
+            <span class="equip-slot-label">Incaltaminte</span>
+            <span class="slot-name" id="equip-shoes-name">Gol</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bag -->
+      <div id="bag-section">
+        <div class="inv-section-title" style="margin-bottom:8px">Geanta / Rucsac</div>
+        <div id="bag-slot-wrap">
+          <div id="bag-slot">
+            <span id="bag-icon">🎒</span>
+            <span id="bag-name">Niciun rucsac</span>
+          </div>
+          <button id="unequip-bag-btn" hidden onclick="unequipBag()">DEZECHIPEAZA</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <script>
-  const MAX_SLOTS  = 30;
-  let invData      = null;
-  let ctxSlot      = -1;
-  let totalWeight  = 0;
+  /* ── State ── */
+  let slots      = new Array(30).fill(null); // { name, icon, qty, type, weight, description, usable }
+  let equipped   = {};
+  let equippedBag = null;
+  let dragFrom   = null; // { type:'grid'|'equip', index/key }
+  let ctxSlot    = null;
+  let ctxType    = null;
 
   const ITEM_ICONS = {
-    weapon: '🔫', drug: '💊', food: '🍞', clothing: '👕',
-    key: '🔑', document: '🪪', misc: '📦', default: '📦'
+    food:'🍔', drink:'💧', weapon:'🔫', armor:'🛡️', clothing:'👕',
+    bag:'🎒', drug:'💊', tool:'🔧', key:'🗝️', money:'💵',
+    phone:'📱', document:'📄', ammo:'🔴', misc:'📦'
   };
 
-  function loadInventory(data) {
-    invData = data;
-    document.getElementById('charName').textContent = data.name || '---';
-    document.getElementById('charCash').textContent = '$' + (data.cash || 0).toLocaleString();
-    document.getElementById('maxWeight').textContent = data.maxWeight || 15;
-
-    renderGrid(data.items || [], data.maxSlots || MAX_SLOTS);
-    applyClothes(data.clothes || []);
+  function getIcon(item) {
+    if (item.icon) return item.icon;
+    return ITEM_ICONS[item.type] || '📦';
   }
 
-  function renderGrid(items, maxSlots) {
-    const grid = document.getElementById('invGrid');
+  /* ── Build grid ── */
+  function buildGrid() {
+    const grid = document.getElementById('slot-grid');
     grid.innerHTML = '';
-    const slotMap = {};
-    totalWeight = 0;
-
-    items.forEach(item => {
-      slotMap[item.slot_index] = item;
-      totalWeight += (item.weight || 0.1) * (item.quantity || 1);
-    });
-    document.getElementById('curWeight').textContent = totalWeight.toFixed(1);
-
-    for (let i = 0; i < maxSlots; i++) {
-      const slot = document.createElement('div');
-      slot.className = 'inv-slot';
-      slot.dataset.slot = i;
-
-      if (slotMap[i]) {
-        const item = slotMap[i];
-        slot.classList.add('occupied');
-        slot.dataset.tooltip = item.display_name;
-        slot.innerHTML = `
-          <div class="slot-icon">${ITEM_ICONS[item.item_type] || '📦'}</div>
-          <div class="slot-name">${item.display_name}</div>
-          ${item.quantity > 1 ? `<div class="slot-qty">x${item.quantity}</div>` : ''}`;
-        slot.oncontextmenu = (e) => { e.preventDefault(); showCtx(e, i, item); };
-        slot.onclick = (e) => { if (e.button === 0) showTooltip(e, item); };
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement('div');
+      el.className = 'inv-slot' + (slots[i] ? ' occupied' : '');
+      el.dataset.index = i;
+      if (slots[i]) {
+        const item = slots[i];
+        el.innerHTML = `
+          <span class="slot-icon">${getIcon(item)}</span>
+          <span class="slot-name">${item.name}</span>
+          ${item.qty > 1 ? `<span class="slot-qty">${item.qty}</span>` : ''}
+        `;
+      } else {
+        el.innerHTML = `<span class="slot-empty-label">${String(i+1).padStart(2,'0')}</span>`;
       }
-      grid.appendChild(slot);
+      // Drag
+      el.addEventListener('mousedown', e => startDrag(e, 'grid', i));
+      el.addEventListener('mouseenter', () => onDragEnter(el));
+      el.addEventListener('mouseleave', () => el.classList.remove('drag-over'));
+      el.addEventListener('mouseup', () => endDrag('grid', i));
+      // Context menu
+      el.addEventListener('contextmenu', e => { e.preventDefault(); showCtx(e, 'grid', i); });
+      // Tooltip
+      el.addEventListener('mousemove', e => showTooltip(e, slots[i]));
+      el.addEventListener('mouseleave', () => hideTooltip());
+      grid.appendChild(el);
     }
   }
 
-  function showTooltip(e, item) {
-    const tt = document.getElementById('tooltip');
-    document.getElementById('ttName').textContent   = item.display_name;
-    document.getElementById('ttType').textContent   = item.item_type.toUpperCase();
-    document.getElementById('ttDesc').textContent   = item.description || '';
-    document.getElementById('ttWeight').textContent = `Greutate: ${item.weight || 0.1} kg`;
-    tt.style.left = (e.clientX + 12) + 'px';
-    tt.style.top  = (e.clientY + 12) + 'px';
-    tt.classList.add('visible');
-    setTimeout(() => tt.classList.remove('visible'), 3000);
+  /* ── Drag & Drop ── */
+  let ghostEl, ghostActive = false;
+
+  function startDrag(e, type, index) {
+    const item = type === 'grid' ? slots[index] : equipped[index];
+    if (!item || e.button !== 0) return;
+    e.preventDefault();
+    dragFrom = { type, index };
+    ghostActive = true;
+    document.getElementById('ghost-icon').textContent = getIcon(item);
+    document.getElementById('ghost-name').textContent = item.name;
+    const ghost = document.getElementById('drag-ghost');
+    ghost.classList.add('visible');
+    ghost.style.left = e.clientX + 'px';
+    ghost.style.top  = e.clientY + 'px';
+    const slot = type === 'grid' ? document.querySelector(`[data-index="${index}"]`) : null;
+    if (slot) slot.classList.add('dragging');
+    hideTooltip();
   }
 
-  function showCtx(e, slotIdx, item) {
-    ctxSlot = slotIdx;
-    const menu = document.getElementById('ctxMenu');
-    document.getElementById('ctxUse').style.display   = item.is_usable   ? 'flex' : 'none';
-    document.getElementById('ctxEquip').style.display = item.item_type === 'clothing' ? 'flex' : 'none';
+  document.addEventListener('mousemove', e => {
+    if (!ghostActive) return;
+    const ghost = document.getElementById('drag-ghost');
+    ghost.style.left = e.clientX + 'px';
+    ghost.style.top  = e.clientY + 'px';
+  });
+
+  document.addEventListener('mouseup', e => {
+    if (!ghostActive) return;
+    ghostActive = false;
+    document.getElementById('drag-ghost').classList.remove('visible');
+    document.querySelectorAll('.inv-slot.dragging').forEach(el => el.classList.remove('dragging'));
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    dragFrom = null;
+  });
+
+  function onDragEnter(el) {
+    if (!ghostActive) return;
+    document.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
+    el.classList.add('drag-over');
+  }
+
+  function endDrag(type, index) {
+    if (!dragFrom || !ghostActive) return;
+    if (dragFrom.type === type && dragFrom.index === index) return; // same slot
+    if (dragFrom.type === 'grid' && type === 'grid') {
+      // Grid to grid
+      const fromItem = slots[dragFrom.index];
+      const toItem   = slots[index];
+      if (fromItem) {
+        if (typeof mp !== 'undefined')
+          mp.trigger('inventory:browserMove', dragFrom.index, index);
+        // Optimistic local swap
+        slots[dragFrom.index] = toItem;
+        slots[index] = fromItem;
+        buildGrid();
+      }
+    }
+  }
+
+  /* ── Context menu ── */
+  function showCtx(e, type, index) {
+    ctxSlot = index; ctxType = type;
+    const item = type === 'grid' ? slots[index] : null;
+    if (!item) return;
+    const menu = document.getElementById('ctx-menu');
+    document.getElementById('ctx-use').style.display   = item.usable  ? '' : 'none';
+    document.getElementById('ctx-equip').style.display = item.type === 'clothing' ? '' : 'none';
+    document.getElementById('ctx-bag').style.display   = item.type === 'bag' ? '' : 'none';
     menu.style.left = e.clientX + 'px';
     menu.style.top  = e.clientY + 'px';
     menu.classList.add('visible');
-    e.preventDefault();
   }
 
   function ctxAction(action) {
-    document.getElementById('ctxMenu').classList.remove('visible');
-    if (ctxSlot < 0) return;
-    if (action === 'use')   mp.trigger('inventory:browserUse',   ctxSlot);
-    if (action === 'drop')  mp.trigger('inventory:browserDrop',  ctxSlot);
-    if (action === 'equip') mp.trigger('inventory:browserEquip', ctxSlot, 0, 0);
-    ctxSlot = -1;
+    document.getElementById('ctx-menu').classList.remove('visible');
+    if (ctxSlot === null) return;
+    const item = slots[ctxSlot];
+    if (!item) return;
+    if (action === 'use')   { if (typeof mp!=='undefined') mp.trigger('inventory:browserUse',  ctxSlot); }
+    if (action === 'drop')  { if (typeof mp!=='undefined') mp.trigger('inventory:browserDrop', ctxSlot); slots[ctxSlot] = null; buildGrid(); }
+    if (action === 'equip') { if (typeof mp!=='undefined') mp.trigger('inventory:browserEquipBag', ctxSlot); }
+    if (action === 'bag')   { if (typeof mp!=='undefined') mp.trigger('inventory:browserEquipBag', ctxSlot); equipBagLocally(item, ctxSlot); }
   }
 
-  function applyClothes(clothes) {
-    clothes.forEach(c => {
-      const box = document.getElementById('cs-' + c.slot);
-      if (box) box.classList.add('equipped');
-    });
+  function equipBagLocally(item, slotIdx) {
+    equippedBag = item;
+    slots[slotIdx] = null;
+    document.getElementById('bag-icon').textContent = getIcon(item);
+    document.getElementById('bag-name').textContent = item.name;
+    document.getElementById('unequip-bag-btn').hidden = false;
+    buildGrid();
   }
 
-  function openClothSlot(slot) {
-    // Could open a sub-menu to change clothing - future implementation
+  function unequipBag() {
+    if (typeof mp !== 'undefined') mp.trigger('inventory:browserUnequipBag');
+    equippedBag = null;
+    document.getElementById('bag-icon').textContent = '🎒';
+    document.getElementById('bag-name').textContent = 'Niciun rucsac';
+    document.getElementById('unequip-bag-btn').hidden = true;
   }
 
-  function closeInventory() {
-    mp.trigger('inventory:browserClose');
-  }
+  document.addEventListener('click', () => document.getElementById('ctx-menu').classList.remove('visible'));
 
-  // Hide context menu on click
-  document.addEventListener('click', () => {
-    document.getElementById('ctxMenu').classList.remove('visible');
+  /* ── Tooltip ── */
+  function showTooltip(e, item) {
+    if (!item || ghostActive) return;
+    const tt = document.getElementById('tooltip');
+    document.getElementById('tt-name').textContent   = item.name;
+    document.getElementById('tt-type').textContent   = item.type || 'misc';
+    document.getElementById('tt-weight').textContent = (item.weight || 0) + ' kg';
+    document.getElementById('tt-desc').textContent   = item.description || '';
+    tt.style.left = (e.clientX + 14) + 'px';
+    tt.style.top  = (e.clientY - 10) + 'px';
+    tt.classList.add('visible');
+  }
+  function hideTooltip() {
     document.getElementById('tooltip').classList.remove('visible');
+  }
+
+  /* ── Weight ── */
+  function updateWeight() {
+    let w = 0;
+    slots.forEach(s => { if (s) w += (s.weight || 0) * (s.qty || 1); });
+    const max = 30;
+    const pct = Math.min(100, (w / max) * 100);
+    document.getElementById('weight-fill').style.width = pct + '%';
+    document.getElementById('weight-text').textContent = w.toFixed(1) + ' / ' + max + '.0 kg';
+  }
+
+  /* ── loadInventory(data) ── */
+  function loadInventory(data) {
+    // data: { items: [{slot, name, qty, type, weight, description, usable, icon}], equipped: {}, bag: null }
+    slots = new Array(30).fill(null);
+    if (data.items) {
+      data.items.forEach(item => {
+        if (item.slot >= 0 && item.slot < 30) slots[item.slot] = item;
+      });
+    }
+    if (data.equipped) {
+      equipped = data.equipped;
+      Object.keys(equipped).forEach(key => {
+        const nameEl = document.getElementById('equip-' + key + '-name');
+        const iconEl = document.querySelector(`#equip-${key} .slot-icon`);
+        if (nameEl && equipped[key]) { nameEl.textContent = equipped[key].name; }
+        if (iconEl && equipped[key]) { iconEl.textContent = getIcon(equipped[key]); }
+      });
+    }
+    if (data.bag) { equipBagLocally(data.bag, -1); }
+    buildGrid();
+    updateWeight();
+  }
+
+  /* ── openTrunk(vin, trunkData) ── */
+  function openTrunk(vin, trunkData) {
+    document.getElementById('inv-title').textContent = 'PORTBAGAJ — ' + vin;
+    loadInventory(trunkData);
+  }
+
+  /* ── Close ── */
+  function doClose() {
+    if (typeof mp !== 'undefined') mp.trigger('inventory:browserClose');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'i' || e.key === 'I' || e.key === 'Escape') doClose();
   });
-  document.addEventListener('contextmenu', e => e.preventDefault());
+
+  /* ── Init ── */
+  buildGrid();
 </script>
 </body>
 </html>

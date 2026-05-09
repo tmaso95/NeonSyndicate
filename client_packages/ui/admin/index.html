@@ -2,153 +2,573 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeonSyndicate — Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{width:100vw;height:100vh;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;color:#e0e0e0}
-  .panel{width:900px;height:620px;background:linear-gradient(135deg,rgba(10,10,20,0.98),rgba(15,15,30,0.98));border:1px solid #FF2D78;border-radius:6px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(255,45,120,0.3)}
-  .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:rgba(255,45,120,0.1);border-bottom:1px solid rgba(255,45,120,0.4)}
-  .header h1{font-family:'Orbitron',sans-serif;font-size:16px;color:#FF2D78;text-transform:uppercase;letter-spacing:3px}
-  .rank-badge{font-size:12px;color:#00D4FF;border:1px solid #00D4FF;padding:3px 10px;border-radius:3px;letter-spacing:1px}
-  .close-btn{background:none;border:1px solid #FF2D78;color:#FF2D78;width:28px;height:28px;cursor:pointer;border-radius:3px;font-size:16px;transition:all .2s}
-  .close-btn:hover{background:#FF2D78;color:#000}
-  .body{display:flex;flex:1;overflow:hidden}
-  .sidebar{width:200px;background:rgba(0,0,0,0.4);border-right:1px solid rgba(255,45,120,0.2);display:flex;flex-direction:column}
-  .tab-btn{padding:12px 16px;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:1px;border:none;background:none;color:#888;text-align:left;transition:all .2s;border-left:2px solid transparent}
-  .tab-btn.active,.tab-btn:hover{color:#FF2D78;background:rgba(255,45,120,0.08);border-left-color:#FF2D78}
-  .content{flex:1;padding:16px;overflow-y:auto}
-  .section{display:none}
-  .section.active{display:block}
-  /* Players table */
-  table{width:100%;border-collapse:collapse;font-size:12px}
-  thead tr{background:rgba(255,45,120,0.15);border-bottom:1px solid rgba(255,45,120,0.3)}
-  th{padding:8px 10px;text-align:left;color:#FF2D78;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:11px}
-  td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.05);color:#ccc}
-  tr:hover td{background:rgba(255,45,120,0.05)}
-  .action-row{display:flex;gap:4px;flex-wrap:wrap}
-  .btn{padding:4px 8px;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:0.5px;transition:all .15s}
-  .btn-pink{background:rgba(255,45,120,0.2);color:#FF2D78;border:1px solid rgba(255,45,120,0.4)}
-  .btn-cyan{background:rgba(0,212,255,0.15);color:#00D4FF;border:1px solid rgba(0,212,255,0.4)}
-  .btn-red{background:rgba(255,60,60,0.15);color:#ff4444;border:1px solid rgba(255,60,60,0.4)}
-  .btn-green{background:rgba(50,255,100,0.1);color:#32ff64;border:1px solid rgba(50,255,100,0.3)}
-  .btn:hover{filter:brightness(1.4)}
-  /* Forms */
-  .form-group{margin-bottom:12px}
-  .form-group label{display:block;font-size:12px;color:#888;margin-bottom:4px;letter-spacing:0.5px}
-  .form-group input,.form-group select{width:100%;padding:8px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,45,120,0.3);border-radius:3px;color:#e0e0e0;font-family:'Rajdhani',sans-serif;font-size:13px;outline:none}
-  .form-group input:focus,.form-group select:focus{border-color:#FF2D78;box-shadow:0 0 6px rgba(255,45,120,0.3)}
-  .form-group select option{background:#111}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  h3{font-family:'Orbitron',sans-serif;font-size:12px;color:#00D4FF;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid rgba(0,212,255,0.2);letter-spacing:2px}
-  .announce-area{width:100%;height:80px;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,45,120,0.3);border-radius:3px;color:#e0e0e0;font-family:'Rajdhani',sans-serif;font-size:13px;resize:none;outline:none}
-  .announce-area:focus{border-color:#FF2D78}
-  .scrollbar::-webkit-scrollbar{width:4px}
-  .scrollbar::-webkit-scrollbar-track{background:transparent}
-  .scrollbar::-webkit-scrollbar-thumb{background:#FF2D78;border-radius:2px}
-  .no-players{text-align:center;padding:40px;color:#555;font-size:13px}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: transparent;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Rajdhani', sans-serif;
+    color: #e0e0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Main panel */
+  #admin-panel {
+    width: 920px;
+    height: 90vh;
+    background: rgba(8,8,24,0.96);
+    border: 1px solid rgba(255,45,120,0.25);
+    backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 60px rgba(0,0,0,0.65);
+    animation: panelIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    position: relative;
+    overflow: hidden;
+  }
+  #admin-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #FF2D78, #9B44FF, #00D4FF, transparent);
+  }
+
+  /* Header */
+  #admin-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 22px;
+    background: rgba(5,5,16,0.8);
+    border-bottom: 1px solid rgba(255,45,120,0.15);
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  #admin-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #FF2D78;
+    text-shadow: 0 0 10px rgba(255,45,120,0.5);
+    flex: 1;
+  }
+  #admin-rank-badge {
+    padding: 3px 10px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  .rank-owner     { background: rgba(255,45,120,0.15); border: 1px solid rgba(255,45,120,0.4); color: #FF2D78; }
+  .rank-admin     { background: rgba(155,68,255,0.12); border: 1px solid rgba(155,68,255,0.4); color: #9B44FF; }
+  .rank-moderator { background: rgba(0,212,255,0.1);   border: 1px solid rgba(0,212,255,0.3); color: #00D4FF; }
+  .rank-helper    { background: rgba(0,255,136,0.08);  border: 1px solid rgba(0,255,136,0.25); color: #00FF88; }
+
+  #close-btn {
+    width: 28px; height: 28px;
+    background: rgba(255,45,120,0.1);
+    border: 1px solid rgba(255,45,120,0.3);
+    color: #FF2D78;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  #close-btn:hover { background: rgba(255,45,120,0.25); }
+
+  /* Body */
+  #admin-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Sidebar */
+  #admin-sidebar {
+    width: 180px;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255,45,120,0.12);
+    background: rgba(5,5,16,0.6);
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    gap: 2px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 18px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(224,224,240,0.4);
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    text-transform: uppercase;
+  }
+  .nav-item:hover { color: rgba(224,224,240,0.75); background: rgba(255,45,120,0.05); }
+  .nav-item.active {
+    color: #FF2D78;
+    background: rgba(255,45,120,0.08);
+    border-left-color: #FF2D78;
+    text-shadow: 0 0 8px rgba(255,45,120,0.4);
+  }
+  .nav-icon { font-size: 14px; }
+
+  /* Content area */
+  #admin-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-tab {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  .admin-tab.active { display: flex; }
+
+  .tab-inner {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 22px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,45,120,0.3) transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .tab-inner::-webkit-scrollbar { width: 3px; }
+  .tab-inner::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.3); }
+
+  /* Section title */
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: rgba(0,212,255,0.5);
+    text-transform: uppercase;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(0,212,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before { content:''; width:12px; height:1px; background:#00D4FF; box-shadow: 0 0 6px rgba(0,212,255,0.6); }
+
+  /* Search bar */
+  #player-search-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  #player-search {
+    width: 100%;
+    background: rgba(5,5,16,0.8);
+    border: 1px solid rgba(255,45,120,0.18);
+    color: #e0e0f0;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    padding: 8px 14px 8px 38px;
+    outline: none;
+    transition: border-color 0.2s;
+    border-radius: 2px;
+  }
+  #player-search:focus { border-color: rgba(255,45,120,0.5); }
+  #player-search::placeholder { color: rgba(224,224,240,0.22); }
+  #player-search-icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  /* Player table */
+  #players-table-wrap { overflow-x: auto; }
+  .admin-table { width: 100%; border-collapse: collapse; }
+  .admin-table thead tr {
+    background: rgba(5,5,16,0.8);
+    border-bottom: 1px solid rgba(255,45,120,0.15);
+  }
+  .admin-table th {
+    padding: 8px 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(0,212,255,0.5);
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .admin-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.12s;
+  }
+  .admin-table tbody tr:hover { background: rgba(255,45,120,0.04); }
+  .admin-table td {
+    padding: 9px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(224,224,240,0.7);
+    white-space: nowrap;
+  }
+  .player-id-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: #FF2D78;
+    background: rgba(255,45,120,0.1);
+    padding: 2px 6px;
+    border: 1px solid rgba(255,45,120,0.2);
+    border-radius: 2px;
+  }
+  .player-name-cell { font-weight: 700; color: #e0e0f0; }
+  .ping-cell { color: #00FF88; font-family: 'Orbitron', sans-serif; font-size: 10px; }
+  .ping-cell.high { color: #FFD700; }
+  .ping-cell.bad  { color: #FF4466; }
+
+  /* Action buttons in table */
+  .action-group { display: flex; gap: 3px; flex-wrap: wrap; }
+  .act-btn {
+    padding: 3px 7px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.12s;
+    border-radius: 2px;
+    text-transform: uppercase;
+    background: transparent;
+    white-space: nowrap;
+  }
+  .act-btn.cyan   { border-color: rgba(0,212,255,0.3);   color: #00D4FF; }
+  .act-btn.cyan:hover   { background: rgba(0,212,255,0.12); }
+  .act-btn.green  { border-color: rgba(0,255,136,0.3);  color: #00FF88; }
+  .act-btn.green:hover  { background: rgba(0,255,136,0.1); }
+  .act-btn.yellow { border-color: rgba(255,215,0,0.3);  color: #FFD700; }
+  .act-btn.yellow:hover { background: rgba(255,215,0,0.1); }
+  .act-btn.red    { border-color: rgba(255,45,120,0.35); color: #FF2D78; }
+  .act-btn.red:hover    { background: rgba(255,45,120,0.12); }
+  .act-btn.purple { border-color: rgba(155,68,255,0.3); color: #9B44FF; }
+  .act-btn.purple:hover { background: rgba(155,68,255,0.1); }
+
+  /* Server tab */
+  .server-card {
+    background: rgba(5,5,16,0.6);
+    border: 1px solid rgba(255,45,120,0.12);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .server-card-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #00D4FF;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .form-row { display: flex; gap: 8px; align-items: flex-end; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .form-label { font-size: 10px; font-weight: 600; color: rgba(224,224,240,0.35); letter-spacing: 1px; text-transform: uppercase; }
+  .form-input, .form-select, .form-textarea {
+    background: rgba(5,5,16,0.8);
+    border: 1px solid rgba(255,45,120,0.18);
+    color: #e0e0f0;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    border-radius: 2px;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: rgba(255,45,120,0.5); }
+  .form-select option { background: #0a0a1a; }
+  .form-textarea { resize: vertical; min-height: 60px; }
+
+  .server-action-btn {
+    padding: 10px 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+    background: transparent;
+    white-space: nowrap;
+  }
+  .server-action-btn.pink   { border-color: rgba(255,45,120,0.4); color: #FF2D78; }
+  .server-action-btn.pink:hover   { background: rgba(255,45,120,0.12); }
+  .server-action-btn.cyan   { border-color: rgba(0,212,255,0.4); color: #00D4FF; }
+  .server-action-btn.cyan:hover   { background: rgba(0,212,255,0.1); }
+  .server-action-btn.green  { border-color: rgba(0,255,136,0.4); color: #00FF88; }
+  .server-action-btn.green:hover  { background: rgba(0,255,136,0.08); }
+
+  /* Admins tab */
+  .admin-row-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(5,5,16,0.55);
+    border: 1px solid rgba(255,45,120,0.08);
+    transition: border-color 0.15s;
+  }
+  .admin-row-card:hover { border-color: rgba(255,45,120,0.2); }
+  .admin-row-name  { flex: 1; font-size: 14px; font-weight: 700; }
+  .admin-row-email { font-size: 11px; color: rgba(224,224,240,0.4); }
+
+  /* Logs tab */
+  #logs-output {
+    flex: 1;
+    overflow-y: auto;
+    background: rgba(5,5,16,0.7);
+    border: 1px solid rgba(255,45,120,0.1);
+    padding: 10px 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: rgba(224,224,240,0.65);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,45,120,0.2) transparent;
+  }
+  .log-entry { display: flex; gap: 10px; line-height: 1.5; }
+  .log-time  { color: rgba(0,212,255,0.5); flex-shrink: 0; }
+  .log-type  { font-weight: 700; flex-shrink: 0; width: 50px; }
+  .log-type.admin  { color: #FF2D78; }
+  .log-type.system { color: #9B44FF; }
+  .log-type.chat   { color: #00FF88; }
+  .log-msg   { color: rgba(224,224,240,0.6); }
+
+  /* Stats bar (bottom of Players tab) */
+  #player-stats-bar {
+    padding: 8px 22px;
+    background: rgba(5,5,16,0.7);
+    border-top: 1px solid rgba(255,45,120,0.1);
+    display: flex;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+  }
+  .stat-pill-label { color: rgba(224,224,240,0.35); letter-spacing: 1px; }
+  .stat-pill-val { font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
 </style>
 </head>
 <body>
-<div class="panel">
-  <div class="header">
-    <h1>Admin Panel</h1>
-    <span class="rank-badge" id="rankBadge">RANK</span>
-    <button class="close-btn" onclick="closePanel()">✕</button>
+<div class="scanlines"></div>
+
+<div id="admin-panel">
+  <!-- Header -->
+  <div id="admin-header">
+    <span id="admin-title">⚡ PANOU ADMINISTRARE</span>
+    <span id="admin-rank-badge" class="rank-admin">ADMIN</span>
+    <button id="close-btn" onclick="doClose()">✕</button>
   </div>
-  <div class="body">
-    <div class="sidebar">
-      <button class="tab-btn active" onclick="showTab('players')">JUCATORI</button>
-      <button class="tab-btn" onclick="showTab('actions')">ACTIUNI</button>
-      <button class="tab-btn" onclick="showTab('ranks')">RANGURI</button>
-      <button class="tab-btn" onclick="showTab('announce')">ANUNT</button>
+
+  <div id="admin-body">
+    <!-- Sidebar -->
+    <div id="admin-sidebar">
+      <div class="nav-item active" onclick="switchTab('players')">
+        <span class="nav-icon">👥</span> Jucatori
+      </div>
+      <div class="nav-item" onclick="switchTab('bans')">
+        <span class="nav-icon">🔨</span> Banuri
+      </div>
+      <div class="nav-item" onclick="switchTab('admins')">
+        <span class="nav-icon">⚡</span> Admini
+      </div>
+      <div class="nav-item" onclick="switchTab('server')">
+        <span class="nav-icon">🖥️</span> Server
+      </div>
+      <div class="nav-item" onclick="switchTab('logs')">
+        <span class="nav-icon">📋</span> Loguri
+      </div>
     </div>
-    <div class="content scrollbar">
+
+    <!-- Content -->
+    <div id="admin-content">
 
       <!-- PLAYERS TAB -->
-      <div class="section active" id="tab-players">
-        <h3>JUCATORI ONLINE</h3>
-        <table>
-          <thead><tr><th>ID</th><th>Nume</th><th>CNP</th><th>Ping</th><th>Actiuni</th></tr></thead>
-          <tbody id="playersTbody"></tbody>
-        </table>
-      </div>
-
-      <!-- ACTIONS TAB -->
-      <div class="section" id="tab-actions">
-        <h3>ACTIUNI RAPIDE</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Player ID</label>
-            <input id="act-id" type="number" placeholder="ID jucator" min="0">
+      <div class="admin-tab active" id="tab-players">
+        <div class="tab-inner" style="flex:1;overflow-y:hidden;display:flex;flex-direction:column;gap:10px;padding:14px 18px">
+          <div class="section-title">Jucatori online</div>
+          <div id="player-search-wrap">
+            <span id="player-search-icon">🔍</span>
+            <input id="player-search" type="text" placeholder="Cauta dupa nume, ID, CNP..." oninput="filterPlayers()">
           </div>
-          <div class="form-group">
-            <label>Suma ($)</label>
-            <input id="act-money" type="number" placeholder="Suma">
-          </div>
-        </div>
-        <div class="action-row" style="margin-bottom:14px">
-          <button class="btn btn-green" onclick="giveMoney()">DAR BANI</button>
-          <button class="btn btn-pink" onclick="heal()">VINDECARE</button>
-          <button class="btn btn-cyan" onclick="tp()">TELEPORT</button>
-          <button class="btn btn-cyan" onclick="spectate()">SPECTATE</button>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Motiv kick/ban</label>
-            <input id="act-reason" type="text" placeholder="Motiv">
-          </div>
-          <div class="form-group">
-            <label>Wanted Level (0-5)</label>
-            <input id="act-wanted" type="number" min="0" max="5" placeholder="0-5">
+          <div id="players-table-wrap" style="flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,45,120,0.3) transparent">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nume</th>
+                  <th>CNP</th>
+                  <th>Ping</th>
+                  <th>Actiuni</th>
+                </tr>
+              </thead>
+              <tbody id="players-tbody"></tbody>
+            </table>
           </div>
         </div>
-        <div class="action-row" style="margin-bottom:14px">
-          <button class="btn btn-red" onclick="kick()">KICK</button>
-          <button class="btn btn-red" onclick="ban()">BAN</button>
-          <button class="btn btn-pink" onclick="setWanted()">SET WANTED</button>
-          <button class="btn btn-cyan" onclick="toggleGod()">GOD MODE</button>
-        </div>
-        <div class="form-group">
-          <label>Email unban</label>
-          <input id="act-unban-email" type="email" placeholder="email@exemplu.ro">
-        </div>
-        <button class="btn btn-green" onclick="unban()">UNBAN</button>
-      </div>
-
-      <!-- RANKS TAB -->
-      <div class="section" id="tab-ranks">
-        <h3>SETARE RANG</h3>
-        <div class="form-group">
-          <label>Email cont</label>
-          <input id="rank-email" type="email" placeholder="email@exemplu.ro">
-        </div>
-        <div class="form-group">
-          <label>Rang</label>
-          <select id="rank-select">
-            <option value="tester">Tester</option>
-            <option value="helper">Helper</option>
-            <option value="moderator">Moderator</option>
-            <option value="admin">Admin</option>
-            <option value="head_admin">Head Admin</option>
-            <option value="co_owner">Co-Owner</option>
-            <option value="owner">Owner</option>
-          </select>
-        </div>
-        <div class="action-row">
-          <button class="btn btn-pink" onclick="setRank()">SETEAZA RANG</button>
-          <button class="btn btn-red" onclick="removeRank()">ELIMINA RANG</button>
+        <div id="player-stats-bar">
+          <div class="stat-pill">
+            <span class="stat-pill-label">ONLINE</span>
+            <span class="stat-pill-val" id="stat-online" style="color:#00FF88">0</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-pill-label">PEAK</span>
+            <span class="stat-pill-val" id="stat-peak" style="color:#00D4FF">0</span>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-pill-label">BANNED</span>
+            <span class="stat-pill-val" id="stat-banned" style="color:#FF2D78">0</span>
+          </div>
         </div>
       </div>
 
-      <!-- ANNOUNCE TAB -->
-      <div class="section" id="tab-announce">
-        <h3>ANUNT SERVER</h3>
-        <div class="form-group">
-          <label>Mesaj anunt</label>
-          <textarea id="announce-msg" class="announce-area" placeholder="Scrie anuntul..."></textarea>
+      <!-- BANS TAB -->
+      <div class="admin-tab" id="tab-bans">
+        <div class="tab-inner">
+          <div class="section-title">Banuri active</div>
+          <div id="bans-list" style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:12px;color:rgba(224,224,240,0.25);text-align:center;padding:30px">Niciun ban activ</div>
+          </div>
         </div>
-        <button class="btn btn-pink" onclick="sendAnnounce()" style="width:100%;padding:10px;font-size:14px">TRIMITE ANUNT</button>
+      </div>
+
+      <!-- ADMINS TAB -->
+      <div class="admin-tab" id="tab-admins">
+        <div class="tab-inner">
+          <div class="section-title">Setare rang admin</div>
+          <div class="server-card">
+            <div class="server-card-title">Acorda / Modifica rang</div>
+            <div class="form-group">
+              <label class="form-label">Email cont</label>
+              <input class="form-input" id="admin-email-inp" type="email" placeholder="user@neonsyndicate.ro">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rang</label>
+              <select class="form-select" id="admin-rank-inp">
+                <option value="0">0 - Jucator normal</option>
+                <option value="1">1 - Helper</option>
+                <option value="2">2 - Moderator</option>
+                <option value="3">3 - Admin</option>
+                <option value="4">4 - Senior Admin</option>
+                <option value="5">5 - Owner</option>
+              </select>
+            </div>
+            <div>
+              <button class="server-action-btn pink" onclick="doSetRank()">SETEAZA RANG</button>
+            </div>
+          </div>
+
+          <div class="section-title">Lista admini</div>
+          <div id="admins-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+
+      <!-- SERVER TAB -->
+      <div class="admin-tab" id="tab-server">
+        <div class="tab-inner">
+          <div class="section-title">Anunt server</div>
+          <div class="server-card">
+            <div class="server-card-title">Trimite anunt</div>
+            <div class="form-group">
+              <textarea class="form-textarea" id="announce-inp" placeholder="Scrie anuntul..."></textarea>
+            </div>
+            <div class="form-row">
+              <button class="server-action-btn pink" onclick="doAnnounce()">📢 TRIMITE ANUNT</button>
+            </div>
+          </div>
+
+          <div class="section-title">Vreme &amp; Timp</div>
+          <div class="server-card">
+            <div class="server-card-title">Seteaza vreme / ora</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Vreme</label>
+                <select class="form-select" id="weather-inp">
+                  <option value="CLEAR">Clear (Senin)</option>
+                  <option value="EXTRASUNNY">Extra Sunny</option>
+                  <option value="CLOUDS">Clouds (Noros)</option>
+                  <option value="OVERCAST">Overcast (Intunecat)</option>
+                  <option value="RAIN">Rain (Ploaie)</option>
+                  <option value="THUNDER">Thunder (Furtuna)</option>
+                  <option value="FOGGY">Foggy (Ceata)</option>
+                  <option value="SNOW">Snow (Zapada)</option>
+                  <option value="BLIZZARD">Blizzard (Viscol)</option>
+                  <option value="SNOWLIGHT">Snow Light (Zapada usoara)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ora (0-23)</label>
+                <input class="form-input" id="time-inp" type="number" min="0" max="23" value="12">
+              </div>
+              <button class="server-action-btn cyan" style="margin-bottom:0;align-self:flex-end" onclick="doSetWeatherTime()">APLICA</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOGS TAB -->
+      <div class="admin-tab" id="tab-logs">
+        <div class="tab-inner" style="padding:14px 18px;display:flex;flex-direction:column;gap:10px">
+          <div class="section-title">Loguri server</div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="server-action-btn cyan" onclick="filterLogs('all')">TOATE</button>
+            <button class="server-action-btn pink" onclick="filterLogs('admin')">ADMIN</button>
+            <button class="server-action-btn green" onclick="filterLogs('chat')">CHAT</button>
+          </div>
+          <div id="logs-output"></div>
+        </div>
       </div>
 
     </div>
@@ -156,73 +576,205 @@
 </div>
 
 <script>
-let myLevel = -1;
-let playersData = [];
+  /* ── State ── */
+  let allPlayers = [];
+  let allAdmins  = [];
+  let allBans    = [];
+  let allLogs    = [];
+  let logFilter  = 'all';
 
-function loadPanel(data) {
-    myLevel = data.myLevel;
-    playersData = data.players || [];
-    document.getElementById('rankBadge').textContent = (data.myRank || 'none').toUpperCase();
-    renderPlayers();
-}
+  /* ── Navigation ── */
+  function switchTab(tab) {
+    document.querySelectorAll('.nav-item').forEach((n,i) => {
+      const tabs = ['players','bans','admins','server','logs'];
+      n.classList.toggle('active', tabs[i] === tab);
+    });
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
 
-function renderPlayers() {
-    const tbody = document.getElementById('playersTbody');
-    if (!playersData.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="no-players">Niciun jucator online</td></tr>';
-        return;
+  /* ── loadPanel(data) ── */
+  function loadPanel(data) {
+    if (data.players) { allPlayers = data.players; renderPlayers(); }
+    if (data.admins)  { allAdmins  = data.admins;  renderAdmins();  }
+    if (data.bans)    { allBans    = data.bans;     renderBans();    }
+    if (data.logs)    { allLogs    = data.logs;     renderLogs();    }
+    if (data.stats) {
+      document.getElementById('stat-online').textContent = data.stats.online || 0;
+      document.getElementById('stat-peak').textContent   = data.stats.peak   || 0;
+      document.getElementById('stat-banned').textContent = data.stats.banned || 0;
     }
-    tbody.innerHTML = playersData.map(p => `
-        <tr>
-            <td>${p.id}</td>
-            <td>${p.name}</td>
-            <td>${p.cnp}</td>
-            <td>${p.ping}ms</td>
-            <td>
-                <div class="action-row">
-                    <button class="btn btn-cyan" onclick="quickTp(${p.id})">TP</button>
-                    <button class="btn btn-pink" onclick="quickHeal(${p.id})">HEAL</button>
-                    <button class="btn btn-red" onclick="quickKick(${p.id})">KICK</button>
-                    <button class="btn btn-red" onclick="quickBan(${p.id})">BAN</button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
-}
+    if (data.adminRank) {
+      const rankMap = {5:'owner',4:'admin',3:'admin',2:'moderator',1:'helper'};
+      const badge = document.getElementById('admin-rank-badge');
+      badge.textContent = ['','HELPER','MODERATOR','ADMIN','SR.ADMIN','OWNER'][data.adminRank] || 'ADMIN';
+      badge.className = 'rank-' + (rankMap[data.adminRank] || 'admin');
+    }
+  }
 
-function showTab(name) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    event.target.classList.add('active');
-}
+  /* ── Players ── */
+  function renderPlayers(filter) {
+    const tbody = document.getElementById('players-tbody');
+    tbody.innerHTML = '';
+    const list = filter ? allPlayers.filter(p =>
+      p.name.toLowerCase().includes(filter) ||
+      String(p.id).includes(filter) ||
+      (p.cnp || '').includes(filter)
+    ) : allPlayers;
 
-function getId() { return parseInt(document.getElementById('act-id').value); }
+    list.forEach(p => {
+      const ping = p.ping || 0;
+      const pingClass = ping > 150 ? 'bad' : ping > 80 ? 'high' : '';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="player-id-badge">${p.id}</span></td>
+        <td class="player-name-cell">${p.name}</td>
+        <td style="font-family:'Orbitron',sans-serif;font-size:10px;color:rgba(224,224,240,0.4)">${p.cnp || '—'}</td>
+        <td class="ping-cell ${pingClass}">${ping}ms</td>
+        <td>
+          <div class="action-group">
+            <button class="act-btn cyan"   onclick="adminAct('tp',   ${p.id})">TP</button>
+            <button class="act-btn cyan"   onclick="adminAct('bring', ${p.id})">BRING</button>
+            <button class="act-btn green"  onclick="adminAct('heal',  ${p.id})">HEAL</button>
+            <button class="act-btn purple" onclick="adminAct('god',   ${p.id})">GOD</button>
+            <button class="act-btn yellow" onclick="adminAct('freeze',${p.id})">FREEZE</button>
+            <button class="act-btn yellow" onclick="promptWanted(${p.id})">WANTED</button>
+            <button class="act-btn red"    onclick="adminAct('kick',  ${p.id})">KICK</button>
+            <button class="act-btn red"    onclick="promptBan(${p.id})">BAN</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('stat-online').textContent = list.length;
+  }
 
-function quickTp(id)   { mp.trigger('admin:browserTp', id); }
-function quickHeal(id) { mp.trigger('admin:browserHeal', id); }
-function quickKick(id) {
-    const reason = prompt('Motiv kick:') || 'fara motiv';
-    mp.trigger('admin:browserKick', id, reason);
-}
-function quickBan(id) {
-    const reason = prompt('Motiv ban:') || 'fara motiv';
-    mp.trigger('admin:browserBan', id, reason);
-}
+  function filterPlayers() {
+    const q = document.getElementById('player-search').value.trim().toLowerCase();
+    renderPlayers(q || null);
+  }
 
-function giveMoney()  { mp.trigger('admin:browserGiveMoney', getId(), parseInt(document.getElementById('act-money').value) || 0); }
-function heal()       { mp.trigger('admin:browserHeal', getId()); }
-function tp()         { mp.trigger('admin:browserTp', getId()); }
-function spectate()   { mp.trigger('admin:browserSpectate', getId()); }
-function kick()       { mp.trigger('admin:browserKick', getId(), document.getElementById('act-reason').value || 'fara motiv'); }
-function ban()        { mp.trigger('admin:browserBan',  getId(), document.getElementById('act-reason').value || 'fara motiv'); }
-function setWanted()  { mp.trigger('admin:browserSetWanted', getId(), parseInt(document.getElementById('act-wanted').value) || 0); }
-function toggleGod()  { mp.trigger('admin:browserToggleGod'); }
-function unban()      { mp.trigger('admin:browserUnban', document.getElementById('act-unban-email').value); }
-function setRank()    { mp.trigger('admin:browserSetRank', document.getElementById('rank-email').value, document.getElementById('rank-select').value); }
-function removeRank() { mp.trigger('admin:browserSetRank', document.getElementById('rank-email').value, 'remove'); }
-function sendAnnounce(){ mp.trigger('admin:browserAnnounce', document.getElementById('announce-msg').value); document.getElementById('announce-msg').value = ''; }
-function closePanel() { mp.trigger('admin:browserClose'); }
+  /* ── Admin actions ── */
+  function adminAct(action, playerId) {
+    if (typeof mp !== 'undefined') mp.trigger('admin:browser' + capitalize(action), playerId);
+  }
+
+  function promptBan(id) {
+    const reason = prompt('Motiv ban:');
+    const dur    = prompt('Durata (ore, 0=permanent):');
+    if (reason !== null && typeof mp !== 'undefined')
+      mp.trigger('admin:browserBan', id, reason, parseInt(dur) || 0);
+  }
+
+  function promptWanted(id) {
+    const stars = prompt('Stele wanted (0-5):');
+    if (stars !== null && typeof mp !== 'undefined')
+      mp.trigger('admin:browserSetWanted', id, parseInt(stars) || 0);
+  }
+
+  /* ── Admins ── */
+  function renderAdmins() {
+    const list = document.getElementById('admins-list');
+    list.innerHTML = '';
+    const rankLabels = ['','Helper','Moderator','Admin','Sr.Admin','Owner'];
+    const rankColors = ['','#00FF88','#00D4FF','#9B44FF','#FF2D78','#FF2D78'];
+    allAdmins.forEach(a => {
+      const div = document.createElement('div');
+      div.className = 'admin-row-card';
+      div.innerHTML = `
+        <div style="flex:1">
+          <div class="admin-row-name">${a.name}</div>
+          <div class="admin-row-email">${a.email}</div>
+        </div>
+        <span style="font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;color:${rankColors[a.rank]||'#e0e0f0'}">${rankLabels[a.rank]||'—'}</span>
+      `;
+      list.appendChild(div);
+    });
+    if (!allAdmins.length) list.innerHTML = '<div style="font-size:12px;color:rgba(224,224,240,0.25);text-align:center;padding:20px">Niciun admin</div>';
+  }
+
+  function doSetRank() {
+    const email = document.getElementById('admin-email-inp').value.trim();
+    const rank  = parseInt(document.getElementById('admin-rank-inp').value);
+    if (!email) return;
+    if (typeof mp !== 'undefined') mp.trigger('admin:browserSetRank', email, rank);
+  }
+
+  /* ── Bans ── */
+  function renderBans() {
+    const list = document.getElementById('bans-list');
+    list.innerHTML = '';
+    allBans.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'admin-row-card';
+      div.innerHTML = `
+        <div style="flex:1">
+          <div class="admin-row-name">${b.name}</div>
+          <div class="admin-row-email">${b.reason || 'Fara motiv'} — ${b.duration ? b.duration + 'h' : 'Permanent'}</div>
+        </div>
+        <button class="act-btn green" onclick="doUnban('${b.id}')">UNBAN</button>
+      `;
+      list.appendChild(div);
+    });
+    if (!allBans.length) list.innerHTML = '<div style="font-size:12px;color:rgba(224,224,240,0.25);text-align:center;padding:20px">Niciun ban activ</div>';
+    document.getElementById('stat-banned').textContent = allBans.length;
+  }
+
+  function doUnban(id) {
+    if (typeof mp !== 'undefined') mp.trigger('admin:browserUnban', id);
+  }
+
+  /* ── Server ── */
+  function doAnnounce() {
+    const msg = document.getElementById('announce-inp').value.trim();
+    if (!msg) return;
+    if (typeof mp !== 'undefined') mp.trigger('admin:browserAnnounce', msg);
+    document.getElementById('announce-inp').value = '';
+  }
+
+  function doSetWeatherTime() {
+    const weather = document.getElementById('weather-inp').value;
+    const time    = parseInt(document.getElementById('time-inp').value);
+    if (typeof mp !== 'undefined') {
+      mp.trigger('admin:browserSetWeather', weather);
+      mp.trigger('admin:browserSetTime', time);
+    }
+  }
+
+  /* ── Logs ── */
+  function addLog(entry) {
+    allLogs.unshift(entry);
+    renderLogs();
+  }
+
+  function filterLogs(type) {
+    logFilter = type;
+    renderLogs();
+  }
+
+  function renderLogs() {
+    const out = document.getElementById('logs-output');
+    out.innerHTML = '';
+    const filtered = logFilter === 'all' ? allLogs : allLogs.filter(l => l.type === logFilter);
+    filtered.slice(0, 200).forEach(l => {
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = `
+        <span class="log-time">${l.time || ''}</span>
+        <span class="log-type ${l.type||''}">${(l.type||'—').toUpperCase()}</span>
+        <span class="log-msg">${l.msg || ''}</span>
+      `;
+      out.appendChild(div);
+    });
+    if (!filtered.length) out.innerHTML = '<div style="color:rgba(224,224,240,0.2);font-size:11px;text-align:center;padding:20px">Niciun log</div>';
+  }
+
+  /* ── Helpers ── */
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function doClose() {
+    if (typeof mp !== 'undefined') mp.trigger('admin:browserClose');
+  }
 </script>
 </body>
 </html>

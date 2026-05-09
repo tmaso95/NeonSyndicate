@@ -2,173 +2,379 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<title>Garaj</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeonSyndicate — Garaje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --pink: #FF2D78; --cyan: #00D4FF;
-    --bg: rgba(5,5,16,0.97); --border: rgba(255,45,120,0.4);
-    --text: #e8e8f0; --dim: #5a5a7a;
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    background: transparent; color: var(--text);
+    background: transparent;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
     font-family: 'Rajdhani', sans-serif;
-    width: 100vw; height: 100vh; overflow: hidden;
-    display: flex; align-items: center; justify-content: flex-start;
-    padding-left: 40px;
+    color: #e0e0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .panel {
-    background: var(--bg); border: 1px solid var(--border);
-    box-shadow: 4px 0 40px rgba(255,45,120,0.12);
-    width: 360px; max-height: 80vh;
-    display: flex; flex-direction: column;
-    animation: slideIn 0.35s cubic-bezier(.16,1,.3,1);
+
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
   }
-  @keyframes slideIn { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:none} }
 
-  .panel-header { padding: 18px 22px; border-bottom: 1px solid rgba(255,45,120,0.2); }
-  .panel-title {
-    font-family: 'Orbitron', sans-serif; font-size: 0.85rem;
-    letter-spacing: 4px; text-transform: uppercase;
-    color: var(--pink); text-shadow: 0 0 12px rgba(255,45,120,0.4);
+  /* Panel */
+  #garage-panel {
+    width: 680px;
+    max-height: 85vh;
+    background: rgba(8,8,24,0.95);
+    border: 1px solid rgba(255,45,120,0.28);
+    backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6);
+    animation: panelIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    position: relative;
   }
-  .panel-sub { font-size: 0.7rem; color: var(--dim); letter-spacing: 2px; margin-top: 2px; }
-
-  .tabs { display: flex; border-bottom: 1px solid rgba(255,45,120,0.15); flex-shrink: 0; }
-  .tab {
-    flex: 1; padding: 10px; text-align: center;
-    font-family: 'Orbitron', sans-serif; font-size: 0.6rem; letter-spacing: 2px;
-    cursor: pointer; color: var(--dim); border-bottom: 2px solid transparent;
-    transition: all 0.15s; text-transform: uppercase;
+  #garage-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #FF2D78, #9B44FF, transparent);
   }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--pink); border-bottom-color: var(--pink); text-shadow: 0 0 8px rgba(255,45,120,0.5); }
 
-  .vehicle-list { flex: 1; overflow-y: auto; }
-  .vehicle-list::-webkit-scrollbar { width: 3px; }
-  .vehicle-list::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.4); }
-
-  .vehicle-item {
-    padding: 14px 22px; cursor: pointer;
-    border-bottom: 1px solid rgba(255,45,120,0.08);
-    transition: background 0.1s;
-    display: flex; justify-content: space-between; align-items: center;
+  /* Header */
+  #garage-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 22px;
+    background: rgba(5,5,16,0.75);
+    border-bottom: 1px solid rgba(255,45,120,0.15);
+    flex-shrink: 0;
   }
-  .vehicle-item:hover { background: rgba(255,45,120,0.06); }
-  .vi-left {}
-  .vi-name { font-family: 'Orbitron', sans-serif; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; }
-  .vi-plate { font-size: 0.7rem; color: var(--dim); letter-spacing: 1px; margin-top: 3px; }
-  .vi-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  .vi-fuel { font-size: 0.65rem; color: var(--cyan); }
-  .vi-status { font-size: 0.6rem; padding: 2px 8px; border-radius: 2px; letter-spacing: 1px; }
-  .vi-status.parked  { border: 1px solid rgba(0,212,255,0.3); color: var(--cyan); }
-  .vi-status.spawned { border: 1px solid rgba(0,255,136,0.3); color: #00ff88; }
-  .vi-status.impound { border: 1px solid rgba(255,68,68,0.3); color: #ff4444; }
-
-  .empty { padding: 30px; text-align: center; color: var(--dim); font-size: 0.85rem; }
-
-  .footer { padding: 14px 22px; border-top: 1px solid rgba(255,45,120,0.2); display: flex; gap: 8px; }
-  .btn {
-    flex: 1; padding: 10px;
-    font-family: 'Orbitron', sans-serif; font-size: 0.6rem;
-    letter-spacing: 2px; text-transform: uppercase;
-    cursor: pointer; border-radius: 2px; transition: all 0.15s;
-    border: 1px solid rgba(255,45,120,0.35); background: transparent; color: var(--dim);
+  #garage-icon { font-size: 22px; }
+  #garage-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #FF2D78;
+    text-shadow: 0 0 10px rgba(255,45,120,0.5);
+    flex: 1;
   }
-  .btn:hover { border-color: var(--pink); color: var(--pink); }
-  .btn-pink { background: var(--pink); border-color: var(--pink); color: #fff; }
-  .btn-pink:hover { background: #ff4d8d; color: #fff; box-shadow: 0 0 14px rgba(255,45,120,0.4); }
+  #garage-type {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: rgba(0,212,255,0.5);
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid rgba(0,212,255,0.2);
+    background: rgba(0,212,255,0.04);
+  }
+  #close-btn {
+    width: 28px; height: 28px;
+    background: rgba(255,45,120,0.1);
+    border: 1px solid rgba(255,45,120,0.3);
+    color: #FF2D78;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  #close-btn:hover { background: rgba(255,45,120,0.25); }
+
+  /* Subheader: store current vehicle */
+  #store-bar {
+    padding: 10px 22px;
+    background: rgba(5,5,16,0.6);
+    border-bottom: 1px solid rgba(0,255,136,0.1);
+    display: none;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  #store-bar.visible { display: flex; }
+  #store-bar-label { font-size: 12px; font-weight: 600; color: rgba(224,224,240,0.55); flex: 1; }
+  #store-vehicle-name { font-size: 13px; font-weight: 700; color: #00D4FF; }
+  #store-btn {
+    padding: 7px 16px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.35);
+    color: #00FF88;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+  #store-btn:hover { background: rgba(0,255,136,0.18); border-color: #00FF88; box-shadow: 0 0 12px rgba(0,255,136,0.15); }
+
+  /* Body */
+  #garage-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 22px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,45,120,0.3) transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #garage-body::-webkit-scrollbar { width: 3px; }
+  #garage-body::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.3); }
+
+  /* Column headers */
+  #table-header {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 80px 80px 120px;
+    gap: 0;
+    padding: 6px 12px;
+    background: rgba(5,5,16,0.7);
+    border: 1px solid rgba(255,45,120,0.1);
+    flex-shrink: 0;
+  }
+  .th {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: rgba(0,212,255,0.45);
+    text-transform: uppercase;
+  }
+  .th:last-child { text-align: right; }
+
+  /* Vehicle rows */
+  .veh-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 80px 80px 120px;
+    gap: 0;
+    padding: 12px 12px;
+    background: rgba(5,5,16,0.55);
+    border: 1px solid rgba(255,45,120,0.08);
+    align-items: center;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .veh-row:hover { border-color: rgba(255,45,120,0.25); background: rgba(255,45,120,0.04); }
+
+  .veh-name-wrap { display: flex; flex-direction: column; gap: 2px; }
+  .veh-name { font-size: 14px; font-weight: 700; color: #e0e0f0; }
+  .veh-plate {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    color: rgba(255,45,120,0.6);
+    letter-spacing: 2px;
+  }
+  .veh-location { font-size: 11px; color: rgba(224,224,240,0.4); }
+
+  /* Bar columns */
+  .veh-bar-col { display: flex; flex-direction: column; gap: 3px; }
+  .veh-bar-label { font-size: 9px; color: rgba(224,224,240,0.35); }
+  .veh-bar-track {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    width: 60px;
+  }
+  .veh-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .veh-bar-fill.fuel     { background: #00FF88; box-shadow: 0 0 4px rgba(0,255,136,0.5); }
+  .veh-bar-fill.condition { background: #00D4FF; box-shadow: 0 0 4px rgba(0,212,255,0.5); }
+  .veh-bar-fill.fuel.low      { background: #FFD700; }
+  .veh-bar-fill.fuel.critical { background: #FF4466; }
+
+  .veh-actions { display: flex; justify-content: flex-end; gap: 6px; }
+  .veh-action-btn {
+    padding: 6px 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    background: rgba(255,45,120,0.08);
+    border: 1px solid rgba(255,45,120,0.25);
+    color: #FF2D78;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .veh-action-btn:hover {
+    background: rgba(255,45,120,0.2);
+    border-color: #FF2D78;
+    box-shadow: 0 0 10px rgba(255,45,120,0.15);
+  }
+
+  /* Empty state */
+  #empty-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px;
+    color: rgba(224,224,240,0.2);
+  }
+  #empty-state.visible { display: flex; }
+  #empty-icon { font-size: 48px; opacity: 0.3; }
+  #empty-msg { font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* Footer: count */
+  #garage-footer {
+    padding: 10px 22px;
+    border-top: 1px solid rgba(255,45,120,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(5,5,16,0.6);
+    flex-shrink: 0;
+  }
+  #veh-count { font-size: 11px; color: rgba(224,224,240,0.3); letter-spacing: 1px; }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
 </style>
 </head>
 <body>
-<div class="panel">
-  <div class="panel-header">
-    <div class="panel-title" id="garageName">Garaj</div>
-    <div class="panel-sub" id="garageType">Autoturisme</div>
+<div class="scanlines"></div>
+
+<div id="garage-panel">
+  <!-- Header -->
+  <div id="garage-header">
+    <span id="garage-icon">🏢</span>
+    <span id="garage-name">GARAJ</span>
+    <span id="garage-type">PUBLIC</span>
+    <button id="close-btn" onclick="doClose()">✕</button>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('list')">Vehiculele Mele</div>
-    <div class="tab" onclick="switchTab('showroom')">Showroom</div>
+  <!-- Store current vehicle bar -->
+  <div id="store-bar">
+    <span id="store-bar-label">Vehicul curent:</span>
+    <span id="store-vehicle-name">—</span>
+    <button id="store-btn" onclick="doStore()">DEPOZITEAZA</button>
   </div>
 
-  <div class="vehicle-list" id="vehicleList">
-    <div class="empty">Se incarca...</div>
+  <!-- Table header -->
+  <div id="table-header">
+    <div class="th">Vehicul</div>
+    <div class="th">Locatie</div>
+    <div class="th">Combustibil</div>
+    <div class="th">Conditie</div>
+    <div class="th" style="text-align:right">Actiuni</div>
   </div>
 
-  <div class="footer">
-    <button class="btn" onclick="closeGarage()">Inchide</button>
-    <button class="btn btn-pink" id="btnSpawn" onclick="spawnSelected()" disabled>Scoate</button>
+  <!-- Vehicle list -->
+  <div id="garage-body">
+    <div id="empty-state">
+      <div id="empty-icon">🚘</div>
+      <div id="empty-msg">Nu ai vehicule inregistrate</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div id="garage-footer">
+    <span id="veh-count">0 vehicule</span>
   </div>
 </div>
 
 <script>
-  let garageData   = null;
-  let vehicles     = [];
-  let selectedVin  = null;
+  let garageData = null;
+  let currentVehicleVin = null;
 
-  function setGarage(g) {
-    garageData = g;
-    document.getElementById('garageName').textContent = g.name;
-    const typeMap = { car:'Autoturisme', truck:'Tiruri', boat:'Barci', air:'Aeronave' };
-    document.getElementById('garageType').textContent = typeMap[g.type] || g.type;
-  }
+  /* ── loadGarages(data) ── */
+  function loadGarages(data) {
+    garageData = data;
 
-  function loadVehicles(list) {
-    vehicles = list;
-    renderList();
-  }
+    // Garage info
+    if (data.garage) {
+      document.getElementById('garage-name').textContent = (data.garage.name || 'GARAJ').toUpperCase();
+      document.getElementById('garage-type').textContent = (data.garage.type || 'PUBLIC').toUpperCase();
+      const icons = { public:'🏢', private:'🔐', impound:'🚔', mechanic:'🔧' };
+      document.getElementById('garage-icon').textContent = icons[(data.garage.type || '').toLowerCase()] || '🏢';
+    }
 
-  function renderList() {
-    const cont = document.getElementById('vehicleList');
+    // Store bar
+    if (data.currentVehicle) {
+      currentVehicleVin = data.currentVehicle.vin;
+      document.getElementById('store-vehicle-name').textContent = data.currentVehicle.name || data.currentVehicle.plate;
+      document.getElementById('store-bar').classList.add('visible');
+    } else {
+      document.getElementById('store-bar').classList.remove('visible');
+    }
+
+    // Vehicles
+    const vehicles = data.vehicles || [];
+    document.getElementById('veh-count').textContent = vehicles.length + ' vehicule';
+
+    const body = document.getElementById('garage-body');
+    // Clear rows (keep empty-state)
+    Array.from(body.querySelectorAll('.veh-row')).forEach(r => r.remove());
+
     if (!vehicles.length) {
-      cont.innerHTML = '<div class="empty">Nu ai vehicule in acest garaj.</div>';
+      document.getElementById('empty-state').classList.add('visible');
       return;
     }
-    cont.innerHTML = '';
-    vehicles.forEach(v => {
-      const el = document.createElement('div');
-      el.className = 'vehicle-item';
-      const statusClass = v.is_impounded ? 'impound' : (v.garage_id ? 'parked' : 'spawned');
-      const statusText  = v.is_impounded ? 'Sechestrat' : (v.garage_id ? 'Parcat' : 'Activ');
-      el.innerHTML = `
-        <div class="vi-left">
-          <div class="vi-name">${v.display_name}</div>
-          <div class="vi-plate">${v.plate} · ${v.vin}</div>
+    document.getElementById('empty-state').classList.remove('visible');
+
+    vehicles.forEach(veh => {
+      const row = document.createElement('div');
+      row.className = 'veh-row';
+      const fuel = Math.max(0, Math.min(100, veh.fuel || 0));
+      const cond = Math.max(0, Math.min(100, veh.condition || 100));
+      const fuelClass = fuel < 20 ? 'fuel critical' : fuel < 40 ? 'fuel low' : 'fuel';
+      row.innerHTML = `
+        <div class="veh-name-wrap">
+          <span class="veh-name">${veh.name || 'Vehicul'}</span>
+          <span class="veh-plate">${veh.plate || '—'}</span>
         </div>
-        <div class="vi-right">
-          <div class="vi-fuel">⛽ ${Math.round(v.fuel || 0)}%</div>
-          <div class="vi-status ${statusClass}">${statusText}</div>
-        </div>`;
-      el.onclick = () => selectVehicle(v, el);
-      cont.appendChild(el);
+        <div class="veh-location">${veh.location || 'In garaj'}</div>
+        <div class="veh-bar-col">
+          <span class="veh-bar-label">${fuel}%</span>
+          <div class="veh-bar-track"><div class="veh-bar-fill ${fuelClass}" style="width:${fuel}%"></div></div>
+        </div>
+        <div class="veh-bar-col">
+          <span class="veh-bar-label">${cond}%</span>
+          <div class="veh-bar-track"><div class="veh-bar-fill condition" style="width:${cond}%"></div></div>
+        </div>
+        <div class="veh-actions">
+          <button class="veh-action-btn" onclick="doSpawn('${veh.vin}')">🚗 CONDUCE</button>
+        </div>
+      `;
+      body.appendChild(row);
     });
   }
 
-  function selectVehicle(v, el) {
-    document.querySelectorAll('.vehicle-item').forEach(e => e.style.borderLeft = '');
-    el.style.borderLeft = '3px solid var(--pink)';
-    selectedVin = v.vin;
-    document.getElementById('btnSpawn').disabled = v.is_impounded || !v.garage_id;
+  /* ── Spawn ── */
+  function doSpawn(vin) {
+    if (typeof mp !== 'undefined') mp.trigger('garage:browserSpawn', vin);
   }
 
-  function spawnSelected() {
-    if (!selectedVin) return;
-    mp.trigger('garage:browserSpawn', selectedVin);
-    closeGarage();
+  /* ── Store ── */
+  function doStore() {
+    if (!currentVehicleVin || !garageData || !garageData.garage) return;
+    if (typeof mp !== 'undefined') mp.trigger('garage:browserStore', currentVehicleVin, garageData.garage.id);
+    document.getElementById('store-bar').classList.remove('visible');
+    currentVehicleVin = null;
   }
 
-  function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='list'?0:1)===i));
-    if (tab === 'showroom' && garageData) {
-      mp.trigger('garage:browserShowroom', garageData.type);
-      closeGarage();
-    }
-  }
-
-  function closeGarage() {
-    mp.trigger('garage:browserClose');
+  /* ── Close ── */
+  function doClose() {
+    if (typeof mp !== 'undefined') mp.trigger('garage:browserClose');
   }
 </script>
 </body>
