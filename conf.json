@@ -1,7 +1,7 @@
 {
     "endpoint": "0.0.0.0",
     "port": 22005,
-    "announce": true,
+    "announce": false,
     "name": "Neon Syndicate | Blackridge City | Hard RP",
     "gamemode": "Hard Roleplay",
     "map": "San Andreas",

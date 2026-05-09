@@ -3,7 +3,7 @@ let adminBrowser = null;
 mp.events.add('admin:receivePanel', (dataJSON) => {
     if (!adminBrowser) {
         adminBrowser = mp.browsers.new('package://ui/admin/index.html');
-        mp.cursor.show(true, true);
+        showCursor(true);
     }
     adminBrowser.execute(`loadPanel(${dataJSON})`);
 });
@@ -29,7 +29,7 @@ mp.keys.bind(0x75, true, () => {
     if (adminBrowser) {
         adminBrowser.destroy();
         adminBrowser = null;
-        mp.cursor.show(false, false);
+        showCursor(false);
     } else {
         mp.events.callRemote('admin:openPanel');
     }
@@ -49,5 +49,5 @@ mp.events.add('admin:browserUnban',      (email)         => mp.events.callRemote
 mp.events.add('admin:browserToggleGod',  ()              => mp.events.callRemote('admin:toggleGod'));
 mp.events.add('admin:browserClose', () => {
     if (adminBrowser) { adminBrowser.destroy(); adminBrowser = null; }
-    mp.cursor.show(false, false);
+    showCursor(false);
 });

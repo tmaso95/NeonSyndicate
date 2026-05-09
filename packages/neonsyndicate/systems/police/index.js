@@ -119,7 +119,7 @@ mp.events.add('police:arrest', async (player, targetId, reason, jailMinutes) => 
     target.call('police:arrested', [jailMinutes]);
 
     player.call('hud:notification', [`${target.data.cnp} arestat cu ${jailMinutes} min.`, 'success']);
-    mp.console.logInfo(`[POLICE] ${player.data.cnp} a arestat ${target.data.cnp}: ${reason}`);
+    console.log(`[POLICE] ${player.data.cnp} a arestat ${target.data.cnp}: ${reason}`);
 });
 
 // ── FINE / AMENDA ─────────────────────────────────────────────

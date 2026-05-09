@@ -31,11 +31,11 @@ mp.events.add('auth:register', async (player, email, password) => {
         );
 
         player.data.accountId = accountId;
-        mp.console.logInfo(`[AUTH] New account #${accountId} registered: ${email} IP:${ip}`);
+        console.log(`[AUTH] New account #${accountId} registered: ${email} IP:${ip}`);
         player.call('auth:success', ['register', accountId]);
         player.call('character:showCreation');
     } catch (err) {
-        mp.console.logError(`[AUTH] Register error: ${err.message}`);
+        console.error(`[AUTH] Register error: ${err.message}`);
         player.call('auth:error', ['Eroare server. Incearca din nou.']);
     }
 });
@@ -74,16 +74,16 @@ mp.events.add('auth:login', async (player, email, password) => {
         );
 
         if (!character) {
-            mp.console.logInfo(`[AUTH] Login OK #${account.id}, no character -> creation`);
+            console.log(`[AUTH] Login OK #${account.id}, no character -> creation`);
             player.call('auth:success', ['login', account.id]);
             player.call('character:showCreation');
         } else {
-            mp.console.logInfo(`[AUTH] Login OK #${account.id}, loading character ${character.cnp}`);
+            console.log(`[AUTH] Login OK #${account.id}, loading character ${character.cnp}`);
             player.call('auth:success', ['login', account.id]);
             mp.events.call('character:load', player, character);
         }
     } catch (err) {
-        mp.console.logError(`[AUTH] Login error: ${err.message}`);
+        console.error(`[AUTH] Login error: ${err.message}`);
         player.call('auth:error', ['Eroare server. Incearca din nou.']);
     }
 });

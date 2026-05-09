@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     mods            JSON DEFAULT NULL,
     fuel            FLOAT NOT NULL DEFAULT 100.0,
     mileage         FLOAT NOT NULL DEFAULT 0.0,
-    condition       FLOAT NOT NULL DEFAULT 1000.0,
+    `condition`     FLOAT NOT NULL DEFAULT 1000.0,
 
     -- Storage
     trunk_items     JSON DEFAULT NULL,
@@ -217,7 +217,7 @@ CREATE TABLE IF NOT EXISTS character_inventory (
     character_id    INT UNSIGNED NOT NULL,
     item_name       VARCHAR(64) NOT NULL,
     quantity        SMALLINT UNSIGNED NOT NULL DEFAULT 1,
-    slot_index      TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    slot_index      SMALLINT NOT NULL DEFAULT 0,
     metadata        JSON DEFAULT NULL,
     FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE,
     UNIQUE KEY uq_char_slot (character_id, slot_index)

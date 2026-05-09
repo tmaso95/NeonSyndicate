@@ -69,13 +69,12 @@ CREATE TABLE IF NOT EXISTS world_drops (
     item_name       VARCHAR(64) NOT NULL,
     quantity        FLOAT NOT NULL DEFAULT 1,
     metadata        JSON DEFAULT NULL,
-    x               FLOAT NOT NULL,
-    y               FLOAT NOT NULL,
-    z               FLOAT NOT NULL,
-    dropped_by      VARCHAR(8) DEFAULT NULL,
-    dropped_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    disappear_at    DATETIME NOT NULL,
-    INDEX idx_disappear (disappear_at)
+    pos_x           FLOAT NOT NULL,
+    pos_y           FLOAT NOT NULL,
+    pos_z           FLOAT NOT NULL,
+    dropped_by_cnp  VARCHAR(8) DEFAULT NULL,
+    picked_up       TINYINT(1) NOT NULL DEFAULT 0,
+    dropped_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- ============================================================

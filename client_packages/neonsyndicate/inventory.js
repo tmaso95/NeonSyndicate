@@ -3,7 +3,7 @@ let inventoryBrowser = null;
 mp.events.add('inventory:receiveData', (dataJSON) => {
     if (!inventoryBrowser) {
         inventoryBrowser = mp.browsers.new('package://ui/inventory/index.html');
-        mp.cursor.show(true, true);
+        showCursor(true);
     }
     inventoryBrowser.execute(`loadInventory(${dataJSON})`);
 });
@@ -11,7 +11,7 @@ mp.events.add('inventory:receiveData', (dataJSON) => {
 mp.events.add('inventory:openTrunk', (vin, trunkJSON) => {
     if (!inventoryBrowser) {
         inventoryBrowser = mp.browsers.new('package://ui/inventory/index.html');
-        mp.cursor.show(true, true);
+        showCursor(true);
     }
     inventoryBrowser.execute(`openTrunk('${vin}', ${trunkJSON})`);
 });
@@ -21,7 +21,7 @@ mp.keys.bind(0x49, true, () => {
     if (inventoryBrowser) {
         inventoryBrowser.destroy();
         inventoryBrowser = null;
-        mp.cursor.show(false, false);
+        showCursor(false);
     } else {
         mp.events.callRemote('inventory:open');
     }
@@ -34,5 +34,5 @@ mp.events.add('inventory:browserEquip',       (slot, drawable, texture) => mp.ev
 mp.events.add('inventory:browserSaveTrunk',   (vin, rear, front) => mp.events.callRemote('vehicle:saveTrunk', vin, rear, front));
 mp.events.add('inventory:browserClose',       ()                => {
     if (inventoryBrowser) { inventoryBrowser.destroy(); inventoryBrowser = null; }
-    mp.cursor.show(false, false);
+    showCursor(false);
 });

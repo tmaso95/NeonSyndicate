@@ -17,7 +17,7 @@ mp.events.add('onResourceStart', () => {
         const col = mp.colshapes.newSphere(new mp.Vector3(g.x, g.y, g.z), 5.0);
         col.gymData = g;
     });
-    mp.console.logInfo('[GYM] Loaded gym locations');
+    console.log('[GYM] Loaded gym locations');
 });
 
 mp.events.add('playerEnterColshape', (player, colshape) => {

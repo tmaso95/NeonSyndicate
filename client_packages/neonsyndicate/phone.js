@@ -3,7 +3,7 @@ let phoneBrowser = null;
 mp.events.add('phone:receiveData', (dataJSON) => {
     if (!phoneBrowser) {
         phoneBrowser = mp.browsers.new('package://ui/phone/index.html');
-        mp.cursor.show(true, true);
+        showCursor(true);
     }
     phoneBrowser.execute(`initPhone(${dataJSON})`);
 });
@@ -37,7 +37,7 @@ mp.keys.bind(0x4D, true, () => {
     if (phoneBrowser) {
         phoneBrowser.destroy();
         phoneBrowser = null;
-        mp.cursor.show(false, false);
+        showCursor(false);
     } else {
         mp.events.callRemote('phone:open');
     }
@@ -50,5 +50,5 @@ mp.events.add('phone:browserAddContact',   (cnp, name) => mp.events.callRemote('
 mp.events.add('phone:browserDeleteContact',(cnp)       => mp.events.callRemote('phone:deleteContact', cnp));
 mp.events.add('phone:browserClose',        ()          => {
     if (phoneBrowser) { phoneBrowser.destroy(); phoneBrowser = null; }
-    mp.cursor.show(false, false);
+    showCursor(false);
 });

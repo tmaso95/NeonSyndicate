@@ -6,7 +6,7 @@ mp.events.add('garage:showMenu', (garageJSON) => {
 
     if (!garageBrowser) {
         garageBrowser = mp.browsers.new('package://ui/garages/index.html');
-        mp.cursor.show(true, true);
+        showCursor(true);
     }
     garageBrowser.execute(`setGarage(${JSON.stringify(garage)})`);
 });
@@ -17,7 +17,7 @@ mp.events.add('vehicle:receiveList', (vehiclesJSON) => {
 
 mp.events.add('garage:closeMenu', () => {
     if (garageBrowser) { garageBrowser.destroy(); garageBrowser = null; }
-    mp.cursor.show(false, false);
+    showCursor(false);
 });
 
 // Browser events

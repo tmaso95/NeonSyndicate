@@ -9,7 +9,7 @@ mp.events.add('onResourceStart', async () => {
         col.garageType = g.garage_type;
         col.garageName = g.name;
     }
-    mp.console.logInfo(`[GARAGES] Loaded ${garages.length} garages`);
+    console.log(`[GARAGES] Loaded ${garages.length} garages`);
 });
 
 // Player enters garage colshape

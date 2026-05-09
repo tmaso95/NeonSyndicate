@@ -3,7 +3,7 @@ let bizBrowser = null;
 mp.events.add('business:showMenu', (bizJSON) => {
     if (!bizBrowser) {
         bizBrowser = mp.browsers.new('package://ui/businesses/index.html');
-        mp.cursor.show(true, true);
+        showCursor(true);
     }
     bizBrowser.execute(`showMenu(${bizJSON})`);
     // Load stock
@@ -15,7 +15,7 @@ mp.events.add('business:closeMenu', () => {
     if (bizBrowser) {
         bizBrowser.destroy();
         bizBrowser = null;
-        mp.cursor.show(false, false);
+        showCursor(false);
     }
 });
 
@@ -36,5 +36,5 @@ mp.events.add('business:browserGetRevenue',     (bizId)            => mp.events.
 mp.events.add('business:browserWithdrawRevenue',(bizId)            => mp.events.callRemote('business:withdrawRevenue',bizId));
 mp.events.add('business:browserClose', () => {
     if (bizBrowser) { bizBrowser.destroy(); bizBrowser = null; }
-    mp.cursor.show(false, false);
+    showCursor(false);
 });

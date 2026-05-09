@@ -10,7 +10,7 @@ mp.events.add('onResourceStart', async () => {
         col.businessId   = biz.id;
         col.businessData = biz;
     }
-    mp.console.logInfo(`[BUSINESS] Loaded ${businesses.length} businesses`);
+    console.log(`[BUSINESS] Loaded ${businesses.length} businesses`);
 });
 
 mp.events.add('playerEnterColshape', (player, colshape) => {

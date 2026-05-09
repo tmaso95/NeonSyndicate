@@ -2,13 +2,20 @@ require('dotenv').config();
 
 const db = require('./database/connection');
 
+// Safe logger: mp.console may not exist during bootstrap
+const log = {
+    info:  (msg) => { try { mp.console.logInfo(msg);  } catch { console.log('[INFO] ' + msg);  } },
+    warn:  (msg) => { try { mp.console.logWarn(msg);  } catch { console.warn('[WARN] ' + msg);  } },
+    error: (msg) => { try { mp.console.logError(msg); } catch { console.error('[ERROR] ' + msg); } }
+};
+
 async function bootstrap() {
     try {
         await db.connect();
-        mp.console.logInfo('[NS] ==========================================');
-        mp.console.logInfo('[NS]  NEON SYNDICATE | BLACKRIDGE CITY');
-        mp.console.logInfo('[NS]  Hard Roleplay Server v1.0.0');
-        mp.console.logInfo('[NS] ==========================================');
+        log.info('[NS] ==========================================');
+        log.info('[NS]  NEON SYNDICATE | BLACKRIDGE CITY');
+        log.info('[NS]  Hard Roleplay Server v1.0.0');
+        log.info('[NS] ==========================================');
 
         // Load all systems
         require('./systems/auth/index');
@@ -27,10 +34,10 @@ async function bootstrap() {
         require('./systems/survival/index');
         require('./systems/gym/index');
 
-        mp.console.logInfo('[NS] All systems loaded successfully.');
+        log.info('[NS] All systems loaded successfully.');
     } catch (err) {
-        mp.console.logError(`[NS] Bootstrap error: ${err.message}`);
-        mp.console.logError(err.stack);
+        log.error('[NS] Bootstrap error: ' + err.message);
+        log.error(err.stack);
     }
 }
 

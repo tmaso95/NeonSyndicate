@@ -43,7 +43,7 @@ mp.events.add('police:applyUniform', (uniformType) => {
 mp.events.add('police:showMDT', () => {
     if (!policeBrowser) {
         policeBrowser = mp.browsers.new('package://ui/police/index.html');
-        mp.cursor.show(true, true);
+        showCursor(true);
     }
     policeBrowser.execute('openMDT()');
 });
@@ -87,7 +87,7 @@ mp.keys.bind(0x74, true, () => {
     if (policeBrowser) {
         policeBrowser.destroy();
         policeBrowser = null;
-        mp.cursor.show(false, false);
+        showCursor(false);
     } else if (onDuty) {
         mp.events.callRemote('police:openMDT');
     }
@@ -106,5 +106,5 @@ mp.events.add('police:browserTreat',         (id, part)        => mp.events.call
 mp.events.add('police:browserImpound',       (vin)             => mp.events.callRemote('police:impound',       vin));
 mp.events.add('police:browserClose', () => {
     if (policeBrowser) { policeBrowser.destroy(); policeBrowser = null; }
-    mp.cursor.show(false, false);
+    showCursor(false);
 });
