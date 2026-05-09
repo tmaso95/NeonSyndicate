@@ -47,7 +47,7 @@ mp.events.add('render', () => {
 
     const hp    = local.health  > 100 ? local.health - 100 : 0;
     const armor = local.armour;
-    const speed = Math.round(mp.game.entity.getEntitySpeed(local.handle) * 3.6);
+    const speed = Math.round((mp.game.invoke('0xD5037BA82E99E895', local.handle) || 0) * 3.6);
     const inVeh = local.vehicle !== null;
 
     hudBrowser.execute(`updateVitals(${hp}, ${armor}, ${speed}, ${inVeh})`);

@@ -12,7 +12,7 @@ mp.events.add('character:showCreation', () => {
     mp.players.local.position = new mp.Vector3(-867.5, -172.2, 37.8);
     mp.players.local.heading  = 210.0;
 
-    mp.game.entity.freezeEntityPosition(ped, true);
+    mp.game.invoke('0x428CA6DBD1094446', ped, true); // FREEZE_ENTITY_POSITION
     mp.game.controls.disableAllActions(0);
 
     setupCreationCamera('face');
@@ -63,7 +63,7 @@ function destroyCreationScene() {
         } catch (e) {}
         creationCam = null;
     }
-    mp.game.entity.freezeEntityPosition(mp.players.local.handle, false);
+    mp.game.invoke('0x428CA6DBD1094446', mp.players.local.handle, false); // FREEZE_ENTITY_POSITION
     if (charCreationBrowser) {
         charCreationBrowser.destroy();
         charCreationBrowser = null;
