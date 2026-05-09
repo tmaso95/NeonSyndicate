@@ -1,4 +1,5 @@
 // ── NEON SYNDICATE | CLIENT ENTRY POINT ─────────────────────
+require('./neonsyndicate/cursor');
 require('./neonsyndicate/auth');
 require('./neonsyndicate/character');
 require('./neonsyndicate/hud');

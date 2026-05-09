@@ -6,14 +6,14 @@ mp.events.add('auth:showUI', () => {
     mp.game.cam.doScreenFadeIn(1500);
 
     authBrowser = mp.browsers.new('package://ui/auth/index.html');
-    mp.cursor.show(true, true);
+    showCursor(true);
 });
 
 mp.events.add('auth:success', (type, accountId) => {
     if (authBrowser) {
         authBrowser.destroy();
         authBrowser = null;
-        mp.cursor.show(false, false);
+        showCursor(false);
     }
 });
 

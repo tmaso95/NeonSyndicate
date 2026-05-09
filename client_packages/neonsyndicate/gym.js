@@ -3,7 +3,7 @@ let gymBrowser = null;
 mp.events.add('gym:showMenu', (gymDataJSON) => {
     if (!gymBrowser) {
         gymBrowser = mp.browsers.new('package://ui/gym/index.html');
-        mp.cursor.show(true, true);
+        showCursor(true);
     }
     gymBrowser.execute(`showGymMenu(${gymDataJSON})`);
     mp.events.callRemote('gym:getStats');
@@ -13,7 +13,7 @@ mp.events.add('gym:closeMenu', () => {
     if (gymBrowser) {
         gymBrowser.destroy();
         gymBrowser = null;
-        mp.cursor.show(false, false);
+        showCursor(false);
     }
 });
 
@@ -30,5 +30,5 @@ mp.events.add('gym:browserStart',  (type, dur) => mp.events.callRemote('gym:star
 mp.events.add('gym:browserStats',  ()          => mp.events.callRemote('gym:getStats'));
 mp.events.add('gym:browserClose', () => {
     if (gymBrowser) { gymBrowser.destroy(); gymBrowser = null; }
-    mp.cursor.show(false, false);
+    showCursor(false);
 });

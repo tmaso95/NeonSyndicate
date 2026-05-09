@@ -5,7 +5,7 @@ mp.events.add('character:showCreation', () => {
     mp.game.ui.displayHud(false);
     mp.game.ui.displayRadar(false);
     charCreationBrowser = mp.browsers.new('package://ui/character-creation/index.html');
-    mp.cursor.show(true, true);
+    showCursor(true);
 });
 
 // ── APPLY APPEARANCE ──────────────────────────────────────────
@@ -86,7 +86,7 @@ mp.events.add('character:browserCreate', (dataJSON) => {
     if (charCreationBrowser) {
         charCreationBrowser.destroy();
         charCreationBrowser = null;
-        mp.cursor.show(false, false);
+        showCursor(false);
     }
 });
 

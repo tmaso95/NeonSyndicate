@@ -4,7 +4,7 @@ let previewVehicle   = null;
 mp.events.add('showroom:receiveData', (dataJSON) => {
     if (!showroomBrowser) {
         showroomBrowser = mp.browsers.new('package://ui/showroom/index.html');
-        mp.cursor.show(true, true);
+        showCursor(true);
     }
     showroomBrowser.execute(`loadShowroom(${dataJSON})`);
 });
@@ -32,7 +32,7 @@ function spawnPreview(model) {
 mp.events.add('showroom:close', () => {
     if (previewVehicle) { previewVehicle.destroy(); previewVehicle = null; }
     if (showroomBrowser) { showroomBrowser.destroy(); showroomBrowser = null; }
-    mp.cursor.show(false, false);
+    showCursor(false);
 });
 
 // Browser events
