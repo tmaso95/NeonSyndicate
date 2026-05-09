@@ -20,6 +20,7 @@ async function bootstrap() {
         // Load all systems
         require('./systems/auth/index');
         require('./systems/character/index');
+        require('./systems/interaction/index');
         require('./systems/vehicles/index');
         require('./systems/showroom/index');
         require('./systems/garages/index');
