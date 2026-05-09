@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Syndicate</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --neon-pink:   #FF2D78;
+    --neon-cyan:   #00D4FF;
+    --neon-purple: #9B44FF;
+    --bg-dark:     #050510;
+    --bg-panel:    rgba(8, 8, 25, 0.97);
+    --border:      rgba(255, 45, 120, 0.6);
+    --text:        #e8e8f0;
+    --text-dim:    #6a6a8a;
+  }
+
+  body {
+    background: var(--bg-dark);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Animated BG Grid ── */
+  .bg {
+    position: fixed; inset: 0;
+    background:
+      linear-gradient(rgba(255,45,120,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,120,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove { 0%{background-position:0 0} 100%{background-position:60px 60px} }
+
+  .bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(255,45,120,0.08) 0%, transparent 70%);
+  }
+
+  /* ── Scanlines ── */
+  .scanlines {
+    position: fixed; inset: 0; pointer-events: none; z-index: 999;
+    background: repeating-linear-gradient(
+      0deg, transparent 0, transparent 2px,
+      rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px
+    );
+  }
+
+  /* ── Corner decorations ── */
+  .corner { position: fixed; width: 60px; height: 60px; }
+  .corner-tl { top: 20px; left: 20px;
+    border-top: 2px solid var(--neon-pink); border-left: 2px solid var(--neon-pink);
+    box-shadow: -4px -4px 10px rgba(255,45,120,0.3); }
+  .corner-tr { top: 20px; right: 20px;
+    border-top: 2px solid var(--neon-pink); border-right: 2px solid var(--neon-pink);
+    box-shadow: 4px -4px 10px rgba(255,45,120,0.3); }
+  .corner-bl { bottom: 20px; left: 20px;
+    border-bottom: 2px solid var(--neon-pink); border-left: 2px solid var(--neon-pink);
+    box-shadow: -4px 4px 10px rgba(255,45,120,0.3); }
+  .corner-br { bottom: 20px; right: 20px;
+    border-bottom: 2px solid var(--neon-pink); border-right: 2px solid var(--neon-pink);
+    box-shadow: 4px 4px 10px rgba(255,45,120,0.3); }
+
+  /* ── Panel ── */
+  .panel {
+    position: relative; z-index: 10;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    box-shadow:
+      0 0 40px rgba(255,45,120,0.2),
+      0 0 80px rgba(255,45,120,0.05),
+      inset 0 0 40px rgba(255,45,120,0.03);
+    width: 440px;
+    padding: 44px 40px 36px;
+    animation: panelIn 0.5s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* Top line accent */
+  .panel::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-pink), var(--neon-cyan), transparent);
+    box-shadow: 0 0 12px var(--neon-pink);
+  }
+
+  /* ── Logo ── */
+  .logo { text-align: center; margin-bottom: 32px; }
+  .logo-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.6rem;
+    font-weight: 900;
+    letter-spacing: 6px;
+    line-height: 1;
+    text-shadow:
+      0 0 20px var(--neon-pink),
+      0 0 40px rgba(255,45,120,0.5),
+      0 0 80px rgba(255,45,120,0.2);
+    color: #fff;
+  }
+  .logo-title span { color: var(--neon-pink); }
+  .logo-sub {
+    font-size: 0.75rem;
+    letter-spacing: 8px;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    margin-top: 6px;
+    text-shadow: 0 0 10px var(--neon-cyan);
+    opacity: 0.8;
+  }
+  .logo-line {
+    width: 200px; height: 1px; margin: 12px auto 0;
+    background: linear-gradient(90deg, transparent, var(--neon-pink), transparent);
+    box-shadow: 0 0 6px var(--neon-pink);
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex; border-bottom: 1px solid rgba(255,45,120,0.2);
+    margin-bottom: 28px; gap: 4px;
+  }
+  .tab {
+    flex: 1; padding: 10px 0; text-align: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-dim); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--neon-pink);
+    border-bottom-color: var(--neon-pink);
+    text-shadow: 0 0 10px var(--neon-pink);
+  }
+
+  /* ── Forms ── */
+  .form { display: none; flex-direction: column; gap: 16px; }
+  .form.active { display: flex; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .field input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,45,120,0.3);
+    border-radius: 2px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field input:focus {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 14px rgba(255,45,120,0.2), inset 0 0 10px rgba(255,45,120,0.04);
+  }
+  .field input::placeholder { color: var(--text-dim); opacity: 0.6; }
+
+  /* ── Button ── */
+  .btn-primary {
+    margin-top: 8px;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid var(--neon-pink);
+    color: var(--neon-pink);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem; letter-spacing: 4px; text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--neon-pink);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 0;
+  }
+  .btn-primary:hover::before { transform: translateX(0); }
+  .btn-primary:hover { color: #fff; box-shadow: 0 0 20px rgba(255,45,120,0.4); }
+  .btn-primary span { position: relative; z-index: 1; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary.loading span::after { content: '...'; animation: dots 1s infinite; }
+
+  /* ── Error ── */
+  .error-box {
+    display: none; padding: 10px 14px;
+    background: rgba(255, 45, 45, 0.08);
+    border: 1px solid rgba(255, 45, 45, 0.4);
+    border-radius: 2px;
+    font-size: 0.85rem;
+    color: #ff6b6b;
+    animation: shake 0.4s ease;
+  }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-6px)}
+    40%{transform:translateX(6px)}
+    60%{transform:translateX(-4px)}
+    80%{transform:translateX(4px)}
+  }
+  .error-box.visible { display: block; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; margin-top: 20px;
+    font-size: 0.7rem; color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+  .footer span { color: var(--neon-pink); }
+
+  /* ── Server status ── */
+  .server-status {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.65rem; letter-spacing: 3px; color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 8px #00ff88;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="panel">
+  <div class="logo">
+    <div class="logo-title"><span>NEON</span> SYNDICATE</div>
+    <div class="logo-sub">Blackridge City</div>
+    <div class="logo-line"></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('login')">Conectare</div>
+    <div class="tab" onclick="switchTab('register')">Inregistrare</div>
+  </div>
+
+  <div id="errorBox" class="error-box"></div>
+
+  <!-- LOGIN -->
+  <form id="loginForm" class="form active" onsubmit="doLogin(event)">
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="adresa@email.com" autocomplete="off" required>
+    </div>
+    <div class="field">
+      <label>Parola</label>
+      <input type="password" id="loginPass" placeholder="••••••••" required>
+    </div>
+    <button type="submit" class="btn-primary" id="loginBtn"><span>Conectare</span></button>
+  </form>
+
+  <!-- REGISTER -->
+  <form id="registerForm" class="form" onsubmit="doRegister(event)">
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="regEmail" placeholder="adresa@email.com" autocomplete="off" required>
+    </div>
+    <div class="field">
+      <label>Parola</label>
+      <input type="password" id="regPass" placeholder="Minim 6 caractere" required minlength="6">
+    </div>
+    <div class="field">
+      <label>Confirmare Parola</label>
+      <input type="password" id="regPassConfirm" placeholder="Repeta parola" required>
+    </div>
+    <button type="submit" class="btn-primary" id="regBtn"><span>Creeaza Cont</span></button>
+  </form>
+
+  <div class="footer">Hard Roleplay &bull; Real Consequences &bull; <span>Your Story</span></div>
+</div>
+
+<div class="server-status">
+  <div class="status-dot"></div>
+  <span>Neon Syndicate Online</span>
+</div>
+
+<script>
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='login'?0:1)===i));
+    document.getElementById('loginForm').classList.toggle('active', tab==='login');
+    document.getElementById('registerForm').classList.toggle('active', tab==='register');
+    clearError();
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.classList.add('visible');
+    void box.offsetWidth; // re-trigger animation
+    box.style.animation = 'none';
+    requestAnimationFrame(() => { box.style.animation = ''; });
+  }
+
+  function clearError() {
+    document.getElementById('errorBox').classList.remove('visible');
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.classList.toggle('loading', loading);
+  }
+
+  function doLogin(e) {
+    e.preventDefault();
+    clearError();
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPass').value;
+    setLoading('loginBtn', true);
+    mp.trigger('auth:browserLogin', email, pass);
+  }
+
+  function doRegister(e) {
+    e.preventDefault();
+    clearError();
+    const email   = document.getElementById('regEmail').value.trim();
+    const pass    = document.getElementById('regPass').value;
+    const confirm = document.getElementById('regPassConfirm').value;
+    if (pass !== confirm) { showError('Parolele nu coincid.'); return; }
+    setLoading('regBtn', true);
+    mp.trigger('auth:browserRegister', email, pass);
+  }
+</script>
+</body>
+</html>

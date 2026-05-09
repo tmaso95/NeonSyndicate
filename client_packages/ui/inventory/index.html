@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>Inventar</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --pink:   #FF2D78;
+    --cyan:   #00D4FF;
+    --purple: #9B44FF;
+    --bg:     rgba(5,5,16,0.97);
+    --panel:  rgba(8,8,24,0.98);
+    --border: rgba(255,45,120,0.35);
+    --text:   #e8e8f0;
+    --dim:    #5a5a7a;
+    --slot-bg: rgba(255,45,120,0.04);
+    --slot-border: rgba(255,45,120,0.2);
+  }
+  body {
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    gap: 20px;
+  }
+
+  /* ── Left: Inventory grid ── */
+  .inv-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    box-shadow: 0 0 40px rgba(255,45,120,0.12);
+    width: 480px;
+    display: flex; flex-direction: column;
+    animation: panelIn 0.35s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes panelIn { from{opacity:0;transform:translateY(20px) scale(0.96)} to{opacity:1;transform:none} }
+
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,45,120,0.2);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .panel-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--pink); text-shadow: 0 0 12px rgba(255,45,120,0.5);
+  }
+  .weight-info { font-size: 0.7rem; color: var(--dim); letter-spacing: 1px; }
+  .weight-info span { color: var(--pink); }
+
+  .inv-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px; padding: 16px;
+  }
+
+  .inv-slot {
+    aspect-ratio: 1;
+    background: var(--slot-bg);
+    border: 1px solid var(--slot-border);
+    border-radius: 2px;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .inv-slot:hover {
+    border-color: var(--pink);
+    background: rgba(255,45,120,0.1);
+    box-shadow: 0 0 10px rgba(255,45,120,0.15);
+  }
+  .inv-slot.occupied:hover::after {
+    content: attr(data-tooltip);
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    background: rgba(5,5,16,0.97);
+    border: 1px solid rgba(255,45,120,0.4);
+    padding: 6px 10px; font-size: 0.72rem;
+    white-space: nowrap; color: var(--text);
+    z-index: 100; pointer-events: none;
+  }
+  .slot-icon { font-size: 1.4rem; }
+  .slot-qty  {
+    position: absolute; bottom: 2px; right: 4px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.55rem; color: var(--pink);
+  }
+  .slot-name {
+    font-size: 0.55rem; color: var(--dim);
+    text-align: center; padding: 0 2px;
+    text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%;
+  }
+
+  /* Context menu */
+  .ctx-menu {
+    position: fixed; display: none;
+    background: rgba(5,5,16,0.98);
+    border: 1px solid rgba(255,45,120,0.4);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    min-width: 140px; z-index: 200;
+    padding: 4px 0;
+  }
+  .ctx-menu.visible { display: block; animation: fadeCtx 0.15s ease; }
+  @keyframes fadeCtx { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:none} }
+  .ctx-item {
+    padding: 9px 16px; cursor: pointer;
+    font-size: 0.82rem; transition: background 0.1s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ctx-item:hover { background: rgba(255,45,120,0.12); color: var(--pink); }
+  .ctx-divider { height: 1px; background: rgba(255,45,120,0.15); margin: 3px 0; }
+
+  /* ── Middle: Character silhouette ── */
+  .char-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    box-shadow: 0 0 40px rgba(255,45,120,0.1);
+    width: 280px;
+    display: flex; flex-direction: column;
+    align-items: center;
+    animation: panelIn 0.35s cubic-bezier(.16,1,.3,1) 0.05s both;
+  }
+
+  .char-header {
+    padding: 14px 20px; width: 100%;
+    border-bottom: 1px solid rgba(255,45,120,0.2);
+  }
+  .char-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text); text-align: center;
+  }
+  .char-cash { font-size: 0.75rem; color: var(--pink); text-align: center; margin-top: 3px; }
+
+  .char-body {
+    position: relative; flex: 1;
+    width: 100%; padding: 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Character SVG silhouette */
+  .char-silhouette {
+    width: 80px;
+    opacity: 0.5;
+    filter: drop-shadow(0 0 8px rgba(255,45,120,0.3));
+  }
+
+  /* Clothing slot buttons positioned around silhouette */
+  .clothes-slots {
+    position: absolute; inset: 0;
+    pointer-events: none;
+  }
+
+  .cloth-slot {
+    position: absolute;
+    pointer-events: all;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .cloth-slot-box {
+    width: 46px; height: 46px;
+    background: var(--slot-bg);
+    border: 1px solid var(--slot-border);
+    border-radius: 2px; transition: all 0.15s;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    position: relative;
+  }
+  .cloth-slot-box:hover {
+    border-color: var(--pink);
+    background: rgba(255,45,120,0.1);
+    box-shadow: 0 0 12px rgba(255,45,120,0.2);
+  }
+  .cloth-slot-box.equipped { border-color: rgba(0,212,255,0.5); background: rgba(0,212,255,0.06); }
+  .cloth-icon { font-size: 1.1rem; }
+  .cloth-lbl  { font-size: 0.45rem; letter-spacing: 1px; text-transform: uppercase; color: var(--dim); }
+
+  .cloth-line {
+    height: 1px; background: rgba(255,45,120,0.25);
+    flex-shrink: 0;
+  }
+
+  /* Left slots */
+  .slot-hat     { top: 10px; left: 14px; }
+  .slot-mask    { top: 56px; left: 14px; }
+  .slot-top     { top: 104px; left: 14px; }
+  .slot-vest    { top: 150px; left: 14px; }
+  .slot-gloves  { top: 196px; left: 14px; }
+
+  /* Right slots */
+  .slot-accessories { top: 10px; right: 14px; }
+  .slot-undershirt  { top: 56px; right: 14px; }
+  .slot-legs        { top: 104px; right: 14px; }
+  .slot-shoes       { top: 150px; right: 14px; }
+  .slot-bag         { top: 196px; right: 14px; }
+
+  /* ── Item tooltip ── */
+  .tooltip {
+    position: fixed; display: none;
+    background: rgba(5,5,16,0.98);
+    border: 1px solid rgba(255,45,120,0.4);
+    padding: 12px 14px; z-index: 300;
+    max-width: 200px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    pointer-events: none;
+  }
+  .tooltip.visible { display: block; }
+  .tt-name  { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 2px; color: var(--pink); }
+  .tt-type  { font-size: 0.65rem; color: var(--cyan); margin: 2px 0; letter-spacing: 1px; }
+  .tt-desc  { font-size: 0.75rem; color: var(--dim); margin-top: 4px; line-height: 1.4; }
+  .tt-weight { font-size: 0.65rem; color: var(--dim); margin-top: 6px; }
+
+  /* Close */
+  .btn-close-inv {
+    position: fixed; top: 20px; right: 20px;
+    width: 38px; height: 38px;
+    background: rgba(5,5,16,0.9); border: 1px solid rgba(255,45,120,0.4);
+    color: var(--dim); font-size: 1.1rem;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-close-inv:hover { border-color: var(--pink); color: var(--pink); }
+</style>
+</head>
+<body>
+
+<!-- Inventory Grid -->
+<div class="inv-panel">
+  <div class="panel-header">
+    <div class="panel-title">Inventar</div>
+    <div class="weight-info">Greutate: <span id="curWeight">0.0</span> / <span id="maxWeight">15.0</span> kg</div>
+  </div>
+  <div class="inv-grid" id="invGrid"></div>
+</div>
+
+<!-- Character Panel -->
+<div class="char-panel">
+  <div class="char-header">
+    <div class="char-name" id="charName">---</div>
+    <div class="char-cash" id="charCash">$0</div>
+  </div>
+  <div class="char-body">
+    <!-- Silhouette SVG -->
+    <svg class="char-silhouette" id="charSvg" viewBox="0 0 100 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Head -->
+      <ellipse cx="50" cy="22" rx="18" ry="20" fill="rgba(255,45,120,0.15)" stroke="rgba(255,45,120,0.6)" stroke-width="1.5"/>
+      <!-- Neck -->
+      <rect x="44" y="40" width="12" height="12" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
+      <!-- Torso -->
+      <path d="M22 52 Q18 62 20 100 L80 100 Q82 62 78 52 Q65 44 50 43 Q35 44 22 52Z"
+            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.5)" stroke-width="1.5"/>
+      <!-- Arms -->
+      <path d="M22 55 Q10 70 12 100 Q14 106 18 106 Q22 106 22 100 L22 75Z"
+            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.4)" stroke-width="1.2"/>
+      <path d="M78 55 Q90 70 88 100 Q86 106 82 106 Q78 106 78 100 L78 75Z"
+            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.4)" stroke-width="1.2"/>
+      <!-- Hands -->
+      <ellipse cx="15" cy="108" rx="7" ry="9" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
+      <ellipse cx="85" cy="108" rx="7" ry="9" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
+      <!-- Hips/Legs junction -->
+      <path d="M20 100 Q20 115 30 118 L50 118 L70 118 Q80 115 80 100Z"
+            fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
+      <!-- Legs -->
+      <path d="M30 118 Q26 148 28 180 Q30 186 36 186 Q42 186 42 180 L44 118Z"
+            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.4)" stroke-width="1.2"/>
+      <path d="M70 118 Q74 148 72 180 Q70 186 64 186 Q58 186 58 180 L56 118Z"
+            fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.4)" stroke-width="1.2"/>
+      <!-- Shoes -->
+      <ellipse cx="33" cy="188" rx="14" ry="8" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
+      <ellipse cx="67" cy="188" rx="14" ry="8" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.4)" stroke-width="1"/>
+      <!-- Glow dots -->
+      <circle cx="50" cy="22" r="2" fill="rgba(255,45,120,0.6)"/>
+      <circle cx="50" cy="70" r="2" fill="rgba(0,212,255,0.4)"/>
+    </svg>
+
+    <!-- Clothing slots -->
+    <div class="clothes-slots">
+      <div class="cloth-slot slot-hat"          onclick="openClothSlot('mask')">
+        <div class="cloth-slot-box" id="cs-mask"><div class="cloth-icon">🎭</div><div class="cloth-lbl">Masca</div></div>
+      </div>
+      <div class="cloth-slot slot-mask"         onclick="openClothSlot('top')">
+        <div class="cloth-slot-box" id="cs-top"><div class="cloth-icon">🧥</div><div class="cloth-lbl">Jacheta</div></div>
+      </div>
+      <div class="cloth-slot slot-top"          onclick="openClothSlot('undershirt')">
+        <div class="cloth-slot-box" id="cs-undershirt"><div class="cloth-icon">👕</div><div class="cloth-lbl">Tricou</div></div>
+      </div>
+      <div class="cloth-slot slot-vest"         onclick="openClothSlot('accessories')">
+        <div class="cloth-slot-box" id="cs-accessories"><div class="cloth-icon">📿</div><div class="cloth-lbl">Accesorii</div></div>
+      </div>
+      <div class="cloth-slot slot-gloves"       onclick="openClothSlot('arms')">
+        <div class="cloth-slot-box" id="cs-arms"><div class="cloth-icon">🧤</div><div class="cloth-lbl">Manusi</div></div>
+      </div>
+
+      <div class="cloth-slot slot-accessories"  onclick="openClothSlot('bags')">
+        <div class="cloth-slot-box" id="cs-bag"><div class="cloth-icon">🎒</div><div class="cloth-lbl">Rucsac</div></div>
+      </div>
+      <div class="cloth-slot slot-undershirt"   onclick="openClothSlot('armor')">
+        <div class="cloth-slot-box" id="cs-armor"><div class="cloth-icon">🛡️</div><div class="cloth-lbl">Vesta</div></div>
+      </div>
+      <div class="cloth-slot slot-legs"         onclick="openClothSlot('legs')">
+        <div class="cloth-slot-box" id="cs-legs"><div class="cloth-icon">👖</div><div class="cloth-lbl">Pantaloni</div></div>
+      </div>
+      <div class="cloth-slot slot-shoes"        onclick="openClothSlot('shoes')">
+        <div class="cloth-slot-box" id="cs-shoes"><div class="cloth-icon">👟</div><div class="cloth-lbl">Pantofi</div></div>
+      </div>
+      <div class="cloth-slot slot-bag"          onclick="openClothSlot('decals')">
+        <div class="cloth-slot-box" id="cs-decals"><div class="cloth-icon">🔱</div><div class="cloth-lbl">Decals</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Context Menu -->
+<div class="ctx-menu" id="ctxMenu">
+  <div class="ctx-item" id="ctxUse"  onclick="ctxAction('use')"> <span>▶</span> Foloseste</div>
+  <div class="ctx-item" id="ctxEquip" onclick="ctxAction('equip')"><span>👔</span> Echipeaza</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" onclick="ctxAction('drop')" style="color:#ff6b6b"><span>🗑</span> Arunca</div>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip">
+  <div class="tt-name"   id="ttName">---</div>
+  <div class="tt-type"   id="ttType">---</div>
+  <div class="tt-desc"   id="ttDesc"></div>
+  <div class="tt-weight" id="ttWeight"></div>
+</div>
+
+<!-- Close -->
+<button class="btn-close-inv" onclick="closeInventory()">✕</button>
+
+<script>
+  const MAX_SLOTS  = 30;
+  let invData      = null;
+  let ctxSlot      = -1;
+  let totalWeight  = 0;
+
+  const ITEM_ICONS = {
+    weapon: '🔫', drug: '💊', food: '🍞', clothing: '👕',
+    key: '🔑', document: '🪪', misc: '📦', default: '📦'
+  };
+
+  function loadInventory(data) {
+    invData = data;
+    document.getElementById('charName').textContent = data.name || '---';
+    document.getElementById('charCash').textContent = '$' + (data.cash || 0).toLocaleString();
+    document.getElementById('maxWeight').textContent = data.maxWeight || 15;
+
+    renderGrid(data.items || [], data.maxSlots || MAX_SLOTS);
+    applyClothes(data.clothes || []);
+  }
+
+  function renderGrid(items, maxSlots) {
+    const grid = document.getElementById('invGrid');
+    grid.innerHTML = '';
+    const slotMap = {};
+    totalWeight = 0;
+
+    items.forEach(item => {
+      slotMap[item.slot_index] = item;
+      totalWeight += (item.weight || 0.1) * (item.quantity || 1);
+    });
+    document.getElementById('curWeight').textContent = totalWeight.toFixed(1);
+
+    for (let i = 0; i < maxSlots; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'inv-slot';
+      slot.dataset.slot = i;
+
+      if (slotMap[i]) {
+        const item = slotMap[i];
+        slot.classList.add('occupied');
+        slot.dataset.tooltip = item.display_name;
+        slot.innerHTML = `
+          <div class="slot-icon">${ITEM_ICONS[item.item_type] || '📦'}</div>
+          <div class="slot-name">${item.display_name}</div>
+          ${item.quantity > 1 ? `<div class="slot-qty">x${item.quantity}</div>` : ''}`;
+        slot.oncontextmenu = (e) => { e.preventDefault(); showCtx(e, i, item); };
+        slot.onclick = (e) => { if (e.button === 0) showTooltip(e, item); };
+      }
+      grid.appendChild(slot);
+    }
+  }
+
+  function showTooltip(e, item) {
+    const tt = document.getElementById('tooltip');
+    document.getElementById('ttName').textContent   = item.display_name;
+    document.getElementById('ttType').textContent   = item.item_type.toUpperCase();
+    document.getElementById('ttDesc').textContent   = item.description || '';
+    document.getElementById('ttWeight').textContent = `Greutate: ${item.weight || 0.1} kg`;
+    tt.style.left = (e.clientX + 12) + 'px';
+    tt.style.top  = (e.clientY + 12) + 'px';
+    tt.classList.add('visible');
+    setTimeout(() => tt.classList.remove('visible'), 3000);
+  }
+
+  function showCtx(e, slotIdx, item) {
+    ctxSlot = slotIdx;
+    const menu = document.getElementById('ctxMenu');
+    document.getElementById('ctxUse').style.display   = item.is_usable   ? 'flex' : 'none';
+    document.getElementById('ctxEquip').style.display = item.item_type === 'clothing' ? 'flex' : 'none';
+    menu.style.left = e.clientX + 'px';
+    menu.style.top  = e.clientY + 'px';
+    menu.classList.add('visible');
+    e.preventDefault();
+  }
+
+  function ctxAction(action) {
+    document.getElementById('ctxMenu').classList.remove('visible');
+    if (ctxSlot < 0) return;
+    if (action === 'use')   mp.trigger('inventory:browserUse',   ctxSlot);
+    if (action === 'drop')  mp.trigger('inventory:browserDrop',  ctxSlot);
+    if (action === 'equip') mp.trigger('inventory:browserEquip', ctxSlot, 0, 0);
+    ctxSlot = -1;
+  }
+
+  function applyClothes(clothes) {
+    clothes.forEach(c => {
+      const box = document.getElementById('cs-' + c.slot);
+      if (box) box.classList.add('equipped');
+    });
+  }
+
+  function openClothSlot(slot) {
+    // Could open a sub-menu to change clothing - future implementation
+  }
+
+  function closeInventory() {
+    mp.trigger('inventory:browserClose');
+  }
+
+  // Hide context menu on click
+  document.addEventListener('click', () => {
+    document.getElementById('ctxMenu').classList.remove('visible');
+    document.getElementById('tooltip').classList.remove('visible');
+  });
+  document.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+</body>
+</html>
