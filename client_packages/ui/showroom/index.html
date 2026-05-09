@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>Neon Syndicate - Showroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --pink:   #FF2D78;
+    --cyan:   #00D4FF;
+    --purple: #9B44FF;
+    --bg:     rgba(5,5,16,0.96);
+    --panel:  rgba(10,10,28,0.98);
+    --border: rgba(255,45,120,0.4);
+    --text:   #e8e8f0;
+    --dim:    #5a5a7a;
+  }
+  body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* ── Left sidebar: catalog ── */
+  .sidebar {
+    width: 340px; height: 100vh;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    animation: slideIn 0.4s cubic-bezier(.16,1,.3,1);
+    box-shadow: 4px 0 40px rgba(255,45,120,0.1);
+  }
+  @keyframes slideIn { from{transform:translateX(-100%)} to{transform:none} }
+
+  .sidebar-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid rgba(255,45,120,0.2);
+    flex-shrink: 0;
+  }
+  .sidebar-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--pink); text-shadow: 0 0 16px rgba(255,45,120,0.5);
+  }
+  .sidebar-title::before {
+    content: ''; display: block; width: 40px; height: 2px;
+    background: linear-gradient(90deg, var(--pink), transparent);
+    margin-bottom: 8px;
+    box-shadow: 0 0 8px var(--pink);
+  }
+
+  /* Type filter tabs */
+  .type-tabs {
+    display: flex; gap: 4px;
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(255,45,120,0.1);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .type-tab {
+    padding: 5px 12px; border-radius: 2px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
+    border: 1px solid rgba(255,45,120,0.25);
+    color: var(--dim);
+  }
+  .type-tab:hover  { border-color: var(--pink); color: var(--pink); }
+  .type-tab.active {
+    background: var(--pink); border-color: var(--pink);
+    color: #fff; box-shadow: 0 0 12px rgba(255,45,120,0.4);
+  }
+
+  /* Vehicle list */
+  .vehicle-list { flex: 1; overflow-y: auto; padding: 12px; }
+  .vehicle-list::-webkit-scrollbar { width: 4px; }
+  .vehicle-list::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.4); border-radius: 2px; }
+
+  .vehicle-card {
+    padding: 14px 16px;
+    border: 1px solid rgba(255,45,120,0.15);
+    background: rgba(255,45,120,0.03);
+    margin-bottom: 8px; cursor: pointer;
+    transition: all 0.2s; border-radius: 2px;
+    position: relative;
+  }
+  .vehicle-card:hover, .vehicle-card.selected {
+    border-color: var(--pink);
+    background: rgba(255,45,120,0.08);
+    box-shadow: 0 0 16px rgba(255,45,120,0.15);
+    transform: translateX(4px);
+  }
+  .vehicle-card.selected::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--pink);
+    box-shadow: 0 0 8px var(--pink);
+  }
+  .vc-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem; letter-spacing: 2px;
+    color: var(--text); text-transform: uppercase;
+  }
+  .vc-meta { display: flex; justify-content: space-between; margin-top: 6px; align-items: center; }
+  .vc-cat  { font-size: 0.65rem; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
+  .vc-price {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem; color: var(--pink);
+    text-shadow: 0 0 8px rgba(255,45,120,0.4);
+  }
+
+  .cash-badge {
+    padding: 8px 24px;
+    border-top: 1px solid rgba(255,45,120,0.2);
+    font-size: 0.75rem; color: var(--dim);
+    flex-shrink: 0;
+  }
+  .cash-badge span { color: var(--pink); font-family: 'Orbitron', sans-serif; }
+
+  /* ── Right panel: detail ── */
+  .detail {
+    flex: 1; height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px;
+    position: relative;
+  }
+
+  .empty-state {
+    text-align: center; color: var(--dim);
+  }
+  .empty-state svg { opacity: 0.15; margin-bottom: 16px; }
+  .empty-title { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; letter-spacing: 4px; }
+  .empty-sub   { font-size: 0.8rem; margin-top: 6px; }
+
+  /* Vehicle detail card */
+  .vd-card {
+    display: none;
+    max-width: 520px; width: 100%;
+    background: rgba(10,10,28,0.9);
+    border: 1px solid rgba(255,45,120,0.4);
+    box-shadow: 0 0 60px rgba(255,45,120,0.1);
+    padding: 32px;
+    animation: detailIn 0.4s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes detailIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:none} }
+
+  .vd-card.visible { display: block; }
+
+  .vd-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem; font-weight: 700; letter-spacing: 3px;
+    color: #fff; text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(255,255,255,0.2);
+  }
+  .vd-category {
+    font-size: 0.7rem; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--cyan); margin-top: 4px;
+    text-shadow: 0 0 8px rgba(0,212,255,0.4);
+  }
+  .vd-divider { height: 1px; background: linear-gradient(90deg, var(--pink), transparent); margin: 20px 0; box-shadow: 0 0 6px var(--pink); }
+
+  /* Stats bars */
+  .stat-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .stat-lbl { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); width: 100px; flex-shrink: 0; }
+  .stat-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+  .stat-fill { height: 100%; border-radius: 3px; transition: width 0.6s cubic-bezier(.16,1,.3,1); }
+  .stat-fill.speed  { background: linear-gradient(90deg, #1a7ab5, var(--cyan)); box-shadow: 0 0 6px var(--cyan); }
+  .stat-fill.accel  { background: linear-gradient(90deg, #5a1a8a, var(--purple)); box-shadow: 0 0 6px var(--purple); }
+  .stat-fill.brake  { background: linear-gradient(90deg, #b5491a, #ff7033); box-shadow: 0 0 6px #ff7033; }
+  .stat-num { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; color: var(--text); width: 30px; text-align: right; }
+
+  /* Features */
+  .vd-features { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .vd-feature {
+    padding: 4px 10px; border: 1px solid rgba(0,212,255,0.3);
+    font-size: 0.65rem; letter-spacing: 1px; color: var(--cyan);
+    border-radius: 2px;
+  }
+
+  /* Color pickers */
+  .color-section { margin-top: 20px; }
+  .color-title { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+  .color-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .color-dot {
+    width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: all 0.15s;
+  }
+  .color-dot:hover   { transform: scale(1.2); }
+  .color-dot.sel     { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.5); }
+
+  /* Price & Buy */
+  .vd-price-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 24px; padding-top: 20px;
+    border-top: 1px solid rgba(255,45,120,0.2);
+  }
+  .vd-price-label { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); }
+  .vd-price-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem; font-weight: 700;
+    color: var(--pink);
+    text-shadow: 0 0 20px rgba(255,45,120,0.5);
+  }
+  .vd-price-val.affordable { color: var(--cyan); text-shadow: 0 0 20px rgba(0,212,255,0.5); }
+  .vd-price-val.unaffordable { color: #ff4444; }
+
+  .btn-buy {
+    margin-top: 14px; width: 100%;
+    padding: 14px; border: 1px solid var(--pink);
+    background: transparent; color: var(--pink);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem; letter-spacing: 4px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .btn-buy::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--pink); transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .btn-buy:hover::before { transform: none; }
+  .btn-buy:hover { color: #fff; box-shadow: 0 0 24px rgba(255,45,120,0.4); }
+  .btn-buy span { position: relative; z-index: 1; }
+  .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Close button */
+  .btn-close {
+    position: fixed; top: 20px; right: 20px;
+    width: 40px; height: 40px;
+    background: rgba(5,5,16,0.9);
+    border: 1px solid rgba(255,45,120,0.4);
+    color: var(--dim); font-size: 1.2rem;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-close:hover { border-color: var(--pink); color: var(--pink); box-shadow: 0 0 12px rgba(255,45,120,0.3); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title">Showroom</div>
+  </div>
+
+  <div class="type-tabs" id="typeTabs">
+    <div class="type-tab active" onclick="filterType('car')">Auto</div>
+    <div class="type-tab" onclick="filterType('motorcycle')">Moto</div>
+    <div class="type-tab" onclick="filterType('bicycle')">Biciclete</div>
+    <div class="type-tab" onclick="filterType('truck')">Tiruri</div>
+    <div class="type-tab" onclick="filterType('boat')">Barci</div>
+    <div class="type-tab" onclick="filterType('plane')">Avioane</div>
+    <div class="type-tab" onclick="filterType('helicopter')">Elicoptere</div>
+  </div>
+
+  <div class="vehicle-list" id="vehicleList"></div>
+
+  <div class="cash-badge">Sold: <span id="cashBadge">$0</span></div>
+</div>
+
+<!-- Detail -->
+<div class="detail">
+  <button class="btn-close" onclick="closeShowroom()">✕</button>
+
+  <div class="empty-state" id="emptyState">
+    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+      <path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11a2 2 0 012 2v3"/>
+      <rect x="9" y="11" width="14" height="10" rx="2" ry="2"/>
+    </svg>
+    <div class="empty-title">Alege un vehicul</div>
+    <div class="empty-sub">Selecteaza din lista din stanga</div>
+  </div>
+
+  <div class="vd-card" id="vdCard">
+    <div class="vd-title" id="vdName">---</div>
+    <div class="vd-category" id="vdCategory">---</div>
+    <div class="vd-divider"></div>
+
+    <div class="stat-row">
+      <span class="stat-lbl">Viteza Max</span>
+      <div class="stat-bar"><div class="stat-fill speed" id="statSpeed" style="width:0%"></div></div>
+      <span class="stat-num" id="statSpeedN">-</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-lbl">Acceleratie</span>
+      <div class="stat-bar"><div class="stat-fill accel" id="statAccel" style="width:0%"></div></div>
+      <span class="stat-num" id="statAccelN">-</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-lbl">Franare</span>
+      <div class="stat-bar"><div class="stat-fill brake" id="statBrake" style="width:0%"></div></div>
+      <span class="stat-num" id="statBrakeN">-</span>
+    </div>
+
+    <div class="vd-features" id="vdFeatures"></div>
+
+    <div class="color-section">
+      <div class="color-title">Culoare Principala</div>
+      <div class="color-row" id="colorPrimary"></div>
+      <div class="color-title" style="margin-top:10px">Culoare Secundara</div>
+      <div class="color-row" id="colorSecondary"></div>
+    </div>
+
+    <div class="vd-price-row">
+      <div>
+        <div class="vd-price-label">Pret</div>
+        <div class="vd-price-val" id="vdPrice">$0</div>
+      </div>
+    </div>
+
+    <button class="btn-buy" id="btnBuy" onclick="buyVehicle()"><span>Cumpara Vehicul</span></button>
+  </div>
+</div>
+
+<script>
+  let catalog = [];
+  let playerCash = 0;
+  let selectedModel = null;
+  let selectedColor1 = 0;
+  let selectedColor2 = 0;
+  let activeType = 'car';
+
+  const COLORS = [
+    '#1a1a1a','#3a3a3a','#ffffff','#c0c0c0',
+    '#8b0000','#ff0000','#ff4500','#ff8c00',
+    '#ffd700','#adff2f','#00ff7f','#00ced1',
+    '#1e90ff','#0000cd','#8b008b','#ff1493',
+    '#ff69b4','#f5deb3','#d2691e','#8b4513'
+  ];
+
+  function loadShowroom(data) {
+    catalog     = data.models || [];
+    playerCash  = data.cash  || 0;
+    document.getElementById('cashBadge').textContent = '$' + playerCash.toLocaleString();
+    buildColorPickers();
+    renderList();
+  }
+
+  function buildColorPickers() {
+    ['colorPrimary','colorSecondary'].forEach((id, ci) => {
+      const cont = document.getElementById(id);
+      cont.innerHTML = '';
+      COLORS.forEach((hex, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'color-dot';
+        dot.style.background = hex;
+        dot.onclick = () => {
+          cont.querySelectorAll('.color-dot').forEach(d => d.classList.remove('sel'));
+          dot.classList.add('sel');
+          if (ci === 0) selectedColor1 = i; else selectedColor2 = i;
+        };
+        if (i === 0) { dot.classList.add('sel'); }
+        cont.appendChild(dot);
+      });
+    });
+  }
+
+  function filterType(type) {
+    activeType = type;
+    document.querySelectorAll('.type-tab').forEach((t,i) => {
+      const types = ['car','motorcycle','bicycle','truck','boat','plane','helicopter'];
+      t.classList.toggle('active', types[i] === type);
+    });
+    mp.trigger('showroom:browserOpen', type);
+  }
+
+  function renderList() {
+    const list = document.getElementById('vehicleList');
+    list.innerHTML = '';
+    catalog.forEach(m => {
+      const el = document.createElement('div');
+      el.className = 'vehicle-card';
+      el.dataset.id = m.id;
+      el.innerHTML = `
+        <div class="vc-name">${m.display_name}</div>
+        <div class="vc-meta">
+          <span class="vc-cat">${m.category}</span>
+          <span class="vc-price">$${m.price.toLocaleString()}</span>
+        </div>`;
+      el.onclick = () => selectModel(m, el);
+      list.appendChild(el);
+    });
+  }
+
+  function selectModel(model, el) {
+    document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedModel = model;
+
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('vdCard').classList.add('visible');
+
+    document.getElementById('vdName').textContent     = model.display_name;
+    document.getElementById('vdCategory').textContent = model.category.toUpperCase();
+
+    // Stats (normalize to 0-100%)
+    const spd = model.handling_max_vel  ? Math.min(100, (model.handling_max_vel  / 60)  * 100) : 60;
+    const acc = model.handling_acceleration ? Math.min(100, model.handling_acceleration * 500) : 50;
+    const brk = model.handling_braking  ? Math.min(100, model.handling_braking   * 100) : 50;
+
+    document.getElementById('statSpeed').style.width  = spd + '%';
+    document.getElementById('statAccel').style.width  = acc + '%';
+    document.getElementById('statBrake').style.width  = brk + '%';
+    document.getElementById('statSpeedN').textContent = Math.round(spd);
+    document.getElementById('statAccelN').textContent = Math.round(acc);
+    document.getElementById('statBrakeN').textContent = Math.round(brk);
+
+    // Features
+    const feats = document.getElementById('vdFeatures');
+    feats.innerHTML = '';
+    if (model.has_rear_trunk)  feats.innerHTML += '<div class="vd-feature">Portbagaj Spate</div>';
+    if (model.has_front_trunk) feats.innerHTML += '<div class="vd-feature">Portbagaj Fata</div>';
+    if (model.trunk_capacity)  feats.innerHTML += `<div class="vd-feature">${model.trunk_capacity} sloturi</div>`;
+
+    // Price
+    const priceEl = document.getElementById('vdPrice');
+    priceEl.textContent = '$' + model.price.toLocaleString();
+    priceEl.className = 'vd-price-val ' + (playerCash >= model.price ? 'affordable' : 'unaffordable');
+
+    document.getElementById('btnBuy').disabled = playerCash < model.price;
+
+    // Preview
+    mp.trigger('showroom:browserPreview', model.id);
+  }
+
+  function buyVehicle() {
+    if (!selectedModel) return;
+    if (!confirm(`Cumpara ${selectedModel.display_name} pentru $${selectedModel.price.toLocaleString()}?`)) return;
+    mp.trigger('showroom:browserBuy', selectedModel.id, selectedColor1, selectedColor2);
+  }
+
+  function closeShowroom() {
+    mp.trigger('showroom:browserClose');
+  }
+
+  // Called from server after purchase
+  function previewModel(model) {
+    // visual handled in client vehicles.js
+  }
+
+  // Initial load
+  mp.trigger('showroom:browserOpen', 'car');
+</script>
+</body>
+</html>
