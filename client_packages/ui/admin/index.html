@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:100vw;height:100vh;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;color:#e0e0e0}
+  .panel{width:900px;height:620px;background:linear-gradient(135deg,rgba(10,10,20,0.98),rgba(15,15,30,0.98));border:1px solid #FF2D78;border-radius:6px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(255,45,120,0.3)}
+  .header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:rgba(255,45,120,0.1);border-bottom:1px solid rgba(255,45,120,0.4)}
+  .header h1{font-family:'Orbitron',sans-serif;font-size:16px;color:#FF2D78;text-transform:uppercase;letter-spacing:3px}
+  .rank-badge{font-size:12px;color:#00D4FF;border:1px solid #00D4FF;padding:3px 10px;border-radius:3px;letter-spacing:1px}
+  .close-btn{background:none;border:1px solid #FF2D78;color:#FF2D78;width:28px;height:28px;cursor:pointer;border-radius:3px;font-size:16px;transition:all .2s}
+  .close-btn:hover{background:#FF2D78;color:#000}
+  .body{display:flex;flex:1;overflow:hidden}
+  .sidebar{width:200px;background:rgba(0,0,0,0.4);border-right:1px solid rgba(255,45,120,0.2);display:flex;flex-direction:column}
+  .tab-btn{padding:12px 16px;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:1px;border:none;background:none;color:#888;text-align:left;transition:all .2s;border-left:2px solid transparent}
+  .tab-btn.active,.tab-btn:hover{color:#FF2D78;background:rgba(255,45,120,0.08);border-left-color:#FF2D78}
+  .content{flex:1;padding:16px;overflow-y:auto}
+  .section{display:none}
+  .section.active{display:block}
+  /* Players table */
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  thead tr{background:rgba(255,45,120,0.15);border-bottom:1px solid rgba(255,45,120,0.3)}
+  th{padding:8px 10px;text-align:left;color:#FF2D78;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:11px}
+  td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.05);color:#ccc}
+  tr:hover td{background:rgba(255,45,120,0.05)}
+  .action-row{display:flex;gap:4px;flex-wrap:wrap}
+  .btn{padding:4px 8px;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:0.5px;transition:all .15s}
+  .btn-pink{background:rgba(255,45,120,0.2);color:#FF2D78;border:1px solid rgba(255,45,120,0.4)}
+  .btn-cyan{background:rgba(0,212,255,0.15);color:#00D4FF;border:1px solid rgba(0,212,255,0.4)}
+  .btn-red{background:rgba(255,60,60,0.15);color:#ff4444;border:1px solid rgba(255,60,60,0.4)}
+  .btn-green{background:rgba(50,255,100,0.1);color:#32ff64;border:1px solid rgba(50,255,100,0.3)}
+  .btn:hover{filter:brightness(1.4)}
+  /* Forms */
+  .form-group{margin-bottom:12px}
+  .form-group label{display:block;font-size:12px;color:#888;margin-bottom:4px;letter-spacing:0.5px}
+  .form-group input,.form-group select{width:100%;padding:8px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,45,120,0.3);border-radius:3px;color:#e0e0e0;font-family:'Rajdhani',sans-serif;font-size:13px;outline:none}
+  .form-group input:focus,.form-group select:focus{border-color:#FF2D78;box-shadow:0 0 6px rgba(255,45,120,0.3)}
+  .form-group select option{background:#111}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  h3{font-family:'Orbitron',sans-serif;font-size:12px;color:#00D4FF;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid rgba(0,212,255,0.2);letter-spacing:2px}
+  .announce-area{width:100%;height:80px;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,45,120,0.3);border-radius:3px;color:#e0e0e0;font-family:'Rajdhani',sans-serif;font-size:13px;resize:none;outline:none}
+  .announce-area:focus{border-color:#FF2D78}
+  .scrollbar::-webkit-scrollbar{width:4px}
+  .scrollbar::-webkit-scrollbar-track{background:transparent}
+  .scrollbar::-webkit-scrollbar-thumb{background:#FF2D78;border-radius:2px}
+  .no-players{text-align:center;padding:40px;color:#555;font-size:13px}
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="header">
+    <h1>Admin Panel</h1>
+    <span class="rank-badge" id="rankBadge">RANK</span>
+    <button class="close-btn" onclick="closePanel()">✕</button>
+  </div>
+  <div class="body">
+    <div class="sidebar">
+      <button class="tab-btn active" onclick="showTab('players')">JUCATORI</button>
+      <button class="tab-btn" onclick="showTab('actions')">ACTIUNI</button>
+      <button class="tab-btn" onclick="showTab('ranks')">RANGURI</button>
+      <button class="tab-btn" onclick="showTab('announce')">ANUNT</button>
+    </div>
+    <div class="content scrollbar">
+
+      <!-- PLAYERS TAB -->
+      <div class="section active" id="tab-players">
+        <h3>JUCATORI ONLINE</h3>
+        <table>
+          <thead><tr><th>ID</th><th>Nume</th><th>CNP</th><th>Ping</th><th>Actiuni</th></tr></thead>
+          <tbody id="playersTbody"></tbody>
+        </table>
+      </div>
+
+      <!-- ACTIONS TAB -->
+      <div class="section" id="tab-actions">
+        <h3>ACTIUNI RAPIDE</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Player ID</label>
+            <input id="act-id" type="number" placeholder="ID jucator" min="0">
+          </div>
+          <div class="form-group">
+            <label>Suma ($)</label>
+            <input id="act-money" type="number" placeholder="Suma">
+          </div>
+        </div>
+        <div class="action-row" style="margin-bottom:14px">
+          <button class="btn btn-green" onclick="giveMoney()">DAR BANI</button>
+          <button class="btn btn-pink" onclick="heal()">VINDECARE</button>
+          <button class="btn btn-cyan" onclick="tp()">TELEPORT</button>
+          <button class="btn btn-cyan" onclick="spectate()">SPECTATE</button>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Motiv kick/ban</label>
+            <input id="act-reason" type="text" placeholder="Motiv">
+          </div>
+          <div class="form-group">
+            <label>Wanted Level (0-5)</label>
+            <input id="act-wanted" type="number" min="0" max="5" placeholder="0-5">
+          </div>
+        </div>
+        <div class="action-row" style="margin-bottom:14px">
+          <button class="btn btn-red" onclick="kick()">KICK</button>
+          <button class="btn btn-red" onclick="ban()">BAN</button>
+          <button class="btn btn-pink" onclick="setWanted()">SET WANTED</button>
+          <button class="btn btn-cyan" onclick="toggleGod()">GOD MODE</button>
+        </div>
+        <div class="form-group">
+          <label>Email unban</label>
+          <input id="act-unban-email" type="email" placeholder="email@exemplu.ro">
+        </div>
+        <button class="btn btn-green" onclick="unban()">UNBAN</button>
+      </div>
+
+      <!-- RANKS TAB -->
+      <div class="section" id="tab-ranks">
+        <h3>SETARE RANG</h3>
+        <div class="form-group">
+          <label>Email cont</label>
+          <input id="rank-email" type="email" placeholder="email@exemplu.ro">
+        </div>
+        <div class="form-group">
+          <label>Rang</label>
+          <select id="rank-select">
+            <option value="tester">Tester</option>
+            <option value="helper">Helper</option>
+            <option value="moderator">Moderator</option>
+            <option value="admin">Admin</option>
+            <option value="head_admin">Head Admin</option>
+            <option value="co_owner">Co-Owner</option>
+            <option value="owner">Owner</option>
+          </select>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-pink" onclick="setRank()">SETEAZA RANG</button>
+          <button class="btn btn-red" onclick="removeRank()">ELIMINA RANG</button>
+        </div>
+      </div>
+
+      <!-- ANNOUNCE TAB -->
+      <div class="section" id="tab-announce">
+        <h3>ANUNT SERVER</h3>
+        <div class="form-group">
+          <label>Mesaj anunt</label>
+          <textarea id="announce-msg" class="announce-area" placeholder="Scrie anuntul..."></textarea>
+        </div>
+        <button class="btn btn-pink" onclick="sendAnnounce()" style="width:100%;padding:10px;font-size:14px">TRIMITE ANUNT</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let myLevel = -1;
+let playersData = [];
+
+function loadPanel(data) {
+    myLevel = data.myLevel;
+    playersData = data.players || [];
+    document.getElementById('rankBadge').textContent = (data.myRank || 'none').toUpperCase();
+    renderPlayers();
+}
+
+function renderPlayers() {
+    const tbody = document.getElementById('playersTbody');
+    if (!playersData.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-players">Niciun jucator online</td></tr>';
+        return;
+    }
+    tbody.innerHTML = playersData.map(p => `
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>${p.cnp}</td>
+            <td>${p.ping}ms</td>
+            <td>
+                <div class="action-row">
+                    <button class="btn btn-cyan" onclick="quickTp(${p.id})">TP</button>
+                    <button class="btn btn-pink" onclick="quickHeal(${p.id})">HEAL</button>
+                    <button class="btn btn-red" onclick="quickKick(${p.id})">KICK</button>
+                    <button class="btn btn-red" onclick="quickBan(${p.id})">BAN</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function showTab(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function getId() { return parseInt(document.getElementById('act-id').value); }
+
+function quickTp(id)   { mp.trigger('admin:browserTp', id); }
+function quickHeal(id) { mp.trigger('admin:browserHeal', id); }
+function quickKick(id) {
+    const reason = prompt('Motiv kick:') || 'fara motiv';
+    mp.trigger('admin:browserKick', id, reason);
+}
+function quickBan(id) {
+    const reason = prompt('Motiv ban:') || 'fara motiv';
+    mp.trigger('admin:browserBan', id, reason);
+}
+
+function giveMoney()  { mp.trigger('admin:browserGiveMoney', getId(), parseInt(document.getElementById('act-money').value) || 0); }
+function heal()       { mp.trigger('admin:browserHeal', getId()); }
+function tp()         { mp.trigger('admin:browserTp', getId()); }
+function spectate()   { mp.trigger('admin:browserSpectate', getId()); }
+function kick()       { mp.trigger('admin:browserKick', getId(), document.getElementById('act-reason').value || 'fara motiv'); }
+function ban()        { mp.trigger('admin:browserBan',  getId(), document.getElementById('act-reason').value || 'fara motiv'); }
+function setWanted()  { mp.trigger('admin:browserSetWanted', getId(), parseInt(document.getElementById('act-wanted').value) || 0); }
+function toggleGod()  { mp.trigger('admin:browserToggleGod'); }
+function unban()      { mp.trigger('admin:browserUnban', document.getElementById('act-unban-email').value); }
+function setRank()    { mp.trigger('admin:browserSetRank', document.getElementById('rank-email').value, document.getElementById('rank-select').value); }
+function removeRank() { mp.trigger('admin:browserSetRank', document.getElementById('rank-email').value, 'remove'); }
+function sendAnnounce(){ mp.trigger('admin:browserAnnounce', document.getElementById('announce-msg').value); document.getElementById('announce-msg').value = ''; }
+function closePanel() { mp.trigger('admin:browserClose'); }
+</script>
+</body>
+</html>

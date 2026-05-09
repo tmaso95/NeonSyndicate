@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>Garaj</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --pink: #FF2D78; --cyan: #00D4FF;
+    --bg: rgba(5,5,16,0.97); --border: rgba(255,45,120,0.4);
+    --text: #e8e8f0; --dim: #5a5a7a;
+  }
+  body {
+    background: transparent; color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    width: 100vw; height: 100vh; overflow: hidden;
+    display: flex; align-items: center; justify-content: flex-start;
+    padding-left: 40px;
+  }
+  .panel {
+    background: var(--bg); border: 1px solid var(--border);
+    box-shadow: 4px 0 40px rgba(255,45,120,0.12);
+    width: 360px; max-height: 80vh;
+    display: flex; flex-direction: column;
+    animation: slideIn 0.35s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:none} }
+
+  .panel-header { padding: 18px 22px; border-bottom: 1px solid rgba(255,45,120,0.2); }
+  .panel-title {
+    font-family: 'Orbitron', sans-serif; font-size: 0.85rem;
+    letter-spacing: 4px; text-transform: uppercase;
+    color: var(--pink); text-shadow: 0 0 12px rgba(255,45,120,0.4);
+  }
+  .panel-sub { font-size: 0.7rem; color: var(--dim); letter-spacing: 2px; margin-top: 2px; }
+
+  .tabs { display: flex; border-bottom: 1px solid rgba(255,45,120,0.15); flex-shrink: 0; }
+  .tab {
+    flex: 1; padding: 10px; text-align: center;
+    font-family: 'Orbitron', sans-serif; font-size: 0.6rem; letter-spacing: 2px;
+    cursor: pointer; color: var(--dim); border-bottom: 2px solid transparent;
+    transition: all 0.15s; text-transform: uppercase;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--pink); border-bottom-color: var(--pink); text-shadow: 0 0 8px rgba(255,45,120,0.5); }
+
+  .vehicle-list { flex: 1; overflow-y: auto; }
+  .vehicle-list::-webkit-scrollbar { width: 3px; }
+  .vehicle-list::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.4); }
+
+  .vehicle-item {
+    padding: 14px 22px; cursor: pointer;
+    border-bottom: 1px solid rgba(255,45,120,0.08);
+    transition: background 0.1s;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .vehicle-item:hover { background: rgba(255,45,120,0.06); }
+  .vi-left {}
+  .vi-name { font-family: 'Orbitron', sans-serif; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; }
+  .vi-plate { font-size: 0.7rem; color: var(--dim); letter-spacing: 1px; margin-top: 3px; }
+  .vi-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .vi-fuel { font-size: 0.65rem; color: var(--cyan); }
+  .vi-status { font-size: 0.6rem; padding: 2px 8px; border-radius: 2px; letter-spacing: 1px; }
+  .vi-status.parked  { border: 1px solid rgba(0,212,255,0.3); color: var(--cyan); }
+  .vi-status.spawned { border: 1px solid rgba(0,255,136,0.3); color: #00ff88; }
+  .vi-status.impound { border: 1px solid rgba(255,68,68,0.3); color: #ff4444; }
+
+  .empty { padding: 30px; text-align: center; color: var(--dim); font-size: 0.85rem; }
+
+  .footer { padding: 14px 22px; border-top: 1px solid rgba(255,45,120,0.2); display: flex; gap: 8px; }
+  .btn {
+    flex: 1; padding: 10px;
+    font-family: 'Orbitron', sans-serif; font-size: 0.6rem;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; border-radius: 2px; transition: all 0.15s;
+    border: 1px solid rgba(255,45,120,0.35); background: transparent; color: var(--dim);
+  }
+  .btn:hover { border-color: var(--pink); color: var(--pink); }
+  .btn-pink { background: var(--pink); border-color: var(--pink); color: #fff; }
+  .btn-pink:hover { background: #ff4d8d; color: #fff; box-shadow: 0 0 14px rgba(255,45,120,0.4); }
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title" id="garageName">Garaj</div>
+    <div class="panel-sub" id="garageType">Autoturisme</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('list')">Vehiculele Mele</div>
+    <div class="tab" onclick="switchTab('showroom')">Showroom</div>
+  </div>
+
+  <div class="vehicle-list" id="vehicleList">
+    <div class="empty">Se incarca...</div>
+  </div>
+
+  <div class="footer">
+    <button class="btn" onclick="closeGarage()">Inchide</button>
+    <button class="btn btn-pink" id="btnSpawn" onclick="spawnSelected()" disabled>Scoate</button>
+  </div>
+</div>
+
+<script>
+  let garageData   = null;
+  let vehicles     = [];
+  let selectedVin  = null;
+
+  function setGarage(g) {
+    garageData = g;
+    document.getElementById('garageName').textContent = g.name;
+    const typeMap = { car:'Autoturisme', truck:'Tiruri', boat:'Barci', air:'Aeronave' };
+    document.getElementById('garageType').textContent = typeMap[g.type] || g.type;
+  }
+
+  function loadVehicles(list) {
+    vehicles = list;
+    renderList();
+  }
+
+  function renderList() {
+    const cont = document.getElementById('vehicleList');
+    if (!vehicles.length) {
+      cont.innerHTML = '<div class="empty">Nu ai vehicule in acest garaj.</div>';
+      return;
+    }
+    cont.innerHTML = '';
+    vehicles.forEach(v => {
+      const el = document.createElement('div');
+      el.className = 'vehicle-item';
+      const statusClass = v.is_impounded ? 'impound' : (v.garage_id ? 'parked' : 'spawned');
+      const statusText  = v.is_impounded ? 'Sechestrat' : (v.garage_id ? 'Parcat' : 'Activ');
+      el.innerHTML = `
+        <div class="vi-left">
+          <div class="vi-name">${v.display_name}</div>
+          <div class="vi-plate">${v.plate} · ${v.vin}</div>
+        </div>
+        <div class="vi-right">
+          <div class="vi-fuel">⛽ ${Math.round(v.fuel || 0)}%</div>
+          <div class="vi-status ${statusClass}">${statusText}</div>
+        </div>`;
+      el.onclick = () => selectVehicle(v, el);
+      cont.appendChild(el);
+    });
+  }
+
+  function selectVehicle(v, el) {
+    document.querySelectorAll('.vehicle-item').forEach(e => e.style.borderLeft = '');
+    el.style.borderLeft = '3px solid var(--pink)';
+    selectedVin = v.vin;
+    document.getElementById('btnSpawn').disabled = v.is_impounded || !v.garage_id;
+  }
+
+  function spawnSelected() {
+    if (!selectedVin) return;
+    mp.trigger('garage:browserSpawn', selectedVin);
+    closeGarage();
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='list'?0:1)===i));
+    if (tab === 'showroom' && garageData) {
+      mp.trigger('garage:browserShowroom', garageData.type);
+      closeGarage();
+    }
+  }
+
+  function closeGarage() {
+    mp.trigger('garage:browserClose');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+    "endpoint": "0.0.0.0",
+    "port": 22005,
+    "announce": true,
+    "name": "Neon Syndicate | Blackridge City | Hard RP",
+    "gamemode": "Hard Roleplay",
+    "map": "San Andreas",
+    "url": "http://neonsyndicate.ddns.net",
+    "maxplayers": 128,
+    "stream-distance": 500.0,
+    "voice-chat": true,
+    "allow-cef-debugging": false,
+    "client-file-downloading": true,
+    "fastdl-host": "",
+    "resources": ["*"],
+    "packages": ["neonsyndicate"],
+    "node-commandline-flags": ""
+}

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>Neon Syndicate - Creare Caracter</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --neon-pink:   #FF2D78;
+    --neon-cyan:   #00D4FF;
+    --neon-purple: #9B44FF;
+    --bg:          #050510;
+    --bg-panel:    rgba(8,8,28,0.98);
+    --border:      rgba(255,45,120,0.5);
+    --text:        #e8e8f0;
+    --text-dim:    #5a5a7a;
+  }
+  body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: flex-end;
+  }
+
+  .panel {
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    box-shadow: -10px 0 60px rgba(255,45,120,0.15);
+    width: 420px; height: 100vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .panel-header {
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid rgba(255,45,120,0.2);
+    flex-shrink: 0;
+  }
+  .panel-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem; letter-spacing: 4px;
+    color: var(--neon-pink);
+    text-shadow: 0 0 16px rgba(255,45,120,0.6);
+    text-transform: uppercase;
+  }
+  .panel-sub { font-size: 0.75rem; color: var(--text-dim); letter-spacing: 2px; margin-top: 2px; }
+
+  /* Steps indicator */
+  .steps {
+    display: flex; gap: 6px;
+    padding: 16px 28px;
+    border-bottom: 1px solid rgba(255,45,120,0.1);
+    flex-shrink: 0;
+  }
+  .step-dot {
+    flex: 1; height: 3px; border-radius: 2px;
+    background: rgba(255,45,120,0.2);
+    transition: background 0.3s;
+  }
+  .step-dot.done   { background: rgba(255,45,120,0.5); }
+  .step-dot.active { background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink); }
+
+  /* Content */
+  .panel-content { flex: 1; overflow-y: auto; padding: 24px 28px; scroll-behavior: smooth; }
+  .panel-content::-webkit-scrollbar { width: 4px; }
+  .panel-content::-webkit-scrollbar-track { background: transparent; }
+  .panel-content::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.4); border-radius: 2px; }
+
+  /* Step screens */
+  .step { display: none; animation: fadeIn 0.3s ease; }
+  .step.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:none} }
+
+  .step-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--neon-cyan); margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(0,212,255,0.4);
+  }
+
+  /* Gender Selection */
+  .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .gender-btn {
+    aspect-ratio: 1; border: 2px solid rgba(255,45,120,0.3);
+    background: rgba(255,45,120,0.04);
+    cursor: pointer; transition: all 0.2s;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    border-radius: 2px;
+    color: var(--text-dim);
+  }
+  .gender-btn:hover, .gender-btn.selected {
+    border-color: var(--neon-pink);
+    background: rgba(255,45,120,0.1);
+    color: var(--neon-pink);
+    box-shadow: 0 0 20px rgba(255,45,120,0.2);
+  }
+  .gender-icon { font-size: 3rem; }
+  .gender-label { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 3px; }
+
+  /* Slider fields */
+  .field { margin-bottom: 18px; }
+  .field-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .field-label { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+  .field-value { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; color: var(--neon-pink); }
+
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    background: rgba(255,45,120,0.2);
+    border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    background: var(--neon-pink); border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--neon-pink);
+    transition: transform 0.1s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  /* Text input */
+  .text-field {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,45,120,0.3);
+    border-radius: 2px; padding: 10px 14px;
+    color: var(--text); font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem; outline: none; width: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .text-field:focus {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 12px rgba(255,45,120,0.15);
+  }
+
+  /* Parent grid */
+  .parent-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+    max-height: 180px; overflow-y: auto;
+  }
+  .parent-grid::-webkit-scrollbar { width: 3px; }
+  .parent-grid::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.4); }
+  .parent-face {
+    aspect-ratio: 1; border: 1px solid rgba(255,45,120,0.2);
+    background: rgba(255,45,120,0.04);
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; color: var(--text-dim);
+    border-radius: 2px;
+    font-family: 'Orbitron', sans-serif;
+  }
+  .parent-face:hover  { border-color: var(--neon-pink); background: rgba(255,45,120,0.1); color: var(--neon-pink); }
+  .parent-face.sel    { border-color: var(--neon-pink); background: rgba(255,45,120,0.15); color: var(--neon-pink); box-shadow: 0 0 10px rgba(255,45,120,0.3); }
+
+  /* Color swatches */
+  .color-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .color-swatch {
+    width: 28px; height: 28px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .color-swatch:hover   { transform: scale(1.2); }
+  .color-swatch.sel     { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.4); transform: scale(1.15); }
+
+  /* Clothing presets */
+  .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .preset {
+    border: 1px solid rgba(255,45,120,0.2);
+    background: rgba(255,45,120,0.04);
+    padding: 14px 10px; cursor: pointer;
+    transition: all 0.15s; border-radius: 2px;
+    text-align: center;
+  }
+  .preset:hover, .preset.sel {
+    border-color: var(--neon-pink);
+    background: rgba(255,45,120,0.1);
+    box-shadow: 0 0 14px rgba(255,45,120,0.15);
+  }
+  .preset-name { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--neon-pink); }
+  .preset-desc { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
+
+  /* Section divider */
+  .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+  .divider-line { flex: 1; height: 1px; background: rgba(255,45,120,0.2); }
+  .divider-text { font-size: 0.65rem; letter-spacing: 2px; color: var(--text-dim); white-space: nowrap; }
+
+  /* Error */
+  .error { color: #ff6b6b; font-size: 0.85rem; margin-bottom: 12px; display: none; }
+  .error.show { display: block; }
+
+  /* Footer nav */
+  .panel-footer {
+    padding: 16px 28px;
+    border-top: 1px solid rgba(255,45,120,0.2);
+    display: flex; gap: 10px;
+    flex-shrink: 0;
+  }
+  .btn {
+    flex: 1; padding: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase;
+    cursor: pointer; border-radius: 2px; transition: all 0.2s;
+    border: 1px solid rgba(255,45,120,0.4);
+    background: transparent; color: var(--text-dim);
+  }
+  .btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); }
+  .btn-next {
+    background: var(--neon-pink); border-color: var(--neon-pink);
+    color: #fff; box-shadow: 0 0 16px rgba(255,45,120,0.4);
+  }
+  .btn-next:hover { background: #ff4d8d; box-shadow: 0 0 24px rgba(255,45,120,0.6); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* CNP preview */
+  .cnp-preview {
+    background: rgba(0,212,255,0.06);
+    border: 1px solid rgba(0,212,255,0.3);
+    padding: 12px 16px; border-radius: 2px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem; color: var(--neon-cyan);
+    letter-spacing: 4px; text-align: center;
+    text-shadow: 0 0 12px rgba(0,212,255,0.4);
+  }
+  .cnp-label { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 2px; text-align: center; margin-bottom: 6px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="panel-header">
+    <div class="panel-title">Creare Caracter</div>
+    <div class="panel-sub">Blackridge City Identity System</div>
+  </div>
+
+  <div class="steps" id="stepsBar">
+    <div class="step-dot active" id="dot0"></div>
+    <div class="step-dot" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+    <div class="step-dot" id="dot4"></div>
+    <div class="step-dot" id="dot5"></div>
+  </div>
+
+  <div class="panel-content">
+    <div id="errorMsg" class="error"></div>
+
+    <!-- STEP 0: Gender -->
+    <div class="step active" id="step0">
+      <div class="step-title">Alege Genul</div>
+      <div class="gender-grid">
+        <div class="gender-btn" id="genderM" onclick="selectGender(0)">
+          <div class="gender-icon">♂</div>
+          <div class="gender-label">Masculin</div>
+        </div>
+        <div class="gender-btn" id="genderF" onclick="selectGender(1)">
+          <div class="gender-icon">♀</div>
+          <div class="gender-label">Feminin</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 1: Parents -->
+    <div class="step" id="step1">
+      <div class="step-title">Mostenire Genetica</div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">Tata</div><div class="divider-line"></div></div>
+      <div class="parent-grid" id="dadGrid"></div>
+
+      <div class="divider" style="margin-top:14px"><div class="divider-line"></div><div class="divider-text">Mama</div><div class="divider-line"></div></div>
+      <div class="parent-grid" id="momGrid"></div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">Mix</div><div class="divider-line"></div></div>
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">Trasaturi fata</span>
+          <span class="field-value" id="shapeMixVal">50%</span>
+        </div>
+        <input type="range" min="0" max="100" value="50" id="shapeMix" oninput="updateMix()">
+      </div>
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">Culoare piele</span>
+          <span class="field-value" id="skinMixVal">50%</span>
+        </div>
+        <input type="range" min="0" max="100" value="50" id="skinMix" oninput="updateMix()">
+      </div>
+    </div>
+
+    <!-- STEP 2: Appearance -->
+    <div class="step" id="step2">
+      <div class="step-title">Aspect Fizic</div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">Culoare ochi</div><div class="divider-line"></div></div>
+      <div class="color-grid" id="eyeColors"></div>
+
+      <div class="divider" style="margin-top:16px"><div class="divider-line"></div><div class="divider-text">Trasaturi faciale</div><div class="divider-line"></div></div>
+      <div id="faceFeaturesFields"></div>
+    </div>
+
+    <!-- STEP 3: Hair -->
+    <div class="step" id="step3">
+      <div class="step-title">Coafura</div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">Stil</div><div class="divider-line"></div></div>
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">Coafura #</span>
+          <span class="field-value" id="hairStyleVal">0</span>
+        </div>
+        <input type="range" min="0" max="20" value="0" id="hairStyle" oninput="updateHair()">
+      </div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">Culoare par</div><div class="divider-line"></div></div>
+      <div class="color-grid" id="hairColors"></div>
+
+      <div class="divider" style="margin-top:12px"><div class="divider-line"></div><div class="divider-text">Reflexe</div><div class="divider-line"></div></div>
+      <div class="color-grid" id="hairHighlights"></div>
+    </div>
+
+    <!-- STEP 4: Clothing -->
+    <div class="step" id="step4">
+      <div class="step-title">Tinuta Initiala</div>
+      <div class="preset-grid" id="clothingPresets"></div>
+    </div>
+
+    <!-- STEP 5: Name & ID -->
+    <div class="step" id="step5">
+      <div class="step-title">Identitate</div>
+
+      <div class="field">
+        <div class="field-header"><span class="field-label">Prenume</span></div>
+        <input type="text" class="text-field" id="firstName" placeholder="ex: Andrei" maxlength="32">
+      </div>
+      <div class="field">
+        <div class="field-header"><span class="field-label">Nume</span></div>
+        <input type="text" class="text-field" id="lastName" placeholder="ex: Ionescu" maxlength="32">
+      </div>
+      <div class="field">
+        <div class="field-header">
+          <span class="field-label">Varsta</span>
+          <span class="field-value" id="ageVal">25</span>
+        </div>
+        <input type="range" min="18" max="70" value="25" id="ageSlider" oninput="document.getElementById('ageVal').textContent=this.value">
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="cnp-label">Cod Numeric Personal (auto-generat)</div>
+        <div class="cnp-preview" id="cnpPreview">--------</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-footer">
+    <button class="btn" id="btnBack" onclick="prevStep()" style="display:none">Inapoi</button>
+    <button class="btn btn-next" id="btnNext" onclick="nextStep()">Continua</button>
+  </div>
+</div>
+
+<script>
+  const TOTAL_STEPS = 6;
+  let curStep = 0;
+  const data = {
+    sex: -1,
+    shapeFather: 0, shapeMother: 0, shapeMix: 0.5,
+    skinFather: 0,  skinMother:  0, skinMix:  0.5,
+    eyeColor: 0, hairStyle: 0, hairColor: 0, hairHighlight: 0,
+    faceFeatures: new Array(20).fill(0),
+    faceOverlays: {},
+    clothingPreset: 0,
+    firstname: '', lastname: '', age: 25
+  };
+
+  // ── Eye colors ──
+  const EYE_COLORS = [
+    '#5B3A29','#6B4226','#7A5C3C','#A0785A',
+    '#7CA9D2','#4A8FD4','#2B6CB0','#1A4F8A',
+    '#3DAA3D','#2D8A2D','#5CAB5C','#9B9B9B',
+    '#C8C8C8','#E8E8E8','#7BAEDC','#D4A843',
+    '#8B5E3C','#C68B5A','#FFDAB9','#E8C99A'
+  ];
+
+  // ── Hair colors ──
+  const HAIR_COLORS = [
+    '#1A0A00','#3D1C02','#6B3A2A','#8B5E3C',
+    '#B8860B','#D4A843','#F5DEB3','#FFFFFF',
+    '#C0C0C0','#808080','#404040','#000000',
+    '#FF0000','#FF6B00','#FFD700','#00FF00',
+    '#00BFFF','#8B00FF','#FF1493','#FF69B4'
+  ];
+
+  const CLOTHING_PRESETS = [
+    { name: 'Street Style',  desc: 'Look casual urban',      icon: '👕' },
+    { name: 'Business',      desc: 'Look business formal',   icon: '👔' },
+    { name: 'Sport',         desc: 'Tinuta sport',            icon: '🏃' },
+    { name: 'Underground',   desc: 'Look underground',       icon: '🖤' }
+  ];
+
+  const FACE_FEATURE_NAMES = [
+    'Nas - Latime', 'Nas - Inaltime', 'Nas - Lungime', 'Nas - Pod',
+    'Obraji', 'Mandibula', 'Barbie', 'Sprancene',
+    'Ochi - Forma', 'Ochi - Distanta', 'Buze', 'Frunte'
+  ];
+
+  // ── Build parent grids ──
+  function buildParentGrids() {
+    ['dadGrid','momGrid'].forEach(id => {
+      const grid = document.getElementById(id);
+      grid.innerHTML = '';
+      for (let i = 0; i < 45; i++) {
+        const el = document.createElement('div');
+        el.className = 'parent-face';
+        el.textContent = i;
+        el.onclick = () => selectParent(id === 'dadGrid' ? 'dad' : 'mom', i, el);
+        grid.appendChild(el);
+      }
+    });
+  }
+
+  function selectParent(type, idx, el) {
+    const grid = document.getElementById(type === 'dad' ? 'dadGrid' : 'momGrid');
+    grid.querySelectorAll('.parent-face').forEach(e => e.classList.remove('sel'));
+    el.classList.add('sel');
+    if (type === 'dad') data.shapeFather = data.skinFather = idx;
+    else                data.shapeMother = data.skinMother = idx;
+    updatePreview();
+  }
+
+  // ── Build color grids ──
+  function buildColorGrid(containerId, colors, key) {
+    const c = document.getElementById(containerId);
+    colors.forEach((hex, i) => {
+      const sw = document.createElement('div');
+      sw.className = 'color-swatch';
+      sw.style.background = hex;
+      sw.title = `${i}`;
+      sw.onclick = () => {
+        c.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('sel'));
+        sw.classList.add('sel');
+        data[key] = i;
+        updatePreview();
+      };
+      if (i === 0) sw.classList.add('sel');
+      c.appendChild(sw);
+    });
+  }
+
+  // ── Build face features ──
+  function buildFaceFeatures() {
+    const cont = document.getElementById('faceFeaturesFields');
+    FACE_FEATURE_NAMES.forEach((name, i) => {
+      cont.innerHTML += `
+        <div class="field">
+          <div class="field-header">
+            <span class="field-label">${name}</span>
+            <span class="field-value" id="ff${i}v">0.0</span>
+          </div>
+          <input type="range" min="-100" max="100" value="0" id="ff${i}"
+            oninput="data.faceFeatures[${i}]=this.value/100; document.getElementById('ff${i}v').textContent=(this.value/100).toFixed(1); updatePreview()">
+        </div>`;
+    });
+  }
+
+  // ── Build clothing presets ──
+  function buildClothingPresets() {
+    const grid = document.getElementById('clothingPresets');
+    CLOTHING_PRESETS.forEach((p, i) => {
+      const el = document.createElement('div');
+      el.className = 'preset' + (i === 0 ? ' sel' : '');
+      el.innerHTML = `<div style="font-size:1.8rem;margin-bottom:6px">${p.icon}</div>
+                      <div class="preset-name">${p.name}</div>
+                      <div class="preset-desc">${p.desc}</div>`;
+      el.onclick = () => {
+        grid.querySelectorAll('.preset').forEach(e => e.classList.remove('sel'));
+        el.classList.add('sel');
+        data.clothingPreset = i;
+      };
+      grid.appendChild(el);
+    });
+  }
+
+  // ── Init ──
+  buildParentGrids();
+  buildColorGrid('eyeColors', EYE_COLORS, 'eyeColor');
+  buildColorGrid('hairColors', HAIR_COLORS, 'hairColor');
+  buildColorGrid('hairHighlights', HAIR_COLORS, 'hairHighlight');
+  buildFaceFeatures();
+  buildClothingPresets();
+
+  // ── Generate random CNP preview ──
+  function genCNPPreview() {
+    const len = 4 + Math.floor(Math.random() * 5);
+    const min = Math.pow(10, len - 1);
+    const max = Math.pow(10, len) - 1;
+    return String(Math.floor(Math.random() * (max - min + 1)) + min);
+  }
+
+  function selectGender(sex) {
+    data.sex = sex;
+    document.getElementById('genderM').classList.toggle('selected', sex === 0);
+    document.getElementById('genderF').classList.toggle('selected', sex === 1);
+  }
+
+  function updateMix() {
+    const sm = document.getElementById('shapeMix').value;
+    const sk = document.getElementById('skinMix').value;
+    document.getElementById('shapeMixVal').textContent = sm + '%';
+    document.getElementById('skinMixVal').textContent  = sk + '%';
+    data.shapeMix = sm / 100;
+    data.skinMix  = sk / 100;
+    updatePreview();
+  }
+
+  function updateHair() {
+    const v = document.getElementById('hairStyle').value;
+    document.getElementById('hairStyleVal').textContent = v;
+    data.hairStyle = parseInt(v);
+    updatePreview();
+  }
+
+  function updatePreview() {
+    mp.trigger('character:browserPreviewUpdate', JSON.stringify(data));
+  }
+
+  // ── Navigation ──
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('active', i === n));
+    for (let i = 0; i < TOTAL_STEPS; i++) {
+      const dot = document.getElementById('dot' + i);
+      dot.classList.toggle('active', i === n);
+      dot.classList.toggle('done', i < n);
+    }
+    document.getElementById('btnBack').style.display = n > 0 ? 'block' : 'none';
+    document.getElementById('btnNext').textContent = n === TOTAL_STEPS - 1 ? 'Creeaza' : 'Continua';
+
+    if (n === 5) {
+      document.getElementById('cnpPreview').textContent = genCNPPreview() + '...';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  function nextStep() {
+    if (curStep === 0 && data.sex === -1) return showError('Selecteaza genul.');
+    if (curStep === 5) return finalCreate();
+
+    curStep++;
+    showStep(curStep);
+  }
+
+  function prevStep() {
+    if (curStep > 0) { curStep--; showStep(curStep); }
+  }
+
+  function finalCreate() {
+    const fname = document.getElementById('firstName').value.trim();
+    const lname = document.getElementById('lastName').value.trim();
+    const age   = parseInt(document.getElementById('ageSlider').value);
+
+    if (!fname || fname.length < 2) return showError('Prenumele trebuie sa aiba minim 2 caractere.');
+    if (!lname || lname.length < 2) return showError('Numele trebuie sa aiba minim 2 caractere.');
+
+    data.firstname = fname;
+    data.lastname  = lname;
+    data.age       = age;
+
+    mp.trigger('character:browserCreate', JSON.stringify(data));
+  }
+</script>
+</body>
+</html>

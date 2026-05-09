@@ -1,0 +1,6 @@
+node_modules/
+.env
+*.log
+ragemp-server
+ragemp-server.exe
+BugTrap-x64.dll
