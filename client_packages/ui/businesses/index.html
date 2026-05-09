@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>Magazine</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:100vw;height:100vh;background:rgba(0,0,0,0.82);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;color:#e0e0e0}
+  .shop{width:820px;height:580px;background:linear-gradient(135deg,rgba(10,8,22,0.98),rgba(14,12,28,0.98));border:1px solid #FF2D78;border-radius:6px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 45px rgba(255,45,120,0.25)}
+  .header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(255,45,120,0.08);border-bottom:1px solid rgba(255,45,120,0.35)}
+  .header h1{font-family:'Orbitron',sans-serif;font-size:15px;color:#FF2D78;letter-spacing:3px;text-transform:uppercase}
+  .header-meta{display:flex;align-items:center;gap:14px;font-size:12px}
+  .cash-display{color:#32ff64;font-weight:700;font-size:14px}
+  .cash-label{color:#555;font-size:11px}
+  .close-btn{background:none;border:1px solid #FF2D78;color:#FF2D78;width:26px;height:26px;cursor:pointer;border-radius:3px;font-size:14px;transition:all .2s}
+  .close-btn:hover{background:#FF2D78;color:#000}
+  .tabs{display:flex;padding:0 18px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,45,120,0.15)}
+  .tab{padding:10px 18px;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;color:#555;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase}
+  .tab.active,.tab:hover{color:#FF2D78;border-bottom-color:#FF2D78}
+  .body{display:flex;flex:1;overflow:hidden}
+  .items-grid{flex:1;padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;overflow-y:auto;align-content:start}
+  .detail-panel{width:240px;border-left:1px solid rgba(255,45,120,0.15);padding:16px;display:flex;flex-direction:column;background:rgba(0,0,0,0.2)}
+  /* Item card */
+  .item-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,45,120,0.15);border-radius:5px;padding:12px;cursor:pointer;transition:all .2s;position:relative}
+  .item-card:hover,.item-card.selected{border-color:#FF2D78;background:rgba(255,45,120,0.07);box-shadow:0 0 10px rgba(255,45,120,0.15)}
+  .item-icon{font-size:28px;text-align:center;margin-bottom:6px}
+  .item-name{font-size:12px;font-weight:700;color:#e0e0e0;text-align:center;margin-bottom:3px}
+  .item-price{font-size:13px;font-weight:700;color:#FF2D78;text-align:center}
+  .item-weight{font-size:10px;color:#556;text-align:center;margin-top:2px}
+  .item-qty{position:absolute;top:6px;right:6px;font-size:10px;color:#00D4FF;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);padding:1px 5px;border-radius:2px}
+  /* Detail panel */
+  h3{font-family:'Orbitron',sans-serif;font-size:11px;color:#FF2D78;margin-bottom:12px;padding-bottom:5px;border-bottom:1px solid rgba(255,45,120,0.2);letter-spacing:2px}
+  .detail-name{font-size:16px;font-weight:700;color:#e0e0e0;margin-bottom:4px}
+  .detail-desc{font-size:11px;color:#778;margin-bottom:10px;line-height:1.5}
+  .detail-kv{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px}
+  .detail-kv .k{color:#667}
+  .detail-kv .v{color:#e0e0e0;font-weight:600}
+  .qty-control{display:flex;align-items:center;gap:8px;margin:12px 0}
+  .qty-btn{width:28px;height:28px;background:rgba(255,45,120,0.15);border:1px solid rgba(255,45,120,0.35);color:#FF2D78;font-size:16px;cursor:pointer;border-radius:3px;transition:all .15s;font-family:'Rajdhani',sans-serif}
+  .qty-btn:hover{background:rgba(255,45,120,0.3)}
+  .qty-val{font-size:18px;font-weight:700;color:#e0e0e0;min-width:30px;text-align:center}
+  .buy-btn{width:100%;padding:10px;background:linear-gradient(135deg,#FF2D78,#cc0055);border:none;color:#fff;font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;cursor:pointer;border-radius:4px;transition:all .2s;margin-top:auto}
+  .buy-btn:hover{box-shadow:0 0 15px rgba(255,45,120,0.5);transform:translateY(-1px)}
+  .buy-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .total-cost{text-align:center;font-size:13px;color:#32ff64;font-weight:700;margin-bottom:8px}
+  .no-selection{display:flex;align-items:center;justify-content:center;flex:1;color:#334;font-size:13px;text-align:center;flex-direction:column;gap:8px}
+  /* Owner section */
+  .form-group{margin-bottom:10px}
+  .form-group label{display:block;font-size:11px;color:#778;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px}
+  .form-group input{width:100%;padding:7px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,45,120,0.25);border-radius:3px;color:#e0e0e0;font-family:'Rajdhani',sans-serif;font-size:12px;outline:none}
+  .form-group input:focus{border-color:#FF2D78}
+  .btn{padding:6px 14px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;transition:all .15s}
+  .btn-pink{background:rgba(255,45,120,0.2);color:#FF2D78;border:1px solid rgba(255,45,120,0.4)}
+  .btn-cyan{background:rgba(0,212,255,0.15);color:#00D4FF;border:1px solid rgba(0,212,255,0.4)}
+  .btn-green{background:rgba(50,255,100,0.1);color:#32ff64;border:1px solid rgba(50,255,100,0.3)}
+  .btn:hover{filter:brightness(1.3)}
+  .revenue-box{background:rgba(50,255,100,0.06);border:1px solid rgba(50,255,100,0.2);border-radius:4px;padding:16px;text-align:center;margin-bottom:14px}
+  .revenue-amount{font-family:'Orbitron',sans-serif;font-size:22px;color:#32ff64;font-weight:700}
+  .revenue-label{font-size:11px;color:#667;margin-top:4px}
+  .scrollbar::-webkit-scrollbar{width:4px}
+  .scrollbar::-webkit-scrollbar-track{background:transparent}
+  .scrollbar::-webkit-scrollbar-thumb{background:#FF2D78;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="shop">
+  <div class="header">
+    <h1 id="shopName">Magazine</h1>
+    <div class="header-meta">
+      <div><div class="cash-label">BANI</div><div class="cash-display">$<span id="cashAmt">0</span></div></div>
+      <button class="close-btn" onclick="closeShop()">✕</button>
+    </div>
+  </div>
+  <div class="tabs" id="shopTabs">
+    <div class="tab active" onclick="showTab('buy')">CUMPARA</div>
+    <div class="tab owner-only" id="ownerTabs" style="display:none" onclick="showTab('owner')">PATRON</div>
+    <div class="tab for-sale" id="buyBizTab" style="display:none" onclick="showTab('buy-biz')">CUMPARA AFACERE</div>
+  </div>
+  <div class="body">
+
+    <!-- BUY TAB -->
+    <div id="tab-buy" style="display:flex;flex:1;overflow:hidden">
+      <div class="items-grid scrollbar" id="itemsGrid"></div>
+      <div class="detail-panel">
+        <h3>DETALII</h3>
+        <div id="itemDetail"><div class="no-selection">↑ Selecteaza un produs</div></div>
+      </div>
+    </div>
+
+    <!-- OWNER TAB -->
+    <div id="tab-owner" style="display:none;flex:1;padding:16px;overflow-y:auto" class="scrollbar">
+      <h3>VENITURI</h3>
+      <div class="revenue-box">
+        <div class="revenue-amount">$<span id="revAmt">0.00</span></div>
+        <div class="revenue-label">Balanta afacere</div>
+      </div>
+      <button class="btn btn-green" style="width:100%;padding:10px;margin-bottom:20px" onclick="withdrawRevenue()">RIDICA VENITURI</button>
+      <h3>SETEAZA PRET</h3>
+      <div class="form-group"><label>Produs</label><input id="price-item" placeholder="Nume produs"></div>
+      <div class="form-group"><label>Pret nou ($)</label><input id="price-val" type="number" placeholder="Pret"></div>
+      <button class="btn btn-pink" style="margin-bottom:16px" onclick="setPrice()">ACTUALIZEAZA PRET</button>
+      <h3>REAPROVIZIONARE</h3>
+      <div class="form-group"><label>Produs</label><input id="stock-item" placeholder="Nume produs"></div>
+      <div class="form-group"><label>Cantitate</label><input id="stock-qty" type="number" placeholder="Cantitate" value="10"></div>
+      <button class="btn btn-cyan" onclick="restock()">REAPROVIZIONARE</button>
+    </div>
+
+    <!-- BUY BUSINESS TAB -->
+    <div id="tab-buy-biz" style="display:none;flex:1;padding:24px;align-items:center;justify-content:center;flex-direction:column;text-align:center">
+      <div style="font-family:'Orbitron',sans-serif;font-size:13px;color:#FF2D78;margin-bottom:12px;letter-spacing:2px">ACHIZITIONARE AFACERE</div>
+      <div style="font-size:13px;color:#778;margin-bottom:20px">Pret: <span id="bizSalePrice" style="color:#32ff64;font-weight:700">$0</span></div>
+      <button class="btn btn-pink" style="padding:12px 30px;font-size:14px" onclick="buyBusiness()">CUMPARA AFACEREA</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let currentBiz = null;
+let selectedItem = null;
+let buyQty = 1;
+
+function showMenu(biz) {
+    currentBiz = biz;
+    document.getElementById('shopName').textContent = biz.name || 'Magazine';
+    if (biz.isOwner || biz.isStateOwned) {
+        document.getElementById('ownerTabs').style.display = biz.isOwner ? 'block' : 'none';
+        if (biz.isOwner) mp.trigger('business:browserGetRevenue', biz.id);
+    }
+    if (biz.forSale && !biz.isOwner) {
+        document.getElementById('buyBizTab').style.display = 'block';
+        document.getElementById('bizSalePrice').textContent = '$' + (biz.salePrice || 0).toLocaleString();
+    }
+}
+
+function loadStock(data) {
+    if (data.cash !== undefined) {
+        document.getElementById('cashAmt').textContent = data.cash.toLocaleString();
+    }
+    const grid = document.getElementById('itemsGrid');
+    const stock = data.stock || [];
+    if (!stock.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#334;font-size:13px">Stoc gol</div>';
+        return;
+    }
+    grid.innerHTML = stock.map(item => `
+        <div class="item-card" onclick="selectItem(this, '${item.item_name}', ${item.sell_price}, ${item.quantity}, '${(item.display_name||item.item_name).replace(/'/g,"\\'")}', ${item.weight||0.1}, '${(item.description||'').replace(/'/g,"\\'")}', ${item.bag_capacity||0})">
+            <div class="item-qty">${item.quantity}</div>
+            <div class="item-icon">${getIcon(item.item_name)}</div>
+            <div class="item-name">${item.display_name || item.item_name}</div>
+            <div class="item-price">$${item.sell_price}</div>
+            <div class="item-weight">${item.weight || 0.1} kg</div>
+        </div>`
+    ).join('');
+}
+
+function selectItem(el, name, price, qty, displayName, weight, desc, bagCap) {
+    document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedItem = { name, price, qty, displayName, weight };
+    buyQty = 1;
+    renderDetail(displayName, price, qty, weight, desc, bagCap);
+}
+
+function renderDetail(dName, price, qty, weight, desc, bagCap) {
+    const total = price * buyQty;
+    document.getElementById('itemDetail').innerHTML = `
+        <div class="detail-name">${dName}</div>
+        <div class="detail-desc">${desc || 'Fara descriere'}</div>
+        <div class="detail-kv"><span class="k">Pret unitate</span><span class="v">$${price}</span></div>
+        <div class="detail-kv"><span class="k">Greutate</span><span class="v">${weight} kg</span></div>
+        ${bagCap > 0 ? `<div class="detail-kv"><span class="k">Capacitate geanta</span><span class="v">+${bagCap} kg</span></div>` : ''}
+        <div class="detail-kv"><span class="k">Stoc disponibil</span><span class="v">${qty}</span></div>
+        <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <div class="qty-val" id="qtyVal">1</div>
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+        <div class="total-cost">Total: $<span id="totalCost">${total}</span></div>
+        <button class="buy-btn" onclick="buyItem()">CUMPARA</button>`;
+}
+
+function changeQty(delta) {
+    if (!selectedItem) return;
+    buyQty = Math.max(1, Math.min(selectedItem.qty, buyQty + delta));
+    document.getElementById('qtyVal').textContent = buyQty;
+    document.getElementById('totalCost').textContent = (selectedItem.price * buyQty).toLocaleString();
+}
+
+function buyItem() {
+    if (!selectedItem || !currentBiz) return;
+    mp.trigger('business:browserBuy', currentBiz.id, selectedItem.name, buyQty);
+}
+
+function loadRevenue(data) {
+    document.getElementById('revAmt').textContent = (data.balance || 0).toFixed(2);
+}
+
+function showTab(name) {
+    document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const el = document.getElementById('tab-' + name);
+    if (el) el.style.display = name === 'buy' ? 'flex' : 'block';
+    event.target.classList.add('active');
+    if (name === 'owner') mp.trigger('business:browserGetRevenue', currentBiz.id);
+}
+
+function setPrice()       { mp.trigger('business:browserSetPrice',       currentBiz.id, document.getElementById('price-item').value, document.getElementById('price-val').value); }
+function restock()        { mp.trigger('business:browserRestock',        currentBiz.id, document.getElementById('stock-item').value, document.getElementById('stock-qty').value); }
+function withdrawRevenue(){ mp.trigger('business:browserWithdrawRevenue',currentBiz.id); }
+function buyBusiness()    { mp.trigger('business:browserBuyBusiness',    currentBiz.id); }
+function closeShop()      { mp.trigger('business:browserClose'); }
+
+function getIcon(name) {
+    const icons = {
+        sandwich:'🥪',water_bottle_l:'💧',energy_drink:'⚡',water:'🥤',protein_bar:'💪',
+        phone_basic:'📱',phone_mid:'📱',phone_high:'📱',sim_card:'💳',
+        bandage:'🩹',medkit:'🏥',
+        backpack_small:'🎒',backpack_large:'🎒',fanny_pack:'👜',suitcase:'🧳',
+        t_shirt_white:'👕',t_shirt_black:'👕',jeans_blue:'👖',jeans_black:'👖',
+        dress_red:'👗',dress_black:'👗',heels_red:'👠',sneakers_white:'👟',sneakers_black:'👟',
+        jacket_leather:'🧥',balaclava:'🎭'
+    };
+    for (const k of Object.keys(icons)) { if (name.startsWith(k.split('_')[0])) return icons[k]; }
+    return '📦';
+}
+</script>
+</body>
+</html>

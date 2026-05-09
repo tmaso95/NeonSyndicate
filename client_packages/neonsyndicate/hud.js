@@ -42,5 +42,10 @@ mp.events.add('render', () => {
     hudBrowser.execute(`updateVitals(${hp}, ${armor}, ${speed}, ${inVeh})`);
 });
 
+// ── SURVIVAL STATS (forwarded from survival.js) ───────────────
+mp.events.add('hud:survivalStats', (statsJSON) => {
+    if (hudBrowser) hudBrowser.execute(`updateSurvival(${statsJSON})`);
+});
+
 // ── MINIMAP ───────────────────────────────────────────────────
 mp.game.ui.setRadarZoom(1100);
