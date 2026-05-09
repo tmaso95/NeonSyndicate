@@ -352,6 +352,9 @@
     document.getElementById('staminaVal').textContent  = Math.round(stats.stamina || 0);
     document.getElementById('stressVal').textContent   = Math.round(stats.stress  || 0);
   }
+
+  // Signal to client JS that the HUD page has fully loaded
+  if (typeof mp !== 'undefined') mp.trigger('hud:ready');
 </script>
 </body>
 </html>
