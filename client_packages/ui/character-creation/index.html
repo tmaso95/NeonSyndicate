@@ -230,6 +230,13 @@
 </style>
 </head>
 <body>
+<!-- Camera switch buttons (left side of screen) -->
+<div class="cam-controls">
+  <div class="cam-label">CAMERA</div>
+  <div class="cam-btn active" id="cam-face" onclick="setCam('face')">👤 FATA</div>
+  <div class="cam-btn" id="cam-body" onclick="setCam('body')">🧍 CORP</div>
+</div>
+
 <div class="panel">
   <div class="panel-header">
     <div class="panel-title">Creare Caracter</div>
@@ -360,6 +367,42 @@
   </div>
 </div>
 
+<style>
+  .cam-controls {
+    position: fixed;
+    left: 20px;
+    bottom: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cam-btn {
+    padding: 8px 16px;
+    background: rgba(5,5,16,0.85);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: #00D4FF;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all .2s;
+    text-align: center;
+  }
+  .cam-btn.active, .cam-btn:hover {
+    background: rgba(0,212,255,0.15);
+    border-color: #00D4FF;
+    box-shadow: 0 0 12px rgba(0,212,255,0.3);
+  }
+  .cam-label {
+    font-size: 9px;
+    color: rgba(0,212,255,0.4);
+    letter-spacing: 2px;
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+    margin-bottom: 4px;
+  }
+</style>
 <script>
   const TOTAL_STEPS = 6;
   let curStep = 0;
@@ -545,6 +588,13 @@
     const el = document.getElementById('errorMsg');
     el.textContent = msg; el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  // ── Camera controls ──
+  function setCam(mode) {
+    document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('cam-' + mode).classList.add('active');
+    mp.trigger('character:setCamMode', mode);
   }
 
   function nextStep() {
