@@ -13,7 +13,7 @@ mp.events.add('character:showCreation', () => {
     mp.players.local.heading  = 210.0;
 
     mp.game.invoke('0x428CA6DBD1094446', ped, true); // FREEZE_ENTITY_POSITION
-    mp.game.controls.disableAllActions(0);
+    mp.game.invoke('0xA5FFE9B05F199DE7', 0); // DISABLE_ALL_CONTROL_ACTIONS
 
     setupCreationCamera('face');
 
@@ -22,32 +22,37 @@ mp.events.add('character:showCreation', () => {
 });
 
 function setupCreationCamera(mode) {
-    if (creationCam !== null) {
-        try {
-            mp.game.cam.renderScriptCams(false, true, 500, true, false);
-            mp.game.cam.destroyCam(creationCam, false);
-        } catch (e) {}
+    try {
+        if (creationCam !== null) {
+            try {
+                mp.game.cam.renderScriptCams(false, true, 500, true, false);
+                mp.game.cam.destroyCam(creationCam, false);
+            } catch (e) {}
+            creationCam = null;
+        }
+
+        const ped = mp.players.local.handle;
+        const pos = mp.players.local.position;
+
+        creationCam = mp.game.cam.createCam('DEFAULT_SCRIPTED_CAMERA', true);
+
+        if (mode === 'face') {
+            mp.game.cam.setCamCoord(creationCam, pos.x + 1.5, pos.y + 1.5, pos.z + 0.65);
+            mp.game.cam.setCamFov(creationCam, 28.0);
+            mp.game.cam.pointCamAtEntity(creationCam, ped, 0.0, 0.0, 0.1, true);
+        } else {
+            mp.game.cam.setCamCoord(creationCam, pos.x + 2.8, pos.y + 2.8, pos.z + 0.6);
+            mp.game.cam.setCamFov(creationCam, 45.0);
+            mp.game.cam.pointCamAtEntity(creationCam, ped, 0.0, 0.0, 0.0, true);
+        }
+
+        mp.game.cam.setCamActive(creationCam, true);
+        mp.game.cam.renderScriptCams(true, true, 500, true, false);
+        creationCamMode = mode;
+    } catch (e) {
+        // Camera API unavailable in this RageMP version — creation UI still works
         creationCam = null;
     }
-
-    const ped = mp.players.local.handle;
-    const pos = mp.players.local.position;
-
-    creationCam = mp.game.cam.createCam('DEFAULT_SCRIPTED_CAMERA', true);
-
-    if (mode === 'face') {
-        mp.game.cam.setCamCoord(creationCam, pos.x + 1.5, pos.y + 1.5, pos.z + 0.65);
-        mp.game.cam.setCamFov(creationCam, 28.0);
-        mp.game.cam.pointCamAtEntity(creationCam, ped, 0.0, 0.0, 0.1, true);
-    } else {
-        mp.game.cam.setCamCoord(creationCam, pos.x + 2.8, pos.y + 2.8, pos.z + 0.6);
-        mp.game.cam.setCamFov(creationCam, 45.0);
-        mp.game.cam.pointCamAtEntity(creationCam, ped, 0.0, 0.0, 0.0, true);
-    }
-
-    mp.game.cam.setCamActive(creationCam, true);
-    mp.game.cam.renderScriptCams(true, true, 500, true, false);
-    creationCamMode = mode;
 }
 
 mp.events.add('character:setCamMode', (mode) => {
@@ -56,13 +61,13 @@ mp.events.add('character:setCamMode', (mode) => {
 
 // ── DESTROY CREATION SCENE ────────────────────────────────────
 function destroyCreationScene() {
-    if (creationCam !== null) {
-        try {
+    try {
+        if (creationCam !== null) {
             mp.game.cam.renderScriptCams(false, true, 500, true, false);
             mp.game.cam.destroyCam(creationCam, false);
-        } catch (e) {}
-        creationCam = null;
-    }
+            creationCam = null;
+        }
+    } catch (e) { creationCam = null; }
     mp.game.invoke('0x428CA6DBD1094446', mp.players.local.handle, false); // FREEZE_ENTITY_POSITION
     if (charCreationBrowser) {
         charCreationBrowser.destroy();
@@ -162,6 +167,6 @@ mp.events.add('character:error', (msg) => {
 
 mp.events.add('render', () => {
     if (charCreationBrowser) {
-        mp.game.controls.disableAllActions(0);
+        mp.game.invoke('0xA5FFE9B05F199DE7', 0); // DISABLE_ALL_CONTROL_ACTIONS
     }
 });

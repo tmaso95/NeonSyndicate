@@ -35,7 +35,7 @@ mp.events.add('police:applyUniform', (uniformType) => {
     if (!set) return;
     const parts = sex === 1 ? set.female : set.male;
     parts.forEach(p => {
-        mp.game.ped.setPedComponentVariation(local.handle, p.c, p.d, p.t, 2);
+        mp.game.invoke('0x262B14F48D29DE80', local.handle, p.c, p.d, p.t, 2); // SET_PED_COMPONENT_VARIATION
     });
 });
 

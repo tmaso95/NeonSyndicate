@@ -9,13 +9,11 @@ mp.events.add('admin:receivePanel', (dataJSON) => {
 });
 
 mp.events.add('admin:toggleGodClient', (enabled) => {
-    // God mode: handle damage locally
-    mp.game.entity.setEntityInvincible(mp.players.local.handle, enabled);
+    mp.game.invoke('0xB8A6322200FE3D87', mp.players.local.handle, enabled); // SET_ENTITY_INVINCIBLE
 });
 
 mp.events.add('admin:startSpectate', (targetId) => {
-    // Basic spectate implementation
-    mp.game.cameras.renderScriptCams(false, false, 0, true, false);
+    mp.game.cam.renderScriptCams(false, false, 0, true, false);
 });
 
 mp.events.add('admin:setTag', (label, rank) => {

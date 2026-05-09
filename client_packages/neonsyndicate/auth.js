@@ -3,7 +3,7 @@ let authBrowser = null;
 mp.events.add('auth:showUI', () => {
     mp.game.ui.displayHud(false);
     mp.game.ui.displayRadar(false);
-    mp.game.cam.doScreenFadeIn(1500);
+    mp.game.invoke('0xD4E8E24955024033', 1500); // DO_SCREEN_FADE_IN
 
     authBrowser = mp.browsers.new('package://ui/auth/index.html');
     setCursorLocked(true);
