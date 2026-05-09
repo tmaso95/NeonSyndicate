@@ -3,6 +3,7 @@ require('./neonsyndicate/cursor');
 require('./neonsyndicate/auth');
 require('./neonsyndicate/character');
 require('./neonsyndicate/hud');
+require('./neonsyndicate/blips');
 require('./neonsyndicate/vehicles');
 require('./neonsyndicate/showroom');
 require('./neonsyndicate/garages');

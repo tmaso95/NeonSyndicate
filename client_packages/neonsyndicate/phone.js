@@ -1,9 +1,10 @@
 let phoneBrowser = null;
 
+// Phone opens WITHOUT auto-showing cursor.
+// Player uses ` key to toggle cursor manually while phone is open.
 mp.events.add('phone:receiveData', (dataJSON) => {
     if (!phoneBrowser) {
         phoneBrowser = mp.browsers.new('package://ui/phone/index.html');
-        showCursor(true);
     }
     phoneBrowser.execute(`initPhone(${dataJSON})`);
 });
@@ -32,7 +33,7 @@ mp.events.add('phone:error', (msg) => {
     if (phoneBrowser) phoneBrowser.execute(`phoneError('${msg.replace(/'/g, "\\'")}')`);
 });
 
-// Key: M (phone)
+// Key: M — open / close phone
 mp.keys.bind(0x4D, true, () => {
     if (phoneBrowser) {
         phoneBrowser.destroy();

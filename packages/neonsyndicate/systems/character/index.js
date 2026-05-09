@@ -92,9 +92,9 @@ mp.events.add('character:load', async (player, character) => {
 
         // Apply position
         player.spawn(new mp.Vector3(character.pos_x, character.pos_y, character.pos_z));
-        player.heading  = character.pos_h;
-        player.health   = Math.min(200, Math.max(100, character.health));
-        player.armour   = character.armor;
+        player.heading   = character.pos_h;
+        player.health    = Math.min(200, Math.max(100, character.health));
+        player.armour    = character.armor;
         player.dimension = character.dimension || 0;
 
         // Apply appearance
@@ -102,15 +102,15 @@ mp.events.add('character:load', async (player, character) => {
         player.model = model;
 
         player.call('character:applyAppearance', [JSON.stringify({
-            shapeFirst:  character.shape_first,
-            shapeSecond: character.shape_second,
-            shapeMix:    character.shape_mix,
-            skinFirst:   character.skin_first,
-            skinSecond:  character.skin_second,
-            skinMix:     character.skin_mix,
-            eyeColor:    character.eye_color,
-            hairStyle:   character.hair_style,
-            hairColor:   character.hair_color,
+            shapeFirst:    character.shape_first,
+            shapeSecond:   character.shape_second,
+            shapeMix:      character.shape_mix,
+            skinFirst:     character.skin_first,
+            skinSecond:    character.skin_second,
+            skinMix:       character.skin_mix,
+            eyeColor:      character.eye_color,
+            hairStyle:     character.hair_style,
+            hairColor:     character.hair_color,
             hairHighlight: character.hair_highlight,
             faceFeatures:  character.face_features || [],
             faceOverlays:  character.face_overlays  || {}
@@ -120,9 +120,9 @@ mp.events.add('character:load', async (player, character) => {
         const clothes = await db.queryAll('SELECT slot, drawable, texture FROM character_clothes WHERE character_id = ?', [character.id]);
         player.call('character:applyClothes', [JSON.stringify(clothes)]);
 
-        // Send stats to HUD
-        player.call('hud:updateStats', [JSON.stringify({
-            name:      `${character.firstname} ${character.lastname}`,
+        // hud:show carries the initial stats so the browser can apply them once ready
+        player.call('hud:show', [JSON.stringify({
+            name:     `${character.firstname} ${character.lastname}`,
             cnp:       character.cnp,
             level:     character.level,
             cash:      character.cash,
@@ -131,7 +131,14 @@ mp.events.add('character:load', async (player, character) => {
             playTime:  character.play_time
         })]);
 
-        player.call('hud:show');
+        // Send map blips (garages + legal jobs + open businesses)
+        const [garages, jobs, businesses] = await Promise.all([
+            db.queryAll('SELECT name, garage_type, pos_x, pos_y, pos_z, blip_sprite, blip_color FROM garages WHERE is_active = 1'),
+            db.queryAll('SELECT display_name, job_type, spawn_x, spawn_y, spawn_z, blip_sprite, blip_color FROM jobs WHERE job_type = "legal"'),
+            db.queryAll('SELECT name, business_type, pos_x, pos_y, pos_z, blip_sprite, blip_color FROM businesses WHERE is_open = 1')
+        ]);
+        player.call('blips:receiveAll', [JSON.stringify({ garages, jobs, businesses })]);
+
         console.log(`[CHAR] Loaded ${character.firstname} ${character.lastname} for account #${player.data.accountId}`);
     } catch (err) {
         console.error(`[CHAR] Load error: ${err.message}`);
