@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>BCPD MDT</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:100vw;height:100vh;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;color:#e0e0e0}
+  .mdt{width:860px;height:600px;background:linear-gradient(135deg,rgba(5,10,25,0.98),rgba(8,15,35,0.98));border:1px solid #00D4FF;border-radius:6px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 50px rgba(0,212,255,0.25)}
+  .header{display:flex;align-items:center;gap:16px;padding:12px 20px;background:rgba(0,212,255,0.08);border-bottom:1px solid rgba(0,212,255,0.3)}
+  .header-logo{font-family:'Orbitron',sans-serif;font-size:20px;color:#00D4FF;letter-spacing:4px}
+  .header-sub{font-size:12px;color:#aaa;letter-spacing:2px}
+  .duty-badge{margin-left:auto;font-size:11px;padding:4px 12px;border-radius:3px;letter-spacing:1px;font-weight:700}
+  .duty-on{background:rgba(50,255,100,0.15);color:#32ff64;border:1px solid rgba(50,255,100,0.4)}
+  .duty-off{background:rgba(255,60,60,0.15);color:#ff4444;border:1px solid rgba(255,60,60,0.4)}
+  .close-btn{background:none;border:1px solid #00D4FF;color:#00D4FF;width:28px;height:28px;cursor:pointer;border-radius:3px;font-size:14px;transition:all .2s}
+  .close-btn:hover{background:#00D4FF;color:#000}
+  .body{display:flex;flex:1;overflow:hidden}
+  .sidebar{width:190px;background:rgba(0,0,0,0.3);border-right:1px solid rgba(0,212,255,0.15);display:flex;flex-direction:column;padding:8px 0}
+  .tab-btn{padding:11px 16px;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:1px;border:none;background:none;color:#667;text-align:left;transition:all .2s;border-left:2px solid transparent;text-transform:uppercase}
+  .tab-btn.active,.tab-btn:hover{color:#00D4FF;background:rgba(0,212,255,0.08);border-left-color:#00D4FF}
+  .content{flex:1;padding:16px;overflow-y:auto}
+  .section{display:none}
+  .section.active{display:block}
+  h3{font-family:'Orbitron',sans-serif;font-size:11px;color:#00D4FF;margin-bottom:14px;padding-bottom:5px;border-bottom:1px solid rgba(0,212,255,0.2);letter-spacing:2px}
+  .form-group{margin-bottom:10px}
+  .form-group label{display:block;font-size:11px;color:#778;margin-bottom:3px;letter-spacing:0.5px;text-transform:uppercase}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:7px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(0,212,255,0.25);border-radius:3px;color:#e0e0e0;font-family:'Rajdhani',sans-serif;font-size:12px;outline:none}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#00D4FF;box-shadow:0 0 6px rgba(0,212,255,0.2)}
+  .form-group select option{background:#0a0f1f}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{padding:6px 14px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:0.5px;transition:all .15s;text-transform:uppercase}
+  .btn-cyan{background:rgba(0,212,255,0.15);color:#00D4FF;border:1px solid rgba(0,212,255,0.4)}
+  .btn-pink{background:rgba(255,45,120,0.15);color:#FF2D78;border:1px solid rgba(255,45,120,0.35)}
+  .btn-red{background:rgba(255,60,60,0.12);color:#ff4444;border:1px solid rgba(255,60,60,0.35)}
+  .btn-green{background:rgba(50,255,100,0.1);color:#32ff64;border:1px solid rgba(50,255,100,0.3)}
+  .btn:hover{filter:brightness(1.4)}
+  .action-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  /* Result card */
+  .result-card{background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);border-radius:4px;padding:14px;margin-top:12px}
+  .result-card h4{font-family:'Orbitron',sans-serif;font-size:11px;color:#00D4FF;margin-bottom:10px;letter-spacing:2px}
+  .kv{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px}
+  .kv .k{color:#778}
+  .kv .v{color:#e0e0e0;font-weight:600}
+  .v.wanted{color:#FF2D78}
+  .v.jailed{color:#ffaa00}
+  .tag{display:inline-block;font-size:10px;padding:2px 6px;border-radius:2px;font-weight:700;margin-right:4px}
+  .tag-red{background:rgba(255,60,60,0.2);color:#ff4444;border:1px solid rgba(255,60,60,0.4)}
+  .tag-green{background:rgba(50,255,100,0.1);color:#32ff64;border:1px solid rgba(50,255,100,0.3)}
+  .tag-orange{background:rgba(255,170,0,0.15);color:#ffaa00;border:1px solid rgba(255,170,0,0.3)}
+  .warrant-item{padding:6px 10px;border:1px solid rgba(255,45,120,0.2);border-radius:3px;margin-bottom:5px;font-size:11px}
+  .no-result{text-align:center;padding:30px;color:#445;font-size:13px}
+  .scrollbar::-webkit-scrollbar{width:4px}
+  .scrollbar::-webkit-scrollbar-track{background:transparent}
+  .scrollbar::-webkit-scrollbar-thumb{background:#00D4FF;border-radius:2px}
+  .duty-controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="mdt">
+  <div class="header">
+    <div>
+      <div class="header-logo">BCPD MDT</div>
+      <div class="header-sub">BLACKRIDGE CITY POLICE DEPT.</div>
+    </div>
+    <div class="duty-badge duty-off" id="dutyBadge">OFF DUTY</div>
+    <button class="close-btn" onclick="closeMDT()">✕</button>
+  </div>
+  <div class="body">
+    <div class="sidebar">
+      <button class="tab-btn active" onclick="showTab('duty')">SERVICIU</button>
+      <button class="tab-btn" onclick="showTab('search')">CAUTARE</button>
+      <button class="tab-btn" onclick="showTab('actions')">ACTIUNI</button>
+      <button class="tab-btn" onclick="showTab('warrants')">MANDATE</button>
+      <button class="tab-btn" onclick="showTab('ems')">EMS / SMURD</button>
+    </div>
+    <div class="content scrollbar">
+
+      <!-- DUTY TAB -->
+      <div class="section active" id="tab-duty">
+        <h3>CONTROL SERVICIU</h3>
+        <div class="duty-controls">
+          <button class="btn btn-green" onclick="goOnDuty('politie')">POLITIE</button>
+          <button class="btn btn-cyan" onclick="goOnDuty('swat')">SWAT</button>
+          <button class="btn btn-pink" onclick="goOnDuty('ems')">EMS</button>
+          <button class="btn btn-red" onclick="goOffDuty()">OFF DUTY</button>
+        </div>
+        <div class="no-result" id="duty-status">Selecteaza tipul de serviciu</div>
+      </div>
+
+      <!-- SEARCH TAB -->
+      <div class="section" id="tab-search">
+        <h3>CAUTARE PERSOANA / VEHICUL</h3>
+        <div class="form-group">
+          <label>CNP Persoana</label>
+          <input id="search-cnp" type="text" placeholder="CNP (4-8 cifre)" maxlength="8">
+        </div>
+        <button class="btn btn-cyan" onclick="searchPerson()">CAUTA PERSOANA</button>
+        <div style="margin:14px 0;border-top:1px solid rgba(0,212,255,0.1)"></div>
+        <div class="form-group">
+          <label>VIN / Numar inmatriculare</label>
+          <input id="search-veh" type="text" placeholder="VIN sau AB-1234">
+        </div>
+        <button class="btn btn-cyan" onclick="searchVehicle()">CAUTA VEHICUL</button>
+        <div id="search-result"><div class="no-result">Niciun rezultat</div></div>
+      </div>
+
+      <!-- ACTIONS TAB -->
+      <div class="section" id="tab-actions">
+        <h3>RETINERE / AMENDA</h3>
+        <div class="form-group">
+          <label>ID Jucator tinta</label>
+          <input id="act-target-id" type="number" placeholder="ID jucator" min="0">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Motiv</label>
+            <input id="act-reason" type="text" placeholder="Motiv...">
+          </div>
+          <div class="form-group">
+            <label>Timp arest (min)</label>
+            <input id="act-jail-min" type="number" placeholder="1-120" min="1" max="120">
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-red" onclick="arrest()">RETINE</button>
+          <button class="btn btn-pink" onclick="fine()">AMENDA</button>
+        </div>
+        <div style="margin:14px 0;border-top:1px solid rgba(0,212,255,0.1)"></div>
+        <h3>VEHICUL</h3>
+        <div class="form-group">
+          <label>VIN vehicul ridicare</label>
+          <input id="act-vin" type="text" placeholder="VIN vehicul">
+        </div>
+        <div class="action-row">
+          <button class="btn btn-cyan" onclick="impound()">RIDICA VEHICUL</button>
+        </div>
+        <div style="margin:14px 0;border-top:1px solid rgba(0,212,255,0.1)"></div>
+        <h3>WANTED LEVEL</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>ID Jucator</label>
+            <input id="act-wanted-id" type="number" placeholder="ID">
+          </div>
+          <div class="form-group">
+            <label>Nivel (0-5)</label>
+            <input id="act-wanted-lvl" type="number" min="0" max="5" placeholder="0-5">
+          </div>
+        </div>
+        <button class="btn btn-pink" onclick="setWanted()">SET WANTED</button>
+      </div>
+
+      <!-- WARRANTS TAB -->
+      <div class="section" id="tab-warrants">
+        <h3>EMITERE MANDAT</h3>
+        <div class="form-group">
+          <label>CNP Suspect</label>
+          <input id="wrt-cnp" type="text" placeholder="CNP suspect">
+        </div>
+        <div class="form-group">
+          <label>Motiv</label>
+          <input id="wrt-reason" type="text" placeholder="Motiv mandat">
+        </div>
+        <div class="form-group">
+          <label>Tip mandat</label>
+          <select id="wrt-type">
+            <option value="arrest">Arest</option>
+            <option value="search">Perchezitie</option>
+            <option value="observation">Observatie</option>
+          </select>
+        </div>
+        <button class="btn btn-pink" onclick="issueWarrant()">EMITE MANDAT</button>
+      </div>
+
+      <!-- EMS TAB -->
+      <div class="section" id="tab-ems">
+        <h3>EMS / SMURD</h3>
+        <div class="form-group">
+          <label>ID Jucator tinta</label>
+          <input id="ems-id" type="number" placeholder="ID jucator" min="0">
+        </div>
+        <div class="action-row" style="margin-bottom:14px">
+          <button class="btn btn-green" onclick="revivePlayer()">RESUSCITEAZA</button>
+        </div>
+        <div class="form-group">
+          <label>Parte corp ranita</label>
+          <select id="ems-part">
+            <option value="injury_head">Cap</option>
+            <option value="injury_chest">Piept</option>
+            <option value="injury_left_arm">Brat stang</option>
+            <option value="injury_right_arm">Brat drept</option>
+            <option value="injury_left_leg">Picior stang</option>
+            <option value="injury_right_leg">Picior drept</option>
+          </select>
+        </div>
+        <button class="btn btn-cyan" onclick="treatInjury()">TRATEAZA RANA</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function openMDT() { /* already visible */ }
+
+function setDutyState(active, type) {
+    const badge = document.getElementById('dutyBadge');
+    if (active) {
+        badge.textContent = 'ON DUTY: ' + (type || '').toUpperCase();
+        badge.className = 'duty-badge duty-on';
+    } else {
+        badge.textContent = 'OFF DUTY';
+        badge.className = 'duty-badge duty-off';
+    }
+    document.getElementById('duty-status').textContent = active
+        ? `Esti in serviciu ca ${(type || '').toUpperCase()}.`
+        : 'Nu esti in serviciu.';
+}
+
+function showTab(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function goOnDuty(unit)  { mp.trigger('police:browserOnDuty', unit); }
+function goOffDuty()     { mp.trigger('police:browserOffDuty'); }
+function searchPerson()  { mp.trigger('police:browserSearchPerson',  document.getElementById('search-cnp').value); }
+function searchVehicle() { mp.trigger('police:browserSearchVehicle', document.getElementById('search-veh').value); }
+
+function mdtResult(data) {
+    const el = document.getElementById('search-result');
+    if (data.error) {
+        el.innerHTML = `<div class="no-result">${data.error}</div>`;
+        return;
+    }
+    if (data.type === 'person') {
+        const c = data.char;
+        const wList = (data.warrants || []).map(w =>
+            `<div class="warrant-item"><span class="tag tag-red">${w.warrant_type.toUpperCase()}</span> ${w.reason}</div>`
+        ).join('') || '<span style="color:#445;font-size:11px">Fara mandate active</span>';
+        const rec = (() => { try { return JSON.parse(c.criminal_record || '[]'); } catch { return []; } })();
+        el.innerHTML = `
+            <div class="result-card">
+                <h4>FISA PERSOANA</h4>
+                <div class="kv"><span class="k">Nume</span><span class="v">${c.firstname} ${c.lastname}</span></div>
+                <div class="kv"><span class="k">CNP</span><span class="v">${c.cnp}</span></div>
+                <div class="kv"><span class="k">Varsta</span><span class="v">${c.age} ani</span></div>
+                <div class="kv"><span class="k">Wanted</span><span class="v wanted">${c.wanted_level || 0} ★</span></div>
+                <div class="kv"><span class="k">Permis auto</span><span class="v">${c.has_driving_license ? '<span class="tag tag-green">DA</span>' : '<span class="tag tag-red">NU</span>'}</span></div>
+                <div class="kv"><span class="k">Permis arma</span><span class="v">${c.has_weapon_license ? '<span class="tag tag-green">DA</span>' : '<span class="tag tag-red">NU</span>'}</span></div>
+                <div class="kv"><span class="k">Arest</span><span class="v jailed">${c.is_jailed ? `DA (${c.jail_time} min)` : 'NU'}</span></div>
+                <div class="kv"><span class="k">Telefon</span><span class="v">${c.phone_number || 'necunoscut'}</span></div>
+                <div style="margin-top:8px;font-size:11px;color:#778;margin-bottom:4px">MANDATE ACTIVE</div>
+                ${wList}
+                <div style="margin-top:8px;font-size:11px;color:#778">CAZIER (${rec.length} inregistrari)</div>
+            </div>`;
+    } else if (data.type === 'vehicle') {
+        const v = data.veh;
+        el.innerHTML = `
+            <div class="result-card">
+                <h4>FISA VEHICUL</h4>
+                <div class="kv"><span class="k">VIN</span><span class="v">${v.vin}</span></div>
+                <div class="kv"><span class="k">Numar</span><span class="v">${v.plate}</span></div>
+                <div class="kv"><span class="k">Model</span><span class="v">${v.display_name}</span></div>
+                <div class="kv"><span class="k">Proprietar</span><span class="v">${v.firstname} ${v.lastname} (${v.owner_cnp})</span></div>
+                <div class="kv"><span class="k">Furat</span><span class="v">${v.is_stolen ? '<span class="tag tag-red">DA</span>' : '<span class="tag tag-green">NU</span>'}</span></div>
+                <div class="kv"><span class="k">Ridicat</span><span class="v">${v.is_impounded ? '<span class="tag tag-orange">DA</span>' : '<span class="tag tag-green">NU</span>'}</span></div>
+            </div>`;
+    }
+}
+
+function arrest()       { mp.trigger('police:browserArrest',  parseInt(document.getElementById('act-target-id').value), document.getElementById('act-reason').value, document.getElementById('act-jail-min').value); }
+function fine()         { mp.trigger('police:browserFine',    parseInt(document.getElementById('act-target-id').value), 500, document.getElementById('act-reason').value); }
+function impound()      { mp.trigger('police:browserImpound', document.getElementById('act-vin').value); }
+function setWanted()    { mp.trigger('police:browserSetWanted', parseInt(document.getElementById('act-wanted-id').value), parseInt(document.getElementById('act-wanted-lvl').value)); }
+function issueWarrant() { mp.trigger('police:browserWarrant', document.getElementById('wrt-cnp').value, document.getElementById('wrt-reason').value, document.getElementById('wrt-type').value); }
+function revivePlayer() { mp.trigger('police:browserRevive', parseInt(document.getElementById('ems-id').value)); }
+function treatInjury()  { mp.trigger('police:browserTreat',  parseInt(document.getElementById('ems-id').value), document.getElementById('ems-part').value); }
+function closeMDT()     { mp.trigger('police:browserClose'); }
+</script>
+</body>
+</html>

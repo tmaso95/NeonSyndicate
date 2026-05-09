@@ -7,3 +7,8 @@ require('./neonsyndicate/showroom');
 require('./neonsyndicate/garages');
 require('./neonsyndicate/inventory');
 require('./neonsyndicate/phone');
+require('./neonsyndicate/admin');
+require('./neonsyndicate/police');
+require('./neonsyndicate/businesses');
+require('./neonsyndicate/survival');
+require('./neonsyndicate/gym');

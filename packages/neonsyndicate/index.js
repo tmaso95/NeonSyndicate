@@ -21,6 +21,11 @@ async function bootstrap() {
         require('./systems/jobs/index');
         require('./systems/houses/index');
         require('./systems/gangs/index');
+        require('./systems/admin/index');
+        require('./systems/police/index');
+        require('./systems/businesses/index');
+        require('./systems/survival/index');
+        require('./systems/gym/index');
 
         mp.console.logInfo('[NS] All systems loaded successfully.');
     } catch (err) {

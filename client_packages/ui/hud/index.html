@@ -59,8 +59,15 @@
     background: rgba(255,255,255,0.6);
     border-radius: 0 3px 3px 0;
   }
-  .bar-hp   .bar-fill { background: linear-gradient(90deg, #d42b2b, #ff4444); box-shadow: 0 0 8px rgba(255,68,68,0.4); }
-  .bar-armor .bar-fill { background: linear-gradient(90deg, #1a7ab5, var(--cyan)); box-shadow: 0 0 8px rgba(0,212,255,0.3); }
+  .bar-hp      .bar-fill { background: linear-gradient(90deg, #d42b2b, #ff4444); box-shadow: 0 0 8px rgba(255,68,68,0.4); }
+  .bar-armor   .bar-fill { background: linear-gradient(90deg, #1a7ab5, var(--cyan)); box-shadow: 0 0 8px rgba(0,212,255,0.3); }
+  .bar-hunger  .bar-fill { background: linear-gradient(90deg, #c46000, #ff9500); }
+  .bar-thirst  .bar-fill { background: linear-gradient(90deg, #006ab5, #00aaff); }
+  .bar-stamina .bar-fill { background: linear-gradient(90deg, #006e3a, var(--green)); }
+  .bar-stress  .bar-fill { background: linear-gradient(90deg, #8b0057, #cc0088); }
+  .survival-bars { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 4px; }
+  .bar-track.thin { height: 4px; width: 130px; }
+  .bar-label.small { font-size: 0.55rem; width: 20px; }
   .bar-value {
     font-family: 'Orbitron', sans-serif;
     font-size: 0.65rem; color: var(--text);
@@ -250,6 +257,28 @@
     <div class="bar-track"><div class="bar-fill" id="arFill" style="width:0%"></div></div>
     <span class="bar-value" id="arVal">0</span>
   </div>
+  <div class="survival-bars">
+    <div class="bar-row bar-hunger">
+      <span class="bar-label small">🍔</span>
+      <div class="bar-track thin"><div class="bar-fill" id="hungerFill" style="width:100%"></div></div>
+      <span class="bar-value" id="hungerVal" style="font-size:.55rem">100</span>
+    </div>
+    <div class="bar-row bar-thirst" style="margin-top:3px">
+      <span class="bar-label small">💧</span>
+      <div class="bar-track thin"><div class="bar-fill" id="thirstFill" style="width:100%"></div></div>
+      <span class="bar-value" id="thirstVal" style="font-size:.55rem">100</span>
+    </div>
+    <div class="bar-row bar-stamina" style="margin-top:3px">
+      <span class="bar-label small">⚡</span>
+      <div class="bar-track thin"><div class="bar-fill" id="staminaFill" style="width:100%"></div></div>
+      <span class="bar-value" id="staminaVal" style="font-size:.55rem">100</span>
+    </div>
+    <div class="bar-row bar-stress" style="margin-top:3px">
+      <span class="bar-label small">😤</span>
+      <div class="bar-track thin"><div class="bar-fill" id="stressFill" style="width:0%"></div></div>
+      <span class="bar-value" id="stressVal" style="font-size:.55rem">0</span>
+    </div>
+  </div>
 </div>
 
 <!-- Notifications -->
@@ -310,6 +339,18 @@
 
   function hideHud() {
     document.body.style.opacity = '0';
+  }
+
+  // ── Survival stats update ──
+  function updateSurvival(stats) {
+    document.getElementById('hungerFill').style.width  = Math.max(0, Math.min(100, stats.hunger  || 0)) + '%';
+    document.getElementById('thirstFill').style.width  = Math.max(0, Math.min(100, stats.thirst  || 0)) + '%';
+    document.getElementById('staminaFill').style.width = Math.max(0, Math.min(100, stats.stamina || 0)) + '%';
+    document.getElementById('stressFill').style.width  = Math.max(0, Math.min(100, stats.stress  || 0)) + '%';
+    document.getElementById('hungerVal').textContent   = Math.round(stats.hunger  || 0);
+    document.getElementById('thirstVal').textContent   = Math.round(stats.thirst  || 0);
+    document.getElementById('staminaVal').textContent  = Math.round(stats.stamina || 0);
+    document.getElementById('stressVal').textContent   = Math.round(stats.stress  || 0);
   }
 </script>
 </body>
