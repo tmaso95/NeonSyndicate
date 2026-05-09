@@ -1,21 +1,25 @@
-// Survival stats are rendered inside the main HUD browser
+// ── NEON SYNDICATE | SURVIVAL ─────────────────────────────────
+// Survival stats (hunger, thirst, stress, stamina) are rendered
+// inside the main HUD browser. This module bridges server events
+// and relays them through hud.js via the local event bus.
+
+// Server → client: periodic stats update
 mp.events.add('survival:updateStats', (statsJSON) => {
-    const hudBrowser = mp.browsers.getByUrl && mp.browsers.getByUrl('package://ui/hud/index.html');
-    // Broadcast to all active browsers; hud.js stores reference globally via window
+    // Re-emit as hud:survivalStats so hud.js forwards it to the browser
     mp.events.call('hud:survivalStats', statsJSON);
 });
 
-// Bridge: hud.js listens to 'hud:survivalStats' and forwards to the browser
-// (survival stats arrive from server via survival:updateStats, re-emitted here)
+// Inventory UI signals the player ate/drank something
 mp.events.add('inventory:useFood', (itemName) => {
     mp.events.callRemote('survival:eat', itemName);
 });
 
+// Manual stats request (e.g. called by other modules)
 mp.events.add('survival:requestStats', () => {
     mp.events.callRemote('survival:requestStats');
 });
 
-// Request stats on spawn
+// Request fresh stats after the character spawns into the world
 mp.events.add('character:spawned', () => {
     mp.events.callRemote('survival:requestStats');
 });

@@ -1,8 +1,21 @@
+/**
+ * Neon Syndicate – Character System (server-side)
+ *
+ * Changes from previous version:
+ *  1. hud:show is called FIRST with full stats (including level, experience, job, playTime)
+ *  2. Blips data is sent AFTER hud:show
+ *  3. Starter phone item changed from 'phone' → 'phone_basic' (valid item name)
+ *  4. After character load, mp.events.call('survival:loadStats', player, character) is triggered
+ */
+
+'use strict';
+
 const db      = require('../../database/connection');
 const { generateCNP } = require('../../utils/generators');
 const { isValidName, isValidAge } = require('../../utils/validators');
 
-// Default clothing per gender  (component: [drawable, texture])
+// ── DEFAULT CLOTHING PER GENDER ───────────────────────────────────────────────
+// component → [drawable, texture]
 const DEFAULT_CLOTHES = {
     male: {
         undershirt: [15, 0],
@@ -18,7 +31,7 @@ const DEFAULT_CLOTHES = {
     }
 };
 
-// ── CREATE CHARACTER ─────────────────────────────────────────
+// ── CREATE CHARACTER ──────────────────────────────────────────────────────────
 mp.events.add('character:create', async (player, dataJSON) => {
     try {
         if (!player.data || !player.data.accountId) {
@@ -27,18 +40,25 @@ mp.events.add('character:create', async (player, dataJSON) => {
 
         let data;
         try { data = JSON.parse(dataJSON); }
-        catch { return player.call('character:error', ['Date invalide trimise.'  ]); }
+        catch { return player.call('character:error', ['Date invalide trimise.']); }
 
-        const { firstname, lastname, sex, age, shapeFather, shapeMother, shapeMix,
-                skinFather, skinMother, skinMix, eyeColor, hairStyle, hairColor,
-                hairHighlight, faceFeatures, faceOverlays } = data;
+        const {
+            firstname, lastname, sex, age,
+            shapeFather, shapeMother, shapeMix,
+            skinFather, skinMother, skinMix,
+            eyeColor, hairStyle, hairColor, hairHighlight,
+            faceFeatures, faceOverlays
+        } = data;
 
         if (!isValidName(firstname)) return player.call('character:error', ['Prenume invalid (2-32 litere).']);
         if (!isValidName(lastname))  return player.call('character:error', ['Nume invalid (2-32 litere).']);
         if (!isValidAge(age))        return player.call('character:error', ['Varsta trebuie sa fie intre 18-70.']);
 
-        // Only one character per account
-        const existing = await db.queryOne('SELECT id FROM characters WHERE account_id = ?', [player.data.accountId]);
+        // One character per account
+        const existing = await db.queryOne(
+            'SELECT id FROM characters WHERE account_id = ?',
+            [player.data.accountId]
+        );
         if (existing) return player.call('character:error', ['Contul are deja un caracter.']);
 
         const cnp = await generateCNP();
@@ -46,15 +66,18 @@ mp.events.add('character:create', async (player, dataJSON) => {
         const charId = await db.insert(`
             INSERT INTO characters
             (account_id, cnp, firstname, lastname, sex, age,
-             shape_first, shape_second, shape_mix, skin_first, skin_second, skin_mix,
-             eye_color, hair_style, hair_color, hair_highlight, face_features, face_overlays)
+             shape_first, shape_second, shape_mix,
+             skin_first,  skin_second,  skin_mix,
+             eye_color, hair_style, hair_color, hair_highlight,
+             face_features, face_overlays)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
             [
                 player.data.accountId, cnp,
                 firstname.trim(), lastname.trim(), sex ? 1 : 0, age,
-                shapeFather || 0, shapeMother || 0, shapeMix   || 0.5,
-                skinFather  || 0, skinMother  || 0, skinMix    || 0.5,
-                eyeColor    || 0, hairStyle   || 0, hairColor  || 0, hairHighlight || 0,
+                shapeFather   || 0, shapeMother   || 0, shapeMix  || 0.5,
+                skinFather    || 0, skinMother    || 0, skinMix   || 0.5,
+                eyeColor      || 0, hairStyle     || 0,
+                hairColor     || 0, hairHighlight || 0,
                 JSON.stringify(faceFeatures  || []),
                 JSON.stringify(faceOverlays  || {})
             ]
@@ -69,10 +92,19 @@ mp.events.add('character:create', async (player, dataJSON) => {
             );
         }
 
-        // Give starter items
-        await db.insert('INSERT INTO character_inventory (character_id, item_name, quantity, slot_index) VALUES (?,?,?,?)', [charId, 'phone', 1, 0]);
-        await db.insert('INSERT INTO character_inventory (character_id, item_name, quantity, slot_index) VALUES (?,?,?,?)', [charId, 'id_card', 1, 1]);
-        await db.insert('INSERT INTO character_inventory (character_id, item_name, quantity, slot_index) VALUES (?,?,?,?)', [charId, 'wallet', 1, 2]);
+        // Starter items – use 'phone_basic' (valid item name in items table)
+        await db.insert(
+            'INSERT INTO character_inventory (character_id, item_name, quantity, slot_index) VALUES (?,?,?,?)',
+            [charId, 'phone_basic', 1, 0]
+        );
+        await db.insert(
+            'INSERT INTO character_inventory (character_id, item_name, quantity, slot_index) VALUES (?,?,?,?)',
+            [charId, 'id_card', 1, 1]
+        );
+        await db.insert(
+            'INSERT INTO character_inventory (character_id, item_name, quantity, slot_index) VALUES (?,?,?,?)',
+            [charId, 'wallet', 1, 2]
+        );
 
         console.log(`[CHAR] Created character ${firstname} ${lastname} CNP:${cnp}`);
 
@@ -84,23 +116,26 @@ mp.events.add('character:create', async (player, dataJSON) => {
     }
 });
 
-// ── LOAD CHARACTER ────────────────────────────────────────────
+// ── LOAD CHARACTER ────────────────────────────────────────────────────────────
 mp.events.add('character:load', async (player, character) => {
     try {
         player.data.character = character;
         player.data.cnp       = character.cnp;
 
-        // Apply position
-        player.spawn(new mp.Vector3(character.pos_x, character.pos_y, character.pos_z));
-        player.heading   = character.pos_h;
-        player.health    = Math.min(200, Math.max(100, character.health));
-        player.armour    = character.armor;
+        // Spawn at saved position
+        player.spawn(new mp.Vector3(character.pos_x || 0, character.pos_y || 0, character.pos_z || 0));
+        player.heading   = character.pos_h    || 0;
+        player.health    = Math.min(200, Math.max(100, character.health || 100));
+        player.armour    = character.armor    || 0;
         player.dimension = character.dimension || 0;
 
-        // Apply appearance
-        const model = character.sex === 1 ? mp.joaat('mp_f_freemode_01') : mp.joaat('mp_m_freemode_01');
+        // Apply character model
+        const model = character.sex === 1
+            ? mp.joaat('mp_f_freemode_01')
+            : mp.joaat('mp_m_freemode_01');
         player.model = model;
 
+        // Apply face appearance on client
         player.call('character:applyAppearance', [JSON.stringify({
             shapeFirst:    character.shape_first,
             shapeSecond:   character.shape_second,
@@ -116,48 +151,90 @@ mp.events.add('character:load', async (player, character) => {
             faceOverlays:  character.face_overlays  || {}
         })]);
 
-        // Load clothes
-        const clothes = await db.queryAll('SELECT slot, drawable, texture FROM character_clothes WHERE character_id = ?', [character.id]);
+        // Apply saved clothes
+        const clothes = await db.queryAll(
+            'SELECT slot, drawable, texture FROM character_clothes WHERE character_id = ?',
+            [character.id]
+        );
         player.call('character:applyClothes', [JSON.stringify(clothes)]);
 
-        // hud:show carries the initial stats so the browser can apply them once ready
+        // ── STEP 1: hud:show FIRST with full stats ─────────────────────
+        // The browser reads these stats immediately when it mounts.
         player.call('hud:show', [JSON.stringify({
-            name:     `${character.firstname} ${character.lastname}`,
-            cnp:       character.cnp,
-            level:     character.level,
-            cash:      character.cash,
-            bank:      character.bank,
-            job:       character.job_name || 'Somer',
-            playTime:  character.play_time
+            name:       `${character.firstname} ${character.lastname}`,
+            cnp:        character.cnp,
+            level:      character.level      || 1,
+            experience: character.experience || 0,
+            cash:       character.cash       || 0,
+            bank:       character.bank       || 0,
+            job:        character.job_name   || 'Somer',
+            playTime:   character.play_time  || 0
         })]);
 
-        // Send map blips (garages + legal jobs + open businesses)
+        // ── STEP 2: map blips AFTER hud:show ──────────────────────────
         const [garages, jobs, businesses] = await Promise.all([
-            db.queryAll('SELECT name, garage_type, pos_x, pos_y, pos_z, blip_sprite, blip_color FROM garages WHERE is_active = 1'),
-            db.queryAll('SELECT display_name, job_type, spawn_x, spawn_y, spawn_z, blip_sprite, blip_color FROM jobs WHERE job_type = "legal"'),
-            db.queryAll('SELECT name, business_type, pos_x, pos_y, pos_z, blip_sprite, blip_color FROM businesses WHERE is_open = 1')
+            db.queryAll(
+                'SELECT name, garage_type, pos_x, pos_y, pos_z, blip_sprite, blip_color FROM garages WHERE is_active = 1'
+            ),
+            db.queryAll(
+                'SELECT display_name, job_type, spawn_x, spawn_y, spawn_z, blip_sprite, blip_color FROM jobs WHERE job_type = "legal"'
+            ),
+            db.queryAll(
+                'SELECT name, business_type, pos_x, pos_y, pos_z, blip_sprite, blip_color FROM businesses WHERE is_open = 1'
+            )
         ]);
         player.call('blips:receiveAll', [JSON.stringify({ garages, jobs, businesses })]);
 
-        console.log(`[CHAR] Loaded ${character.firstname} ${character.lastname} for account #${player.data.accountId}`);
+        // ── STEP 3: init survival stats ────────────────────────────────
+        mp.events.call('survival:loadStats', player, character);
+
+        console.log(`[CHAR] Loaded ${character.firstname} ${character.lastname} (CNP:${character.cnp}) for account #${player.data.accountId}`);
     } catch (err) {
         console.error(`[CHAR] Load error: ${err.message}`);
     }
 });
 
-// ── SAVE CHARACTER ────────────────────────────────────────────
+// ── SURVIVAL:LOADSTATS stub (survival system overrides this) ─────────────────
+// Provide a safe default so this call never throws if survival loads after char.
+mp.events.add('survival:loadStats', async (player, character) => {
+    if (!player.data || !player.data.cnp) return;
+    try {
+        const char = await db.queryOne(
+            'SELECT hunger, thirst, stamina, stress FROM characters WHERE cnp = ?',
+            [player.data.cnp]
+        );
+        if (char) {
+            player.call('survival:updateStats', [JSON.stringify({
+                hunger:  char.hunger  || 100,
+                thirst:  char.thirst  || 100,
+                stamina: char.stamina || 100,
+                stress:  char.stress  || 0
+            })]);
+        }
+    } catch { /* silent – survival system may not be loaded yet */ }
+});
+
+// ── SAVE CHARACTER ────────────────────────────────────────────────────────────
 async function saveCharacter(player) {
     if (!player.data || !player.data.character) return;
     try {
         const pos = player.position;
         await db.update(`
             UPDATE characters SET
-                health = ?, armor = ?, pos_x = ?, pos_y = ?, pos_z = ?, pos_h = ?,
-                real_time = real_time + ?, last_seen = NOW()
+                health   = ?,
+                armor    = ?,
+                pos_x    = ?,
+                pos_y    = ?,
+                pos_z    = ?,
+                pos_h    = ?,
+                real_time = real_time + ?,
+                last_seen = NOW()
             WHERE cnp = ?`,
             [
-                player.health, player.armour,
-                pos.x, pos.y, pos.z, player.heading,
+                player.health,
+                player.armour,
+                pos.x, pos.y, pos.z,
+                player.heading,
                 Math.floor((Date.now() - (player.data.joinTimestamp || Date.now())) / 60000),
                 player.data.cnp
             ]
@@ -176,26 +253,36 @@ mp.events.add('playerReady', (player) => {
     player.data.joinTimestamp = Date.now();
 });
 
-// ── PLAY TIME TICK (every 60s) ────────────────────────────────
+// ── PLAY TIME TICK (every 60 seconds) ────────────────────────────────────────
 setInterval(async () => {
     const players = mp.players.toArray();
     for (const player of players) {
         if (!player.data || !player.data.cnp) continue;
         try {
-            await db.update('UPDATE characters SET play_time = play_time + 1 WHERE cnp = ?', [player.data.cnp]);
+            await db.update(
+                'UPDATE characters SET play_time = play_time + 1 WHERE cnp = ?',
+                [player.data.cnp]
+            );
             if (player.data.character) player.data.character.play_time++;
         } catch { /* silent */ }
     }
 }, 60000);
 
-// ── CLIENT: Request own stats ─────────────────────────────────
+// ── CLIENT: Request own stats ─────────────────────────────────────────────────
 mp.events.add('character:requestStats', async (player) => {
     if (!player.data || !player.data.cnp) return;
-    const c = await db.queryOne('SELECT level, experience, play_time, real_time, cash, bank FROM characters WHERE cnp = ?', [player.data.cnp]);
-    if (c) player.call('character:receiveStats', [JSON.stringify(c)]);
+    try {
+        const c = await db.queryOne(
+            'SELECT level, experience, play_time, real_time, cash, bank FROM characters WHERE cnp = ?',
+            [player.data.cnp]
+        );
+        if (c) player.call('character:receiveStats', [JSON.stringify(c)]);
+    } catch (err) {
+        console.error(`[CHAR] character:requestStats error: ${err.message}`);
+    }
 });
 
-// ── GIVE MONEY (utility) ─────────────────────────────────────
+// ── GIVE MONEY (utility) ──────────────────────────────────────────────────────
 async function giveCash(cnp, amount) {
     return db.update('UPDATE characters SET cash = cash + ? WHERE cnp = ?', [amount, cnp]);
 }
@@ -209,13 +296,23 @@ async function takeCash(cnp, amount) {
 
 async function giveXP(player, amount) {
     if (!player.data || !player.data.cnp) return;
-    const c = await db.queryOne('SELECT level, experience FROM characters WHERE cnp = ?', [player.data.cnp]);
-    if (!c) return;
-    const newXP    = c.experience + amount;
-    const newLevel = Math.floor(1 + Math.sqrt(newXP / 500));
-    await db.update('UPDATE characters SET experience = ?, level = ? WHERE cnp = ?', [newXP, newLevel, player.data.cnp]);
-    if (newLevel > c.level) {
-        player.call('hud:notification', [`Ai avansat la nivelul ${newLevel}!`, 'success']);
+    try {
+        const c = await db.queryOne(
+            'SELECT level, experience FROM characters WHERE cnp = ?',
+            [player.data.cnp]
+        );
+        if (!c) return;
+        const newXP    = c.experience + amount;
+        const newLevel = Math.floor(1 + Math.sqrt(newXP / 500));
+        await db.update(
+            'UPDATE characters SET experience = ?, level = ? WHERE cnp = ?',
+            [newXP, newLevel, player.data.cnp]
+        );
+        if (newLevel > c.level) {
+            player.call('hud:notification', [`Ai avansat la nivelul ${newLevel}!`, 'success']);
+        }
+    } catch (err) {
+        console.error(`[CHAR] giveXP error: ${err.message}`);
     }
 }
 

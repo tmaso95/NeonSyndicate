@@ -1,9 +1,13 @@
-// ── NEON SYNDICATE | CLIENT ENTRY POINT ─────────────────────
+// ── NEON SYNDICATE | CLIENT ENTRY POINT ──────────────────────
+// Load order matters: cursor must be first (provides global helpers),
+// then interaction & HUD (UI foundations), then feature modules.
+
 require('./neonsyndicate/cursor');
-require('./neonsyndicate/auth');
-require('./neonsyndicate/character');
+require('./neonsyndicate/interaction');
 require('./neonsyndicate/hud');
 require('./neonsyndicate/blips');
+require('./neonsyndicate/auth');
+require('./neonsyndicate/character');
 require('./neonsyndicate/vehicles');
 require('./neonsyndicate/showroom');
 require('./neonsyndicate/garages');

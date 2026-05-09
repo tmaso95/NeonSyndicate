@@ -1,40 +1,81 @@
-let bizBrowser = null;
+// ── NEON SYNDICATE | BUSINESSES ───────────────────────────────
 
-mp.events.add('business:showMenu', (bizJSON) => {
-    if (!bizBrowser) {
-        bizBrowser = mp.browsers.new('package://ui/businesses/index.html');
+let businessBrowser = null;
+
+// ── OPEN BUSINESS UI ──────────────────────────────────────────
+mp.events.add('business:openUI', (dataJSON) => {
+    if (!businessBrowser) {
+        businessBrowser = mp.browsers.new('package://ui/businesses/index.html');
         showCursor(true);
     }
-    bizBrowser.execute(`showMenu(${bizJSON})`);
-    // Load stock
-    const biz = JSON.parse(bizJSON);
-    mp.events.callRemote('business:getStock', biz.id);
+    businessBrowser.execute(`loadBusiness(${dataJSON})`);
 });
 
-mp.events.add('business:closeMenu', () => {
-    if (bizBrowser) {
-        bizBrowser.destroy();
-        bizBrowser = null;
-        showCursor(false);
+// ── LEGACY: business:showMenu (keeps existing server events working) ─
+mp.events.add('business:showMenu', (bizJSON) => {
+    if (!businessBrowser) {
+        businessBrowser = mp.browsers.new('package://ui/businesses/index.html');
+        showCursor(true);
     }
+    businessBrowser.execute(`showMenu(${bizJSON})`);
+    try {
+        const biz = JSON.parse(bizJSON);
+        mp.events.callRemote('business:getStock', biz.id);
+    } catch (e) {}
 });
 
+// ── CLOSE BUSINESS UI ─────────────────────────────────────────
+mp.events.add('business:closeMenu', () => {
+    if (businessBrowser) {
+        businessBrowser.destroy();
+        businessBrowser = null;
+    }
+    showCursor(false);
+});
+
+// ── STOCK / REVENUE DATA FROM SERVER ─────────────────────────
 mp.events.add('business:receiveStock', (dataJSON) => {
-    if (bizBrowser) bizBrowser.execute(`loadStock(${dataJSON})`);
+    if (businessBrowser) businessBrowser.execute(`loadStock(${dataJSON})`);
 });
 
 mp.events.add('business:receiveRevenue', (dataJSON) => {
-    if (bizBrowser) bizBrowser.execute(`loadRevenue(${dataJSON})`);
+    if (businessBrowser) businessBrowser.execute(`loadRevenue(${dataJSON})`);
 });
 
-// Browser → server
-mp.events.add('business:browserBuy',            (bizId, item, qty) => mp.events.callRemote('business:buyItem',        bizId, item, qty));
-mp.events.add('business:browserBuyBusiness',    (bizId)            => mp.events.callRemote('business:buy',            bizId));
-mp.events.add('business:browserSetPrice',       (bizId, item, p)   => mp.events.callRemote('business:setPrice',       bizId, item, p));
-mp.events.add('business:browserRestock',        (bizId, item, qty) => mp.events.callRemote('business:restock',        bizId, item, qty));
-mp.events.add('business:browserGetRevenue',     (bizId)            => mp.events.callRemote('business:getRevenue',     bizId));
-mp.events.add('business:browserWithdrawRevenue',(bizId)            => mp.events.callRemote('business:withdrawRevenue',bizId));
+// ── ITEM BOUGHT CONFIRMATION ──────────────────────────────────
+mp.events.add('business:itemBought', (msg) => {
+    mp.events.call('hud:notification', msg || 'Produs achizitionat!', 'success');
+});
+
+// ── BROWSER → SERVER BRIDGES ──────────────────────────────────
+mp.events.add('business:browserBuy', (bizId, itemName, qty) => {
+    mp.events.callRemote('business:buyItem', bizId, itemName, qty);
+});
+
+mp.events.add('business:browserBuyBusiness', (bizId) => {
+    mp.events.callRemote('business:buy', bizId);
+});
+
+mp.events.add('business:browserSetPrice', (bizId, item, price) => {
+    mp.events.callRemote('business:setPrice', bizId, item, price);
+});
+
+mp.events.add('business:browserRestock', (bizId, item, qty) => {
+    mp.events.callRemote('business:restock', bizId, item, qty);
+});
+
+mp.events.add('business:browserGetRevenue', (bizId) => {
+    mp.events.callRemote('business:getRevenue', bizId);
+});
+
+mp.events.add('business:browserWithdrawRevenue', (bizId) => {
+    mp.events.callRemote('business:withdrawRevenue', bizId);
+});
+
 mp.events.add('business:browserClose', () => {
-    if (bizBrowser) { bizBrowser.destroy(); bizBrowser = null; }
+    if (businessBrowser) {
+        businessBrowser.destroy();
+        businessBrowser = null;
+    }
     showCursor(false);
 });

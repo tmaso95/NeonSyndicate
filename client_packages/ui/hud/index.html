@@ -2,358 +2,582 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<title>HUD</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeonSyndicate HUD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --pink:   #FF2D78;
-    --cyan:   #00D4FF;
-    --green:  #00FF88;
-    --yellow: #FFD700;
-    --red:    #FF4444;
-    --text:   #e8e8f0;
-    --dim:    #6a6a8a;
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     background: transparent;
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    width: 100vw; height: 100vh;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
+    font-family: 'Rajdhani', sans-serif;
+    color: #e0e0f0;
     pointer-events: none;
     user-select: none;
   }
 
-  /* ── Bottom-right vitals ── */
-  .vitals {
+  /* Scanline overlay */
+  body::after {
+    content: '';
     position: fixed;
-    bottom: 28px; right: 28px;
-    display: flex; flex-direction: column; gap: 6px;
-    align-items: flex-end;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.025) 2px,
+      rgba(0,0,0,0.025) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
   }
 
-  .bar-row {
-    display: flex; align-items: center; gap: 10px;
-  }
-  .bar-label {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.6rem; letter-spacing: 2px;
-    color: var(--dim); text-transform: uppercase;
-    width: 16px; text-align: right;
-  }
-  .bar-track {
-    width: 180px; height: 6px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 3px; overflow: hidden;
-    position: relative;
-  }
-  .bar-fill {
-    height: 100%; border-radius: 3px;
-    transition: width 0.4s ease;
-    position: relative;
-  }
-  .bar-fill::after {
-    content: ''; position: absolute;
-    top: 0; right: 0; bottom: 0; width: 3px;
-    background: rgba(255,255,255,0.6);
-    border-radius: 0 3px 3px 0;
-  }
-  .bar-hp      .bar-fill { background: linear-gradient(90deg, #d42b2b, #ff4444); box-shadow: 0 0 8px rgba(255,68,68,0.4); }
-  .bar-armor   .bar-fill { background: linear-gradient(90deg, #1a7ab5, var(--cyan)); box-shadow: 0 0 8px rgba(0,212,255,0.3); }
-  .bar-hunger  .bar-fill { background: linear-gradient(90deg, #c46000, #ff9500); }
-  .bar-thirst  .bar-fill { background: linear-gradient(90deg, #006ab5, #00aaff); }
-  .bar-stamina .bar-fill { background: linear-gradient(90deg, #006e3a, var(--green)); }
-  .bar-stress  .bar-fill { background: linear-gradient(90deg, #8b0057, #cc0088); }
-  .survival-bars { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 4px; }
-  .bar-track.thin { height: 4px; width: 130px; }
-  .bar-label.small { font-size: 0.55rem; width: 20px; }
-  .bar-value {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.65rem; color: var(--text);
-    width: 28px; text-align: left;
+  /* TOP-LEFT */
+  #top-left {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    animation: slideInLeft 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
   }
 
-  /* ── Cash display ── */
-  .cash-display {
-    position: fixed;
-    bottom: 28px; left: 28px;
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .cash-item {
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(5,5,16,0.75);
-    padding: 6px 12px;
-    border-left: 2px solid var(--pink);
-  }
-  .cash-icon { font-size: 0.75rem; color: var(--pink); }
-  .cash-amount {
+  #logo {
     font-family: 'Orbitron', sans-serif;
-    font-size: 0.8rem; color: var(--text);
-  }
-  .cash-label { font-size: 0.6rem; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
-  .cash-item.bank { border-left-color: var(--cyan); }
-  .cash-item.bank .cash-icon { color: var(--cyan); }
-
-  /* ── Top-left player info ── */
-  .player-info {
-    position: fixed;
-    top: 20px; left: 20px;
-    background: rgba(5,5,16,0.8);
-    border: 1px solid rgba(255,45,120,0.3);
-    border-left: 3px solid var(--pink);
-    padding: 10px 16px;
-    min-width: 200px;
-    box-shadow: 4px 0 20px rgba(255,45,120,0.1);
-  }
-  .player-name {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.75rem; letter-spacing: 2px;
-    color: var(--text); text-transform: uppercase;
-  }
-  .player-meta {
-    display: flex; gap: 12px; margin-top: 4px;
-  }
-  .player-meta-item {
-    display: flex; align-items: center; gap: 4px;
-    font-size: 0.7rem; color: var(--dim);
-  }
-  .player-meta-item span { color: var(--pink); font-family: 'Orbitron', sans-serif; font-size: 0.65rem; }
-  .player-job { margin-top: 4px; font-size: 0.7rem; color: var(--cyan); letter-spacing: 1px; }
-
-  /* ── Speed display (in vehicle) ── */
-  .speed-display {
-    position: fixed;
-    bottom: 100px; right: 28px;
-    display: none;
-    align-items: baseline; gap: 4px;
-  }
-  .speed-display.visible { display: flex; }
-  .speed-num {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 2.5rem; font-weight: 700;
-    color: var(--cyan);
-    text-shadow: 0 0 20px rgba(0,212,255,0.5);
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #FF2D78;
+    text-shadow: 0 0 8px #FF2D78, 0 0 24px rgba(255,45,120,0.55), 0 0 48px rgba(255,45,120,0.2);
     line-height: 1;
   }
-  .speed-unit { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; color: var(--dim); letter-spacing: 2px; }
 
-  /* ── Clock ── */
-  .clock {
-    position: fixed;
-    top: 20px; right: 20px;
-    background: rgba(5,5,16,0.8);
-    border: 1px solid rgba(255,45,120,0.2);
-    padding: 8px 14px; text-align: right;
-  }
-  .clock-time {
+  #cnp-display {
     font-family: 'Orbitron', sans-serif;
-    font-size: 1.1rem; color: var(--text);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #00D4FF;
+    text-shadow: 0 0 6px rgba(0,212,255,0.7);
+    opacity: 0.8;
+    margin-top: -2px;
+  }
+
+  #player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 6px 10px;
+    background: rgba(8,8,24,0.88);
+    border: 1px solid rgba(255,45,120,0.22);
+    border-left: 2px solid #FF2D78;
+    backdrop-filter: blur(8px);
+  }
+
+  #player-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+
+  #player-job {
+    font-size: 11px;
+    font-weight: 600;
+    color: #00D4FF;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* TOP-RIGHT: Clock */
+  #top-right {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    padding: 8px 12px;
+    background: rgba(8,8,24,0.88);
+    border: 1px solid rgba(0,212,255,0.22);
+    border-right: 2px solid #00D4FF;
+    backdrop-filter: blur(8px);
+    animation: slideInRight 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+
+  #clock-time {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #00D4FF;
+    text-shadow: 0 0 12px rgba(0,212,255,0.8), 0 0 32px rgba(0,212,255,0.3);
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+
+  #clock-date {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(0,212,255,0.6);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* BOTTOM-LEFT: Money */
+  #bottom-left {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    animation: slideInLeft 0.5s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  .money-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    background: rgba(8,8,24,0.88);
+    border: 1px solid rgba(255,45,120,0.2);
+    backdrop-filter: blur(6px);
+  }
+  .money-card.bank { border-color: rgba(0,212,255,0.2); }
+
+  .money-icon { font-size: 13px; }
+  .money-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(224,224,240,0.45);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    min-width: 28px;
+  }
+  .money-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #FF2D78;
+    text-shadow: 0 0 8px rgba(255,45,120,0.55);
+    letter-spacing: 0.5px;
+  }
+  .money-card.bank .money-value {
+    color: #00D4FF;
+    text-shadow: 0 0 8px rgba(0,212,255,0.55);
+  }
+
+  /* BOTTOM-RIGHT */
+  #bottom-right {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    animation: slideInRight 0.5s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  /* Speed */
+  #speed-display {
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 6px 12px;
+    background: rgba(8,8,24,0.88);
+    border: 1px solid rgba(155,68,255,0.28);
+    border-right: 2px solid #9B44FF;
+    backdrop-filter: blur(6px);
+  }
+  #speed-display.visible { display: flex; }
+
+  #speed-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: #9B44FF;
+    text-shadow: 0 0 16px rgba(155,68,255,0.85), 0 0 48px rgba(155,68,255,0.3);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  #speed-unit {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(155,68,255,0.65);
     letter-spacing: 3px;
+    text-align: right;
   }
-  .clock-date { font-size: 0.65rem; color: var(--dim); letter-spacing: 2px; margin-top: 2px; }
 
-  /* ── Notifications ── */
-  .notifications {
+  /* Vitals row */
+  #vitals-row {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .vital-ring {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: none; /* shown via JS */
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .vital-ring svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 60px; height: 60px;
+    transform: rotate(-90deg);
+  }
+  .ring-bg  { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 3.5; }
+  .ring-fill {
+    fill: none;
+    stroke-width: 3.5;
+    stroke-linecap: butt;
+    transition: stroke-dashoffset 0.4s ease;
+    stroke-dasharray: 163.36;
+    stroke-dashoffset: 0;
+  }
+  .vital-ring::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: rgba(8,8,24,0.82);
+    z-index: 0;
+  }
+  .vital-icon  { font-size: 18px; z-index: 1; line-height: 1; }
+  .vital-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(224,224,240,0.7);
+    z-index: 1;
+    margin-top: 1px;
+  }
+
+  .ring-hp    .ring-fill { stroke: #FF4466; }
+  .ring-armor .ring-fill { stroke: #4488FF; }
+  .ring-hunger .ring-fill{ stroke: #FF9944; }
+  .ring-thirst .ring-fill{ stroke: #44CCFF; }
+  .ring-stamina .ring-fill{ stroke: #00FF88; }
+  .ring-stress .ring-fill { stroke: #FF6600; }
+
+  /* CENTER-BOTTOM: Hint */
+  #interaction-hint {
     position: fixed;
-    top: 20px; left: 50%; transform: translateX(-50%);
-    display: flex; flex-direction: column; gap: 8px;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     pointer-events: none;
-    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 22px;
+    background: rgba(8,8,24,0.92);
+    border: 1px solid rgba(0,255,136,0.35);
+    border-bottom: 2px solid #00FF88;
+    backdrop-filter: blur(8px);
   }
-  .notif {
-    background: rgba(5,5,16,0.95);
-    border-left: 3px solid var(--cyan);
-    padding: 10px 18px;
-    font-size: 0.9rem; letter-spacing: 0.5px;
-    min-width: 280px; max-width: 420px;
-    animation: notifIn 0.3s cubic-bezier(.16,1,.3,1);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  #interaction-hint.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
-  .notif.success { border-left-color: var(--green); }
-  .notif.error   { border-left-color: var(--red); }
-  .notif.warning { border-left-color: var(--yellow); }
-  .notif.info    { border-left-color: var(--cyan); }
-  .notif.out     { animation: notifOut 0.3s ease forwards; }
-  @keyframes notifIn  { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:none} }
-  @keyframes notifOut { to{opacity:0;transform:translateY(-10px)} }
+  .hint-key {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #00FF88;
+    padding: 2px 8px;
+    border: 1px solid rgba(0,255,136,0.5);
+    text-shadow: 0 0 8px rgba(0,255,136,0.8);
+    box-shadow: inset 0 0 8px rgba(0,255,136,0.15);
+  }
+  .hint-text { font-size: 14px; font-weight: 600; color: #e0e0f0; }
+  .hint-poi  { color: #00FF88; font-weight: 700; text-shadow: 0 0 6px rgba(0,255,136,0.6); }
 
-  /* ── Level bar ── */
-  .level-bar {
+  /* CENTER-TOP: Notifications */
+  #notifications {
     position: fixed;
-    top: 72px; left: 20px;
-    width: 200px;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 1000;
+    pointer-events: none;
+    min-width: 320px;
+    max-width: 480px;
   }
-  .level-info { display: flex; justify-content: space-between; margin-bottom: 4px; }
-  .level-label { font-size: 0.65rem; letter-spacing: 2px; color: var(--dim); text-transform: uppercase; }
-  .level-num { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; color: var(--pink); }
-  .level-track { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
-  .level-fill {
-    height: 100%; border-radius: 2px;
-    background: linear-gradient(90deg, var(--neon-purple, #9B44FF), var(--pink));
-    box-shadow: 0 0 8px rgba(255,45,120,0.4);
-    transition: width 0.8s cubic-bezier(.16,1,.3,1);
-    width: 0%;
+
+  .notif {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(8,8,24,0.95);
+    border-left: 3px solid;
+    backdrop-filter: blur(8px);
+    animation: notifIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    position: relative;
+    overflow: hidden;
+  }
+  .notif::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: currentColor;
+    animation: notifTimer 4s linear forwards;
+    transform-origin: left;
+    opacity: 0.5;
+  }
+  .notif.success { border-color: #00FF88; color: #00FF88; }
+  .notif.error   { border-color: #FF2D78; color: #FF2D78; }
+  .notif.warning { border-color: #FFD700; color: #FFD700; }
+  .notif.info    { border-color: #00D4FF; color: #00D4FF; }
+  .notif-icon  { font-size: 15px; flex-shrink: 0; }
+  .notif-msg   { font-size: 13px; font-weight: 600; color: #e0e0f0; flex: 1; }
+  .notif.out   { animation: notifOut 0.3s ease forwards; }
+
+  /* Animations */
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes notifIn {
+    from { opacity: 0; transform: translateY(-16px) scaleY(0.85); }
+    to   { opacity: 1; transform: translateY(0) scaleY(1); }
+  }
+  @keyframes notifOut {
+    to { opacity: 0; transform: translateX(24px); max-height: 0; padding: 0; margin: 0; }
+  }
+  @keyframes notifTimer {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+  }
+
+  body.hud-hidden #top-left,
+  body.hud-hidden #top-right,
+  body.hud-hidden #bottom-left,
+  body.hud-hidden #bottom-right {
+    opacity: 0;
+    transition: opacity 0.5s ease;
   }
 </style>
 </head>
 <body>
 
-<!-- Player Info -->
-<div class="player-info" id="playerInfo">
-  <div class="player-name" id="playerName">---</div>
-  <div class="player-meta">
-    <div class="player-meta-item">CNP: <span id="playerCnp">---</span></div>
-  </div>
-  <div class="player-job" id="playerJob">Somer</div>
-</div>
-
-<!-- Level Bar -->
-<div class="level-bar">
-  <div class="level-info">
-    <span class="level-label">Nivel</span>
-    <span class="level-num" id="levelNum">1</span>
-  </div>
-  <div class="level-track"><div class="level-fill" id="levelFill"></div></div>
-</div>
-
-<!-- Clock -->
-<div class="clock">
-  <div class="clock-time" id="clockTime">00:00</div>
-  <div class="clock-date" id="clockDate">---</div>
-</div>
-
-<!-- Cash -->
-<div class="cash-display">
-  <div class="cash-item">
-    <span class="cash-icon">$</span>
-    <div>
-      <div class="cash-amount" id="cashAmount">$0</div>
-      <div class="cash-label">Cash</div>
-    </div>
-  </div>
-  <div class="cash-item bank">
-    <span class="cash-icon">🏦</span>
-    <div>
-      <div class="cash-amount" id="bankAmount">$0</div>
-      <div class="cash-label">Banca</div>
-    </div>
+<!-- TOP-LEFT: Logo + CNP + Player Info -->
+<div id="top-left">
+  <div id="logo">NEON SYNDICATE</div>
+  <div id="cnp-display">CNP: <span id="cnp-val">––––––––––</span></div>
+  <div id="player-info">
+    <div id="player-name">UNKNOWN</div>
+    <div id="player-job">CIVILIAN</div>
   </div>
 </div>
 
-<!-- Vitals -->
-<div class="vitals">
-  <div class="speed-display" id="speedDisplay">
-    <div class="speed-num" id="speedNum">0</div>
-    <div class="speed-unit">KM/H</div>
+<!-- TOP-RIGHT: Clock -->
+<div id="top-right">
+  <div id="clock-time">00:00</div>
+  <div id="clock-date">SAT, 01 JAN 2026</div>
+</div>
+
+<!-- BOTTOM-LEFT: Money -->
+<div id="bottom-left">
+  <div class="money-card">
+    <span class="money-icon">💵</span>
+    <span class="money-label">CASH</span>
+    <span class="money-value" id="cash-val">$0</span>
   </div>
-  <div class="bar-row bar-hp">
-    <span class="bar-label">HP</span>
-    <div class="bar-track"><div class="bar-fill" id="hpFill" style="width:100%"></div></div>
-    <span class="bar-value" id="hpVal">100</span>
+  <div class="money-card bank">
+    <span class="money-icon">🏦</span>
+    <span class="money-label">BANK</span>
+    <span class="money-value" id="bank-val">$0</span>
   </div>
-  <div class="bar-row bar-armor">
-    <span class="bar-label">AR</span>
-    <div class="bar-track"><div class="bar-fill" id="arFill" style="width:0%"></div></div>
-    <span class="bar-value" id="arVal">0</span>
+</div>
+
+<!-- BOTTOM-RIGHT: Speed + Vitals -->
+<div id="bottom-right">
+  <div id="speed-display">
+    <div id="speed-number">0</div>
+    <div id="speed-unit">KM/H</div>
   </div>
-  <div class="survival-bars">
-    <div class="bar-row bar-hunger">
-      <span class="bar-label small">🍔</span>
-      <div class="bar-track thin"><div class="bar-fill" id="hungerFill" style="width:100%"></div></div>
-      <span class="bar-value" id="hungerVal" style="font-size:.55rem">100</span>
+  <div id="vitals-row">
+    <div class="vital-ring ring-hp" id="ring-hp">
+      <svg viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="26"/><circle class="ring-fill" id="fill-hp" cx="30" cy="30" r="26"/></svg>
+      <span class="vital-icon">❤️</span><span class="vital-value" id="val-hp">100</span>
     </div>
-    <div class="bar-row bar-thirst" style="margin-top:3px">
-      <span class="bar-label small">💧</span>
-      <div class="bar-track thin"><div class="bar-fill" id="thirstFill" style="width:100%"></div></div>
-      <span class="bar-value" id="thirstVal" style="font-size:.55rem">100</span>
+    <div class="vital-ring ring-armor" id="ring-armor">
+      <svg viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="26"/><circle class="ring-fill" id="fill-armor" cx="30" cy="30" r="26"/></svg>
+      <span class="vital-icon">🛡️</span><span class="vital-value" id="val-armor">100</span>
     </div>
-    <div class="bar-row bar-stamina" style="margin-top:3px">
-      <span class="bar-label small">⚡</span>
-      <div class="bar-track thin"><div class="bar-fill" id="staminaFill" style="width:100%"></div></div>
-      <span class="bar-value" id="staminaVal" style="font-size:.55rem">100</span>
+    <div class="vital-ring ring-hunger" id="ring-hunger">
+      <svg viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="26"/><circle class="ring-fill" id="fill-hunger" cx="30" cy="30" r="26"/></svg>
+      <span class="vital-icon">🍔</span><span class="vital-value" id="val-hunger">100</span>
     </div>
-    <div class="bar-row bar-stress" style="margin-top:3px">
-      <span class="bar-label small">😤</span>
-      <div class="bar-track thin"><div class="bar-fill" id="stressFill" style="width:0%"></div></div>
-      <span class="bar-value" id="stressVal" style="font-size:.55rem">0</span>
+    <div class="vital-ring ring-thirst" id="ring-thirst">
+      <svg viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="26"/><circle class="ring-fill" id="fill-thirst" cx="30" cy="30" r="26"/></svg>
+      <span class="vital-icon">💧</span><span class="vital-value" id="val-thirst">100</span>
+    </div>
+    <div class="vital-ring ring-stamina" id="ring-stamina">
+      <svg viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="26"/><circle class="ring-fill" id="fill-stamina" cx="30" cy="30" r="26"/></svg>
+      <span class="vital-icon">⚡</span><span class="vital-value" id="val-stamina">100</span>
+    </div>
+    <div class="vital-ring ring-stress" id="ring-stress">
+      <svg viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="26"/><circle class="ring-fill" id="fill-stress" cx="30" cy="30" r="26"/></svg>
+      <span class="vital-icon">😤</span><span class="vital-value" id="val-stress">0</span>
     </div>
   </div>
 </div>
 
-<!-- Notifications -->
-<div class="notifications" id="notifContainer"></div>
+<!-- CENTER-BOTTOM: Interaction Hint -->
+<div id="interaction-hint">
+  <span class="hint-key">[E]</span>
+  <span class="hint-text">Apasa &nbsp;<span class="hint-poi" id="hint-poi-name">Interact</span></span>
+</div>
+
+<!-- CENTER-TOP: Notifications -->
+<div id="notifications"></div>
 
 <script>
-  // ── Clock ──
+  /* Circumference for r=26: 2 * PI * 26 = 163.36 */
+  const CIRC = 163.36;
+
+  /* ── Clock ── */
   function updateClock() {
     const now = new Date();
     const h   = String(now.getHours()).padStart(2,'0');
     const m   = String(now.getMinutes()).padStart(2,'0');
-    const d   = now.toLocaleDateString('ro-RO', {day:'2-digit',month:'short',year:'numeric'});
-    document.getElementById('clockTime').textContent = `${h}:${m}`;
-    document.getElementById('clockDate').textContent = d;
+    document.getElementById('clock-time').textContent = h + ':' + m;
+    const days   = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    const day = days[now.getDay()];
+    const mon = months[now.getMonth()];
+    const d   = String(now.getDate()).padStart(2,'0');
+    document.getElementById('clock-date').textContent =
+      day + ', ' + d + ' ' + mon + ' ' + now.getFullYear();
   }
-  setInterval(updateClock, 1000);
   updateClock();
+  setInterval(updateClock, 10000);
 
-  // ── Stats update ──
+  /* ── Ring helper ── */
+  function setRing(fillId, pct) {
+    const clamped = Math.max(0, Math.min(100, pct));
+    document.getElementById(fillId).style.strokeDashoffset = CIRC - (clamped / 100) * CIRC;
+  }
+  function showRing(ringId, show) {
+    document.getElementById(ringId).style.display = show ? 'flex' : 'none';
+  }
+
+  /* ── updateStats(stats) ── */
   function updateStats(stats) {
-    document.getElementById('playerName').textContent = stats.name  || '---';
-    document.getElementById('playerCnp').textContent  = stats.cnp   || '---';
-    document.getElementById('playerJob').textContent  = stats.job   || 'Somer';
-    document.getElementById('levelNum').textContent   = stats.level || 1;
-    document.getElementById('cashAmount').textContent = '$' + (stats.cash  || 0).toLocaleString();
-    document.getElementById('bankAmount').textContent = '$' + (stats.bank  || 0).toLocaleString();
-
-    const xpForNext = (stats.level || 1) * 500;
-    const xpPct     = Math.min(100, ((stats.experience || 0) % xpForNext) / xpForNext * 100);
-    document.getElementById('levelFill').style.width = xpPct + '%';
+    if (stats.name  !== undefined) document.getElementById('player-name').textContent = stats.name;
+    if (stats.cnp   !== undefined) document.getElementById('cnp-val').textContent    = stats.cnp;
+    if (stats.job   !== undefined) document.getElementById('player-job').textContent  = stats.job;
+    if (stats.cash  !== undefined) document.getElementById('cash-val').textContent   = '$' + Number(stats.cash).toLocaleString();
+    if (stats.bank  !== undefined) document.getElementById('bank-val').textContent   = '$' + Number(stats.bank).toLocaleString();
   }
 
-  // ── Vitals update (called each frame) ──
+  /* ── updateVitals(hp, armor, speed, inVehicle) ── */
   function updateVitals(hp, armor, speed, inVehicle) {
-    document.getElementById('hpFill').style.width = Math.max(0, Math.min(100, hp)) + '%';
-    document.getElementById('arFill').style.width = Math.max(0, Math.min(100, armor)) + '%';
-    document.getElementById('hpVal').textContent  = Math.round(hp);
-    document.getElementById('arVal').textContent  = Math.round(armor);
+    const speedEl = document.getElementById('speed-display');
+    if (inVehicle) {
+      speedEl.classList.add('visible');
+      document.getElementById('speed-number').textContent = Math.round(speed);
+    } else {
+      speedEl.classList.remove('visible');
+    }
 
-    const speedEl = document.getElementById('speedDisplay');
-    speedEl.classList.toggle('visible', inVehicle);
-    if (inVehicle) document.getElementById('speedNum').textContent = speed;
+    const hpPct    = Math.max(0, Math.min(100, hp));
+    const armorPct = Math.max(0, Math.min(100, armor));
+
+    const showHp    = hpPct    < 85;
+    const showArmor = armorPct < 85;
+
+    showRing('ring-hp',    showHp);
+    showRing('ring-armor', showArmor);
+
+    if (showHp) {
+      setRing('fill-hp', hpPct);
+      document.getElementById('val-hp').textContent = Math.round(hpPct);
+    }
+    if (showArmor) {
+      setRing('fill-armor', armorPct);
+      document.getElementById('val-armor').textContent = Math.round(armorPct);
+    }
   }
 
-  // ── Notifications ──
-  const notifQueue = [];
-  function showNotification(msg, type = 'info') {
-    const cont = document.getElementById('notifContainer');
-    const el   = document.createElement('div');
-    el.className = `notif ${type}`;
-    el.textContent = msg;
-    cont.appendChild(el);
+  /* ── updateSurvival(stats) ── */
+  function updateSurvival(stats) {
+    const items = [
+      { key:'hunger',  ringId:'ring-hunger',  fillId:'fill-hunger',  valId:'val-hunger',  thr:85, invert:false },
+      { key:'thirst',  ringId:'ring-thirst',  fillId:'fill-thirst',  valId:'val-thirst',  thr:85, invert:false },
+      { key:'stamina', ringId:'ring-stamina', fillId:'fill-stamina', valId:'val-stamina', thr:85, invert:false },
+      { key:'stress',  ringId:'ring-stress',  fillId:'fill-stress',  valId:'val-stress',  thr:10, invert:true  },
+    ];
+    items.forEach(item => {
+      if (stats[item.key] === undefined) return;
+      const pct  = Math.max(0, Math.min(100, stats[item.key]));
+      const show = item.invert ? pct > item.thr : pct < item.thr;
+      showRing(item.ringId, show);
+      if (show) {
+        setRing(item.fillId, pct);
+        document.getElementById(item.valId).textContent = Math.round(pct);
+      }
+    });
+  }
+
+  /* ── showNotification(msg, type) ── */
+  const NOTIF_ICONS = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+
+  function showNotification(msg, type) {
+    type = type || 'info';
+    const container = document.getElementById('notifications');
+    const el = document.createElement('div');
+    el.className = 'notif ' + type;
+    el.innerHTML = `<span class="notif-icon">${NOTIF_ICONS[type]||'ℹ️'}</span>
+                    <span class="notif-msg">${msg}</span>`;
+    container.appendChild(el);
+
     setTimeout(() => {
       el.classList.add('out');
-      setTimeout(() => el.remove(), 300);
+      setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 320);
     }, 4000);
   }
 
-  function hideHud() {
-    document.body.style.opacity = '0';
+  /* ── showHint / hideHint ── */
+  function showHint(poiName) {
+    document.getElementById('hint-poi-name').textContent = poiName || 'Interact';
+    document.getElementById('interaction-hint').classList.add('visible');
+  }
+  function hideHint() {
+    document.getElementById('interaction-hint').classList.remove('visible');
   }
 
-  // ── Survival stats update ──
-  function updateSurvival(stats) {
-    document.getElementById('hungerFill').style.width  = Math.max(0, Math.min(100, stats.hunger  || 0)) + '%';
-    document.getElementById('thirstFill').style.width  = Math.max(0, Math.min(100, stats.thirst  || 0)) + '%';
-    document.getElementById('staminaFill').style.width = Math.max(0, Math.min(100, stats.stamina || 0)) + '%';
-    document.getElementById('stressFill').style.width  = Math.max(0, Math.min(100, stats.stress  || 0)) + '%';
-    document.getElementById('hungerVal').textContent   = Math.round(stats.hunger  || 0);
-    document.getElementById('thirstVal').textContent   = Math.round(stats.thirst  || 0);
-    document.getElementById('staminaVal').textContent  = Math.round(stats.stamina || 0);
-    document.getElementById('stressVal').textContent   = Math.round(stats.stress  || 0);
-  }
+  /* ── hideHud / showHud ── */
+  function hideHud() { document.body.classList.add('hud-hidden'); }
+  function showHud()  { document.body.classList.remove('hud-hidden'); }
 
-  // Signal to client JS that the HUD page has fully loaded
+  /* ── Ready ── */
   if (typeof mp !== 'undefined') mp.trigger('hud:ready');
 </script>
 </body>
