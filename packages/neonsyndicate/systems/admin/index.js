@@ -67,7 +67,7 @@ mp.events.add('admin:kick', async (player, targetId, reason) => {
     if (!target) return player.call('hud:notification', ['Jucator negasit.', 'error']);
     if ((target.data.adminLevel || -1) >= (player.data.adminLevel || -1)) return player.call('hud:notification', ['Nu poti da kick unui admin de rang egal sau mai mare.', 'error']);
     target.kick(`Kick de admin: ${reason || 'fara motiv'}`);
-    mp.console.logInfo(`[ADMIN] ${player.data.cnp} a kickat jucatorul ${targetId} (${reason})`);
+    console.log(`[ADMIN] ${player.data.cnp} a kickat jucatorul ${targetId} (${reason})`);
     player.call('hud:notification', [`Jucatorul a fost kickat.`, 'success']);
 });
 
@@ -83,7 +83,7 @@ mp.events.add('admin:ban', async (player, targetId, reason) => {
         await db.update('UPDATE accounts SET is_banned = 1, ban_reason = ? WHERE id = ?', [reason || 'Ban admin', accId]);
     }
     target.kick(`Banat: ${reason || 'fara motiv'}`);
-    mp.console.logInfo(`[ADMIN] ${player.data.cnp} a banat cont #${accId} (${reason})`);
+    console.log(`[ADMIN] ${player.data.cnp} a banat cont #${accId} (${reason})`);
     player.call('hud:notification', ['Jucatorul a fost banat.', 'success']);
 });
 
@@ -172,7 +172,7 @@ mp.events.add('admin:setRank', async (player, email, rank) => {
         target.call('hud:notification', [`Rangul tau a fost setat la ${RANK_LABELS[rank]} de catre un admin.`, 'info']);
     }
 
-    mp.console.logInfo(`[ADMIN] ${player.data.cnp} a setat randul ${rank} pentru ${email}`);
+    console.log(`[ADMIN] ${player.data.cnp} a setat randul ${rank} pentru ${email}`);
     player.call('hud:notification', [`Rang ${RANK_LABELS[rank]} setat pentru ${email}.`, 'success']);
 });
 
@@ -192,7 +192,7 @@ mp.events.add('admin:announce', (player, message) => {
     mp.players.forEach(p => {
         p.call('hud:notification', [`${tag} ANUNT: ${message}`, 'warning']);
     });
-    mp.console.logInfo(`[ADMIN ANNOUNCE] ${message}`);
+    console.log(`[ADMIN ANNOUNCE] ${message}`);
 });
 
 // ── NOCLIP / GOD MODE ────────────────────────────────────────
@@ -209,7 +209,7 @@ mp.events.add('character:load', async (player) => {
     if (player.data.adminRank) {
         const label = RANK_LABELS[player.data.adminRank];
         player.call('admin:setTag', [label, player.data.adminRank]);
-        mp.console.logInfo(`[ADMIN] ${player.data.cnp} conectat cu rang ${player.data.adminRank}`);
+        console.log(`[ADMIN] ${player.data.cnp} conectat cu rang ${player.data.adminRank}`);
     }
 });
 

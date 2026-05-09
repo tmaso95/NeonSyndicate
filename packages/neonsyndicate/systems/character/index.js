@@ -74,12 +74,12 @@ mp.events.add('character:create', async (player, dataJSON) => {
         await db.insert('INSERT INTO character_inventory (character_id, item_name, quantity, slot_index) VALUES (?,?,?,?)', [charId, 'id_card', 1, 1]);
         await db.insert('INSERT INTO character_inventory (character_id, item_name, quantity, slot_index) VALUES (?,?,?,?)', [charId, 'wallet', 1, 2]);
 
-        mp.console.logInfo(`[CHAR] Created character ${firstname} ${lastname} CNP:${cnp}`);
+        console.log(`[CHAR] Created character ${firstname} ${lastname} CNP:${cnp}`);
 
         const character = await db.queryOne('SELECT * FROM characters WHERE id = ?', [charId]);
         mp.events.call('character:load', player, character);
     } catch (err) {
-        mp.console.logError(`[CHAR] Create error: ${err.message}`);
+        console.error(`[CHAR] Create error: ${err.message}`);
         player.call('character:error', ['Eroare server la creare caracter.']);
     }
 });
@@ -132,9 +132,9 @@ mp.events.add('character:load', async (player, character) => {
         })]);
 
         player.call('hud:show');
-        mp.console.logInfo(`[CHAR] Loaded ${character.firstname} ${character.lastname} for account #${player.data.accountId}`);
+        console.log(`[CHAR] Loaded ${character.firstname} ${character.lastname} for account #${player.data.accountId}`);
     } catch (err) {
-        mp.console.logError(`[CHAR] Load error: ${err.message}`);
+        console.error(`[CHAR] Load error: ${err.message}`);
     }
 });
 
@@ -156,7 +156,7 @@ async function saveCharacter(player) {
             ]
         );
     } catch (err) {
-        mp.console.logError(`[CHAR] Save error: ${err.message}`);
+        console.error(`[CHAR] Save error: ${err.message}`);
     }
 }
 

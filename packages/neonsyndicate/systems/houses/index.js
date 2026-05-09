@@ -16,7 +16,7 @@ mp.events.add('onResourceStart', async () => {
         col.houseId   = house.id;
         col.houseData = house;
     }
-    mp.console.logInfo(`[HOUSES] Loaded ${houses.length} houses`);
+    console.log(`[HOUSES] Loaded ${houses.length} houses`);
 });
 
 mp.events.add('playerEnterColshape', (player, colshape) => {

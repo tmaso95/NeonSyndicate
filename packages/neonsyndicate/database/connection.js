@@ -19,7 +19,7 @@ async function connect() {
     // Verify connectivity
     const conn = await pool.getConnection();
     conn.release();
-    mp.console.logInfo('[DB] MySQL pool connected.');
+    console.log('[DB] MySQL pool connected.');
     return pool;
 }
 
