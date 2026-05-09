@@ -2,627 +2,679 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<title>Neon Syndicate - Creare Caracter</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeonSyndicate — Character Creation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --neon-pink:   #FF2D78;
-    --neon-cyan:   #00D4FF;
-    --neon-purple: #9B44FF;
-    --bg:          #050510;
-    --bg-panel:    rgba(8,8,28,0.98);
-    --border:      rgba(255,45,120,0.5);
-    --text:        #e8e8f0;
-    --text-dim:    #5a5a7a;
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     background: transparent;
-    color: var(--text);
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
     font-family: 'Rajdhani', sans-serif;
-    width: 100vw; height: 100vh;
-    overflow: hidden;
-    display: flex; align-items: center; justify-content: flex-end;
+    color: #e0e0f0;
+    display: flex;
   }
 
-  .panel {
-    background: var(--bg-panel);
-    border-left: 1px solid var(--border);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    box-shadow: -10px 0 60px rgba(255,45,120,0.15);
-    width: 420px; height: 100vh;
-    display: flex; flex-direction: column;
-    overflow: hidden;
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 9999;
   }
 
-  /* Header */
-  .panel-header {
-    padding: 20px 28px 16px;
-    border-bottom: 1px solid rgba(255,45,120,0.2);
-    flex-shrink: 0;
+  /* LEFT PANEL: Preview */
+  #left-panel {
+    width: 40%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 30px;
+    background: rgba(5,5,16,0.65);
+    border-right: 1px solid rgba(255,45,120,0.15);
+    animation: slideInLeft 0.5s ease forwards;
   }
-  .panel-title {
+
+  #preview-logo {
     font-family: 'Orbitron', sans-serif;
-    font-size: 1.2rem; letter-spacing: 4px;
-    color: var(--neon-pink);
-    text-shadow: 0 0 16px rgba(255,45,120,0.6);
-    text-transform: uppercase;
-  }
-  .panel-sub { font-size: 0.75rem; color: var(--text-dim); letter-spacing: 2px; margin-top: 2px; }
-
-  /* Steps indicator */
-  .steps {
-    display: flex; gap: 6px;
-    padding: 16px 28px;
-    border-bottom: 1px solid rgba(255,45,120,0.1);
-    flex-shrink: 0;
-  }
-  .step-dot {
-    flex: 1; height: 3px; border-radius: 2px;
-    background: rgba(255,45,120,0.2);
-    transition: background 0.3s;
-  }
-  .step-dot.done   { background: rgba(255,45,120,0.5); }
-  .step-dot.active { background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink); }
-
-  /* Content */
-  .panel-content { flex: 1; overflow-y: auto; padding: 24px 28px; scroll-behavior: smooth; }
-  .panel-content::-webkit-scrollbar { width: 4px; }
-  .panel-content::-webkit-scrollbar-track { background: transparent; }
-  .panel-content::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.4); border-radius: 2px; }
-
-  /* Step screens */
-  .step { display: none; animation: fadeIn 0.3s ease; }
-  .step.active { display: block; }
-  @keyframes fadeIn { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:none} }
-
-  .step-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase;
-    color: var(--neon-cyan); margin-bottom: 20px;
-    text-shadow: 0 0 10px rgba(0,212,255,0.4);
-  }
-
-  /* Gender Selection */
-  .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .gender-btn {
-    aspect-ratio: 1; border: 2px solid rgba(255,45,120,0.3);
-    background: rgba(255,45,120,0.04);
-    cursor: pointer; transition: all 0.2s;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 10px;
-    border-radius: 2px;
-    color: var(--text-dim);
-  }
-  .gender-btn:hover, .gender-btn.selected {
-    border-color: var(--neon-pink);
-    background: rgba(255,45,120,0.1);
-    color: var(--neon-pink);
-    box-shadow: 0 0 20px rgba(255,45,120,0.2);
-  }
-  .gender-icon { font-size: 3rem; }
-  .gender-label { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 3px; }
-
-  /* Slider fields */
-  .field { margin-bottom: 18px; }
-  .field-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .field-label { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
-  .field-value { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; color: var(--neon-pink); }
-
-  input[type=range] {
-    -webkit-appearance: none; width: 100%; height: 4px;
-    background: rgba(255,45,120,0.2);
-    border-radius: 2px; outline: none;
-  }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 16px; height: 16px;
-    background: var(--neon-pink); border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 0 8px var(--neon-pink);
-    transition: transform 0.1s;
-  }
-  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
-
-  /* Text input */
-  .text-field {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,45,120,0.3);
-    border-radius: 2px; padding: 10px 14px;
-    color: var(--text); font-family: 'Rajdhani', sans-serif;
-    font-size: 1rem; outline: none; width: 100%;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .text-field:focus {
-    border-color: var(--neon-pink);
-    box-shadow: 0 0 12px rgba(255,45,120,0.15);
-  }
-
-  /* Parent grid */
-  .parent-grid {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
-    max-height: 180px; overflow-y: auto;
-  }
-  .parent-grid::-webkit-scrollbar { width: 3px; }
-  .parent-grid::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.4); }
-  .parent-face {
-    aspect-ratio: 1; border: 1px solid rgba(255,45,120,0.2);
-    background: rgba(255,45,120,0.04);
-    cursor: pointer; transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.65rem; color: var(--text-dim);
-    border-radius: 2px;
-    font-family: 'Orbitron', sans-serif;
-  }
-  .parent-face:hover  { border-color: var(--neon-pink); background: rgba(255,45,120,0.1); color: var(--neon-pink); }
-  .parent-face.sel    { border-color: var(--neon-pink); background: rgba(255,45,120,0.15); color: var(--neon-pink); box-shadow: 0 0 10px rgba(255,45,120,0.3); }
-
-  /* Color swatches */
-  .color-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-  .color-swatch {
-    width: 28px; height: 28px; border-radius: 50%;
-    cursor: pointer; border: 2px solid transparent;
-    transition: all 0.15s; flex-shrink: 0;
-  }
-  .color-swatch:hover   { transform: scale(1.2); }
-  .color-swatch.sel     { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.4); transform: scale(1.15); }
-
-  /* Clothing presets */
-  .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .preset {
-    border: 1px solid rgba(255,45,120,0.2);
-    background: rgba(255,45,120,0.04);
-    padding: 14px 10px; cursor: pointer;
-    transition: all 0.15s; border-radius: 2px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #FF2D78;
+    text-shadow: 0 0 10px #FF2D78, 0 0 30px rgba(255,45,120,0.4);
+    margin-bottom: 30px;
     text-align: center;
   }
-  .preset:hover, .preset.sel {
-    border-color: var(--neon-pink);
-    background: rgba(255,45,120,0.1);
-    box-shadow: 0 0 14px rgba(255,45,120,0.15);
+
+  #char-silhouette {
+    width: 180px;
+    height: 320px;
+    background: rgba(8,8,24,0.6);
+    border: 1px solid rgba(255,45,120,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 100px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
   }
-  .preset-name { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--neon-pink); }
-  .preset-desc { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
-
-  /* Section divider */
-  .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
-  .divider-line { flex: 1; height: 1px; background: rgba(255,45,120,0.2); }
-  .divider-text { font-size: 0.65rem; letter-spacing: 2px; color: var(--text-dim); white-space: nowrap; }
-
-  /* Error */
-  .error { color: #ff6b6b; font-size: 0.85rem; margin-bottom: 12px; display: none; }
-  .error.show { display: block; }
-
-  /* Footer nav */
-  .panel-footer {
-    padding: 16px 28px;
-    border-top: 1px solid rgba(255,45,120,0.2);
-    display: flex; gap: 10px;
-    flex-shrink: 0;
+  #char-silhouette::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(255,45,120,0.05) 100%);
   }
-  .btn {
-    flex: 1; padding: 12px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase;
-    cursor: pointer; border-radius: 2px; transition: all 0.2s;
-    border: 1px solid rgba(255,45,120,0.4);
-    background: transparent; color: var(--text-dim);
-  }
-  .btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); }
-  .btn-next {
-    background: var(--neon-pink); border-color: var(--neon-pink);
-    color: #fff; box-shadow: 0 0 16px rgba(255,45,120,0.4);
-  }
-  .btn-next:hover { background: #ff4d8d; box-shadow: 0 0 24px rgba(255,45,120,0.6); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  #char-sex-icon { z-index: 1; filter: drop-shadow(0 0 12px rgba(255,45,120,0.5)); }
 
-  /* CNP preview */
-  .cnp-preview {
-    background: rgba(0,212,255,0.06);
-    border: 1px solid rgba(0,212,255,0.3);
-    padding: 12px 16px; border-radius: 2px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1rem; color: var(--neon-cyan);
-    letter-spacing: 4px; text-align: center;
-    text-shadow: 0 0 12px rgba(0,212,255,0.4);
-  }
-  .cnp-label { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 2px; text-align: center; margin-bottom: 6px; text-transform: uppercase; }
-</style>
-</head>
-<body>
-<!-- Camera switch buttons (left side of screen) -->
-<div class="cam-controls">
-  <div class="cam-label">CAMERA</div>
-  <div class="cam-btn active" id="cam-face" onclick="setCam('face')">👤 FATA</div>
-  <div class="cam-btn" id="cam-body" onclick="setCam('body')">🧍 CORP</div>
-</div>
-
-<div class="panel">
-  <div class="panel-header">
-    <div class="panel-title">Creare Caracter</div>
-    <div class="panel-sub">Blackridge City Identity System</div>
-  </div>
-
-  <div class="steps" id="stepsBar">
-    <div class="step-dot active" id="dot0"></div>
-    <div class="step-dot" id="dot1"></div>
-    <div class="step-dot" id="dot2"></div>
-    <div class="step-dot" id="dot3"></div>
-    <div class="step-dot" id="dot4"></div>
-    <div class="step-dot" id="dot5"></div>
-  </div>
-
-  <div class="panel-content">
-    <div id="errorMsg" class="error"></div>
-
-    <!-- STEP 0: Gender -->
-    <div class="step active" id="step0">
-      <div class="step-title">Alege Genul</div>
-      <div class="gender-grid">
-        <div class="gender-btn" id="genderM" onclick="selectGender(0)">
-          <div class="gender-icon">♂</div>
-          <div class="gender-label">Masculin</div>
-        </div>
-        <div class="gender-btn" id="genderF" onclick="selectGender(1)">
-          <div class="gender-icon">♀</div>
-          <div class="gender-label">Feminin</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 1: Parents -->
-    <div class="step" id="step1">
-      <div class="step-title">Mostenire Genetica</div>
-
-      <div class="divider"><div class="divider-line"></div><div class="divider-text">Tata</div><div class="divider-line"></div></div>
-      <div class="parent-grid" id="dadGrid"></div>
-
-      <div class="divider" style="margin-top:14px"><div class="divider-line"></div><div class="divider-text">Mama</div><div class="divider-line"></div></div>
-      <div class="parent-grid" id="momGrid"></div>
-
-      <div class="divider"><div class="divider-line"></div><div class="divider-text">Mix</div><div class="divider-line"></div></div>
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Trasaturi fata</span>
-          <span class="field-value" id="shapeMixVal">50%</span>
-        </div>
-        <input type="range" min="0" max="100" value="50" id="shapeMix" oninput="updateMix()">
-      </div>
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Culoare piele</span>
-          <span class="field-value" id="skinMixVal">50%</span>
-        </div>
-        <input type="range" min="0" max="100" value="50" id="skinMix" oninput="updateMix()">
-      </div>
-    </div>
-
-    <!-- STEP 2: Appearance -->
-    <div class="step" id="step2">
-      <div class="step-title">Aspect Fizic</div>
-
-      <div class="divider"><div class="divider-line"></div><div class="divider-text">Culoare ochi</div><div class="divider-line"></div></div>
-      <div class="color-grid" id="eyeColors"></div>
-
-      <div class="divider" style="margin-top:16px"><div class="divider-line"></div><div class="divider-text">Trasaturi faciale</div><div class="divider-line"></div></div>
-      <div id="faceFeaturesFields"></div>
-    </div>
-
-    <!-- STEP 3: Hair -->
-    <div class="step" id="step3">
-      <div class="step-title">Coafura</div>
-
-      <div class="divider"><div class="divider-line"></div><div class="divider-text">Stil</div><div class="divider-line"></div></div>
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Coafura #</span>
-          <span class="field-value" id="hairStyleVal">0</span>
-        </div>
-        <input type="range" min="0" max="20" value="0" id="hairStyle" oninput="updateHair()">
-      </div>
-
-      <div class="divider"><div class="divider-line"></div><div class="divider-text">Culoare par</div><div class="divider-line"></div></div>
-      <div class="color-grid" id="hairColors"></div>
-
-      <div class="divider" style="margin-top:12px"><div class="divider-line"></div><div class="divider-text">Reflexe</div><div class="divider-line"></div></div>
-      <div class="color-grid" id="hairHighlights"></div>
-    </div>
-
-    <!-- STEP 4: Clothing -->
-    <div class="step" id="step4">
-      <div class="step-title">Tinuta Initiala</div>
-      <div class="preset-grid" id="clothingPresets"></div>
-    </div>
-
-    <!-- STEP 5: Name & ID -->
-    <div class="step" id="step5">
-      <div class="step-title">Identitate</div>
-
-      <div class="field">
-        <div class="field-header"><span class="field-label">Prenume</span></div>
-        <input type="text" class="text-field" id="firstName" placeholder="ex: Andrei" maxlength="32">
-      </div>
-      <div class="field">
-        <div class="field-header"><span class="field-label">Nume</span></div>
-        <input type="text" class="text-field" id="lastName" placeholder="ex: Ionescu" maxlength="32">
-      </div>
-      <div class="field">
-        <div class="field-header">
-          <span class="field-label">Varsta</span>
-          <span class="field-value" id="ageVal">25</span>
-        </div>
-        <input type="range" min="18" max="70" value="25" id="ageSlider" oninput="document.getElementById('ageVal').textContent=this.value">
-      </div>
-
-      <div style="margin-top:20px">
-        <div class="cnp-label">Cod Numeric Personal (auto-generat)</div>
-        <div class="cnp-preview" id="cnpPreview">--------</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel-footer">
-    <button class="btn" id="btnBack" onclick="prevStep()" style="display:none">Inapoi</button>
-    <button class="btn btn-next" id="btnNext" onclick="nextStep()">Continua</button>
-  </div>
-</div>
-
-<style>
-  .cam-controls {
-    position: fixed;
-    left: 20px;
-    bottom: 100px;
+  #preview-info {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    width: 100%;
   }
-  .cam-btn {
-    padding: 8px 16px;
-    background: rgba(5,5,16,0.85);
-    border: 1px solid rgba(0,212,255,0.3);
-    color: #00D4FF;
+
+  .preview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background: rgba(8,8,24,0.6);
+    border: 1px solid rgba(255,45,120,0.1);
+    border-left: 2px solid rgba(255,45,120,0.4);
+  }
+  .preview-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: rgba(224,224,240,0.45);
+    text-transform: uppercase;
+  }
+  .preview-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #FF2D78;
+    text-shadow: 0 0 6px rgba(255,45,120,0.5);
+  }
+
+  /* RIGHT PANEL: Controls */
+  #right-panel {
+    width: 60%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(8,8,24,0.92);
+    animation: slideInRight 0.5s ease forwards;
+  }
+
+  #panel-header {
+    padding: 20px 28px;
+    background: rgba(5,5,16,0.8);
+    border-bottom: 1px solid rgba(255,45,120,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  #panel-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #FF2D78;
+    text-shadow: 0 0 8px rgba(255,45,120,0.5);
+  }
+
+  #error-msg {
+    display: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: #FF6699;
+    padding: 4px 10px;
+    border-left: 2px solid #FF2D78;
+    background: rgba(255,45,120,0.08);
+  }
+  #error-msg.visible { display: block; }
+
+  #controls-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 28px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,45,120,0.3) transparent;
+  }
+  #controls-scroll::-webkit-scrollbar { width: 4px; }
+  #controls-scroll::-webkit-scrollbar-track { background: transparent; }
+  #controls-scroll::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.3); border-radius: 2px; }
+
+  /* Section titles */
+  .section-title {
     font-family: 'Orbitron', sans-serif;
     font-size: 10px;
-    letter-spacing: 2px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #00D4FF;
+    text-shadow: 0 0 6px rgba(0,212,255,0.5);
+    text-transform: uppercase;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(0,212,255,0.12);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before {
+    content: '';
+    width: 16px; height: 1px;
+    background: #00D4FF;
+    box-shadow: 0 0 6px rgba(0,212,255,0.6);
+  }
+
+  /* Arrow control rows */
+  .ctrl-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 5px;
+    background: rgba(5,5,16,0.5);
+    border: 1px solid rgba(255,45,120,0.1);
+    height: 38px;
+  }
+  .ctrl-label {
+    width: 140px;
+    flex-shrink: 0;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(224,224,240,0.55);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 11px;
+    border-right: 1px solid rgba(255,45,120,0.1);
+  }
+  .ctrl-arrow {
+    width: 38px;
+    height: 38px;
+    background: rgba(255,45,120,0.04);
+    border: none;
+    color: #FF2D78;
+    font-size: 14px;
     cursor: pointer;
-    border-radius: 3px;
-    transition: all .2s;
-    text-align: center;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
   }
-  .cam-btn.active, .cam-btn:hover {
-    background: rgba(0,212,255,0.15);
-    border-color: #00D4FF;
-    box-shadow: 0 0 12px rgba(0,212,255,0.3);
+  .ctrl-arrow:hover { background: rgba(255,45,120,0.15); color: #ff6699; }
+  .ctrl-arrow:active { background: rgba(255,45,120,0.25); }
+
+  .ctrl-value-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 100%;
   }
-  .cam-label {
-    font-size: 9px;
-    color: rgba(0,212,255,0.4);
-    letter-spacing: 2px;
-    text-align: center;
+  .ctrl-value {
     font-family: 'Orbitron', sans-serif;
-    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #e0e0f0;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.15s;
+    text-align: center;
+    min-width: 60px;
+    user-select: none;
   }
+  .ctrl-value:hover { color: #00D4FF; }
+  .ctrl-value-input {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #00D4FF;
+    background: rgba(0,212,255,0.06);
+    border: 1px solid rgba(0,212,255,0.4);
+    text-align: center;
+    width: 80px;
+    padding: 2px 4px;
+    outline: none;
+  }
+
+  /* Text input rows (name fields) */
+  .text-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 5px;
+    background: rgba(5,5,16,0.5);
+    border: 1px solid rgba(255,45,120,0.1);
+    height: 38px;
+  }
+  .text-row .ctrl-label {
+    border-right: 1px solid rgba(255,45,120,0.1);
+  }
+  .text-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #e0e0f0;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 0 14px;
+    outline: none;
+    height: 100%;
+  }
+  .text-input::placeholder { color: rgba(224,224,240,0.2); }
+  .text-input:focus { background: rgba(0,212,255,0.04); }
+
+  /* Sex toggle */
+  .sex-toggle {
+    display: flex;
+    flex: 1;
+    height: 100%;
+  }
+  .sex-opt {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgba(224,224,240,0.35);
+    gap: 5px;
+  }
+  .sex-opt.active {
+    color: #FF2D78;
+    background: rgba(255,45,120,0.1);
+    text-shadow: 0 0 6px rgba(255,45,120,0.5);
+  }
+  .sex-opt:hover:not(.active) { color: rgba(224,224,240,0.65); }
+
+  /* Bottom bar */
+  #bottom-bar {
+    padding: 16px 28px;
+    border-top: 1px solid rgba(255,45,120,0.2);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  #create-btn {
+    flex: 1;
+    padding: 14px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, rgba(255,45,120,0.18), rgba(155,68,255,0.12));
+    border: 1px solid rgba(255,45,120,0.5);
+    color: #FF2D78;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-shadow: 0 0 8px rgba(255,45,120,0.5);
+    border-radius: 2px;
+  }
+  #create-btn:hover {
+    border-color: #FF2D78;
+    box-shadow: 0 0 24px rgba(255,45,120,0.25);
+    color: #ff6699;
+    background: linear-gradient(135deg, rgba(255,45,120,0.28), rgba(155,68,255,0.18));
+  }
+  #create-btn:active { transform: scale(0.98); }
+
+  @keyframes slideInLeft  { from { opacity:0; transform:translateX(-30px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes slideInRight { from { opacity:0; transform:translateX( 30px); } to { opacity:1; transform:translateX(0); } }
 </style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<!-- LEFT: Preview -->
+<div id="left-panel">
+  <div id="preview-logo">NEON SYNDICATE</div>
+  <div id="char-silhouette">
+    <span id="char-sex-icon">🧍</span>
+  </div>
+  <div id="preview-info">
+    <div class="preview-row">
+      <span class="preview-label">Nume</span>
+      <span class="preview-val" id="prev-name">— —</span>
+    </div>
+    <div class="preview-row">
+      <span class="preview-label">Sex</span>
+      <span class="preview-val" id="prev-sex">Male</span>
+    </div>
+    <div class="preview-row">
+      <span class="preview-label">Varsta</span>
+      <span class="preview-val" id="prev-age">25</span>
+    </div>
+    <div class="preview-row">
+      <span class="preview-label">Coafura</span>
+      <span class="preview-val" id="prev-hair">0</span>
+    </div>
+    <div class="preview-row">
+      <span class="preview-label">Culoare par</span>
+      <span class="preview-val" id="prev-haircolor">0</span>
+    </div>
+    <div class="preview-row">
+      <span class="preview-label">Ochi</span>
+      <span class="preview-val" id="prev-eye">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT: Controls -->
+<div id="right-panel">
+  <div id="panel-header">
+    <span id="panel-title">CREARE PERSONAJ</span>
+    <span id="error-msg" id="error-msg">Eroare</span>
+  </div>
+
+  <div id="controls-scroll">
+
+    <!-- IDENTITY -->
+    <div class="section-title">Identitate</div>
+
+    <div class="text-row">
+      <span class="ctrl-label">Prenume</span>
+      <input class="text-input" id="inp-firstname" type="text" placeholder="Ion" maxlength="24" oninput="onTextChange()">
+    </div>
+    <div class="text-row">
+      <span class="ctrl-label">Nume familie</span>
+      <input class="text-input" id="inp-lastname" type="text" placeholder="Popescu" maxlength="24" oninput="onTextChange()">
+    </div>
+
+    <!-- Age -->
+    <div class="ctrl-row">
+      <span class="ctrl-label">Varsta</span>
+      <button class="ctrl-arrow" onclick="stepAttr('age',-1)">◄</button>
+      <div class="ctrl-value-wrap">
+        <span class="ctrl-value" id="cv-age" onclick="editValue('age')">25</span>
+      </div>
+      <button class="ctrl-arrow" onclick="stepAttr('age', 1)">►</button>
+    </div>
+
+    <!-- Sex -->
+    <div class="ctrl-row">
+      <span class="ctrl-label">Sex</span>
+      <div class="sex-toggle">
+        <div class="sex-opt active" id="sex-male" onclick="setSex('Male')">♂ MASCULIN</div>
+        <div class="sex-opt" id="sex-female" onclick="setSex('Female')">♀ FEMININ</div>
+      </div>
+    </div>
+
+    <!-- HEAD SHAPE -->
+    <div class="section-title">Aspect cap — Parinti</div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Tata (model)</span>
+      <button class="ctrl-arrow" onclick="stepAttr('father',-1)">◄</button>
+      <div class="ctrl-value-wrap"><span class="ctrl-value" id="cv-father" onclick="editValue('father')">0</span></div>
+      <button class="ctrl-arrow" onclick="stepAttr('father', 1)">►</button>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Mama (model)</span>
+      <button class="ctrl-arrow" onclick="stepAttr('mother',-1)">◄</button>
+      <div class="ctrl-value-wrap"><span class="ctrl-value" id="cv-mother" onclick="editValue('mother')">0</span></div>
+      <button class="ctrl-arrow" onclick="stepAttr('mother', 1)">►</button>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Shape Mix</span>
+      <button class="ctrl-arrow" onclick="stepAttr('shapeMix',-1)">◄</button>
+      <div class="ctrl-value-wrap"><span class="ctrl-value" id="cv-shapeMix" onclick="editValue('shapeMix')">0.5</span></div>
+      <button class="ctrl-arrow" onclick="stepAttr('shapeMix', 1)">►</button>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Skin Mix</span>
+      <button class="ctrl-arrow" onclick="stepAttr('skinMix',-1)">◄</button>
+      <div class="ctrl-value-wrap"><span class="ctrl-value" id="cv-skinMix" onclick="editValue('skinMix')">0.5</span></div>
+      <button class="ctrl-arrow" onclick="stepAttr('skinMix', 1)">►</button>
+    </div>
+
+    <!-- SKIN/HAIR -->
+    <div class="section-title">Par &amp; Ochi</div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Coafura</span>
+      <button class="ctrl-arrow" onclick="stepAttr('hairStyle',-1)">◄</button>
+      <div class="ctrl-value-wrap"><span class="ctrl-value" id="cv-hairStyle" onclick="editValue('hairStyle')">0</span></div>
+      <button class="ctrl-arrow" onclick="stepAttr('hairStyle', 1)">►</button>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Culoare par</span>
+      <button class="ctrl-arrow" onclick="stepAttr('hairColor',-1)">◄</button>
+      <div class="ctrl-value-wrap"><span class="ctrl-value" id="cv-hairColor" onclick="editValue('hairColor')">0</span></div>
+      <button class="ctrl-arrow" onclick="stepAttr('hairColor', 1)">►</button>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Culoare ochi</span>
+      <button class="ctrl-arrow" onclick="stepAttr('eyeColor',-1)">◄</button>
+      <div class="ctrl-value-wrap"><span class="ctrl-value" id="cv-eyeColor" onclick="editValue('eyeColor')">0</span></div>
+      <button class="ctrl-arrow" onclick="stepAttr('eyeColor', 1)">►</button>
+    </div>
+
+    <!-- FACE FEATURES (20 sliders) -->
+    <div class="section-title">Trasaturi faciale</div>
+    <div id="face-features-container"></div>
+
+  </div>
+
+  <div id="bottom-bar">
+    <button id="create-btn" onclick="doCreate()">⚡ CREEAZA PERSONAJ</button>
+  </div>
+</div>
+
 <script>
-  const TOTAL_STEPS = 6;
-  let curStep = 0;
-  const data = {
-    sex: -1,
-    shapeFather: 0, shapeMother: 0, shapeMix: 0.5,
-    skinFather: 0,  skinMother:  0, skinMix:  0.5,
-    eyeColor: 0, hairStyle: 0, hairColor: 0, hairHighlight: 0,
-    faceFeatures: new Array(20).fill(0),
-    faceOverlays: {},
-    clothingPreset: 0,
-    firstname: '', lastname: '', age: 25
+  /* ── Attribute definitions ── */
+  const ATTRS = {
+    father:    { min: 0,    max: 44,   step: 1,   val: 0   },
+    mother:    { min: 0,    max: 44,   step: 1,   val: 0   },
+    shapeMix:  { min: 0.0,  max: 1.0,  step: 0.1, val: 0.5, decimals: 1 },
+    skinMix:   { min: 0.0,  max: 1.0,  step: 0.1, val: 0.5, decimals: 1 },
+    hairStyle: { min: 0,    max: 73,   step: 1,   val: 0   },
+    hairColor: { min: 0,    max: 63,   step: 1,   val: 0   },
+    eyeColor:  { min: 0,    max: 31,   step: 1,   val: 0   },
+    age:       { min: 18,   max: 70,   step: 1,   val: 25  },
   };
 
-  // ── Eye colors ──
-  const EYE_COLORS = [
-    '#5B3A29','#6B4226','#7A5C3C','#A0785A',
-    '#7CA9D2','#4A8FD4','#2B6CB0','#1A4F8A',
-    '#3DAA3D','#2D8A2D','#5CAB5C','#9B9B9B',
-    '#C8C8C8','#E8E8E8','#7BAEDC','#D4A843',
-    '#8B5E3C','#C68B5A','#FFDAB9','#E8C99A'
+  const FACE_FEATURE_LABELS = [
+    'Nas (latime)', 'Nas (inaltime)', 'Nas (lungime)', 'Nas (varful nasului)',
+    'Sprancene', 'Pometi', 'Maxilar (latime)', 'Maxilar (inaltime)',
+    'Barbie (latime)', 'Barbie (lungime)', 'Barbie (forma)',
+    'Urechi (talie)', 'Urechi (unghi)', 'Ochi (deschidere)',
+    'Buze (grosime)', 'Buze (forma)', 'Falca (proportie)',
+    'Obraji', 'Ochi (culorare)', 'Ochi (pupile)',
   ];
 
-  // ── Hair colors ──
-  const HAIR_COLORS = [
-    '#1A0A00','#3D1C02','#6B3A2A','#8B5E3C',
-    '#B8860B','#D4A843','#F5DEB3','#FFFFFF',
-    '#C0C0C0','#808080','#404040','#000000',
-    '#FF0000','#FF6B00','#FFD700','#00FF00',
-    '#00BFFF','#8B00FF','#FF1493','#FF69B4'
-  ];
+  const faceVals = new Array(20).fill(0.0);
 
-  const CLOTHING_PRESETS = [
-    { name: 'Street Style',  desc: 'Look casual urban',      icon: '👕' },
-    { name: 'Business',      desc: 'Look business formal',   icon: '👔' },
-    { name: 'Sport',         desc: 'Tinuta sport',            icon: '🏃' },
-    { name: 'Underground',   desc: 'Look underground',       icon: '🖤' }
-  ];
+  /* Build face feature rows */
+  (function buildFaceFeatures() {
+    const cont = document.getElementById('face-features-container');
+    for (let i = 0; i < 20; i++) {
+      const row = document.createElement('div');
+      row.className = 'ctrl-row';
+      row.innerHTML = `
+        <span class="ctrl-label" style="font-size:10px">${FACE_FEATURE_LABELS[i]}</span>
+        <button class="ctrl-arrow" onclick="stepFace(${i},-1)">◄</button>
+        <div class="ctrl-value-wrap">
+          <span class="ctrl-value" id="ff-val-${i}" onclick="editFace(${i})">0.0</span>
+        </div>
+        <button class="ctrl-arrow" onclick="stepFace(${i}, 1)">►</button>
+      `;
+      cont.appendChild(row);
+    }
+  })();
 
-  const FACE_FEATURE_NAMES = [
-    'Nas - Latime', 'Nas - Inaltime', 'Nas - Lungime', 'Nas - Pod',
-    'Obraji', 'Mandibula', 'Barbie', 'Sprancene',
-    'Ochi - Forma', 'Ochi - Distanta', 'Buze', 'Frunte'
-  ];
+  /* ── Helpers ── */
+  function fmt(attrKey) {
+    const a = ATTRS[attrKey];
+    const v = a.val;
+    return a.decimals ? v.toFixed(a.decimals) : String(v);
+  }
 
-  // ── Build parent grids ──
-  function buildParentGrids() {
-    ['dadGrid','momGrid'].forEach(id => {
-      const grid = document.getElementById(id);
-      grid.innerHTML = '';
-      for (let i = 0; i < 45; i++) {
-        const el = document.createElement('div');
-        el.className = 'parent-face';
-        el.textContent = i;
-        el.onclick = () => selectParent(id === 'dadGrid' ? 'dad' : 'mom', i, el);
-        grid.appendChild(el);
+  function refreshDisplay(attrKey) {
+    const el = document.getElementById('cv-' + attrKey);
+    if (el) el.textContent = fmt(attrKey);
+    refreshPreview();
+  }
+
+  function stepAttr(key, dir) {
+    const a = ATTRS[key];
+    a.val = Math.round((a.val + dir * a.step) * 1000) / 1000;
+    if (a.val < a.min) a.val = a.min;
+    if (a.val > a.max) a.val = a.max;
+    refreshDisplay(key);
+    sendPreview();
+  }
+
+  function stepFace(idx, dir) {
+    faceVals[idx] = Math.round((faceVals[idx] + dir * 0.1) * 10) / 10;
+    if (faceVals[idx] < -1.0) faceVals[idx] = -1.0;
+    if (faceVals[idx] >  1.0) faceVals[idx] =  1.0;
+    document.getElementById('ff-val-' + idx).textContent = faceVals[idx].toFixed(1);
+    sendPreview();
+  }
+
+  /* Click-to-edit value */
+  function editValue(key) {
+    const a   = ATTRS[key];
+    const el  = document.getElementById('cv-' + key);
+    const inp = document.createElement('input');
+    inp.className = 'ctrl-value-input';
+    inp.value = fmt(key);
+    inp.type  = 'text';
+    el.replaceWith(inp);
+    inp.focus(); inp.select();
+    function save() {
+      const parsed = parseFloat(inp.value);
+      if (!isNaN(parsed)) {
+        a.val = Math.max(a.min, Math.min(a.max, parsed));
+        if (a.decimals) a.val = Math.round(a.val * 10) / 10;
+        else a.val = Math.round(a.val);
       }
-    });
-  }
-
-  function selectParent(type, idx, el) {
-    const grid = document.getElementById(type === 'dad' ? 'dadGrid' : 'momGrid');
-    grid.querySelectorAll('.parent-face').forEach(e => e.classList.remove('sel'));
-    el.classList.add('sel');
-    if (type === 'dad') data.shapeFather = data.skinFather = idx;
-    else                data.shapeMother = data.skinMother = idx;
-    updatePreview();
-  }
-
-  // ── Build color grids ──
-  function buildColorGrid(containerId, colors, key) {
-    const c = document.getElementById(containerId);
-    colors.forEach((hex, i) => {
-      const sw = document.createElement('div');
-      sw.className = 'color-swatch';
-      sw.style.background = hex;
-      sw.title = `${i}`;
-      sw.onclick = () => {
-        c.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('sel'));
-        sw.classList.add('sel');
-        data[key] = i;
-        updatePreview();
-      };
-      if (i === 0) sw.classList.add('sel');
-      c.appendChild(sw);
-    });
-  }
-
-  // ── Build face features ──
-  function buildFaceFeatures() {
-    const cont = document.getElementById('faceFeaturesFields');
-    FACE_FEATURE_NAMES.forEach((name, i) => {
-      cont.innerHTML += `
-        <div class="field">
-          <div class="field-header">
-            <span class="field-label">${name}</span>
-            <span class="field-value" id="ff${i}v">0.0</span>
-          </div>
-          <input type="range" min="-100" max="100" value="0" id="ff${i}"
-            oninput="data.faceFeatures[${i}]=this.value/100; document.getElementById('ff${i}v').textContent=(this.value/100).toFixed(1); updatePreview()">
-        </div>`;
-    });
-  }
-
-  // ── Build clothing presets ──
-  function buildClothingPresets() {
-    const grid = document.getElementById('clothingPresets');
-    CLOTHING_PRESETS.forEach((p, i) => {
-      const el = document.createElement('div');
-      el.className = 'preset' + (i === 0 ? ' sel' : '');
-      el.innerHTML = `<div style="font-size:1.8rem;margin-bottom:6px">${p.icon}</div>
-                      <div class="preset-name">${p.name}</div>
-                      <div class="preset-desc">${p.desc}</div>`;
-      el.onclick = () => {
-        grid.querySelectorAll('.preset').forEach(e => e.classList.remove('sel'));
-        el.classList.add('sel');
-        data.clothingPreset = i;
-      };
-      grid.appendChild(el);
-    });
-  }
-
-  // ── Init ──
-  buildParentGrids();
-  buildColorGrid('eyeColors', EYE_COLORS, 'eyeColor');
-  buildColorGrid('hairColors', HAIR_COLORS, 'hairColor');
-  buildColorGrid('hairHighlights', HAIR_COLORS, 'hairHighlight');
-  buildFaceFeatures();
-  buildClothingPresets();
-
-  // ── Generate random CNP preview ──
-  function genCNPPreview() {
-    const len = 4 + Math.floor(Math.random() * 5);
-    const min = Math.pow(10, len - 1);
-    const max = Math.pow(10, len) - 1;
-    return String(Math.floor(Math.random() * (max - min + 1)) + min);
-  }
-
-  function selectGender(sex) {
-    data.sex = sex;
-    document.getElementById('genderM').classList.toggle('selected', sex === 0);
-    document.getElementById('genderF').classList.toggle('selected', sex === 1);
-  }
-
-  function updateMix() {
-    const sm = document.getElementById('shapeMix').value;
-    const sk = document.getElementById('skinMix').value;
-    document.getElementById('shapeMixVal').textContent = sm + '%';
-    document.getElementById('skinMixVal').textContent  = sk + '%';
-    data.shapeMix = sm / 100;
-    data.skinMix  = sk / 100;
-    updatePreview();
-  }
-
-  function updateHair() {
-    const v = document.getElementById('hairStyle').value;
-    document.getElementById('hairStyleVal').textContent = v;
-    data.hairStyle = parseInt(v);
-    updatePreview();
-  }
-
-  function updatePreview() {
-    mp.trigger('character:browserPreviewUpdate', JSON.stringify(data));
-  }
-
-  // ── Navigation ──
-  function showStep(n) {
-    document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('active', i === n));
-    for (let i = 0; i < TOTAL_STEPS; i++) {
-      const dot = document.getElementById('dot' + i);
-      dot.classList.toggle('active', i === n);
-      dot.classList.toggle('done', i < n);
+      const span = document.createElement('span');
+      span.className = 'ctrl-value';
+      span.id = 'cv-' + key;
+      span.textContent = fmt(key);
+      span.onclick = () => editValue(key);
+      inp.replaceWith(span);
+      refreshPreview();
+      sendPreview();
     }
-    document.getElementById('btnBack').style.display = n > 0 ? 'block' : 'none';
-    document.getElementById('btnNext').textContent = n === TOTAL_STEPS - 1 ? 'Creeaza' : 'Continua';
+    inp.addEventListener('blur', save);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = fmt(key); inp.blur(); } });
+  }
 
-    if (n === 5) {
-      document.getElementById('cnpPreview').textContent = genCNPPreview() + '...';
+  function editFace(idx) {
+    const el  = document.getElementById('ff-val-' + idx);
+    const inp = document.createElement('input');
+    inp.className = 'ctrl-value-input';
+    inp.value = faceVals[idx].toFixed(1);
+    inp.type  = 'text';
+    el.replaceWith(inp);
+    inp.focus(); inp.select();
+    function save() {
+      const p = parseFloat(inp.value);
+      if (!isNaN(p)) faceVals[idx] = Math.max(-1.0, Math.min(1.0, Math.round(p * 10) / 10));
+      const span = document.createElement('span');
+      span.className = 'ctrl-value';
+      span.id = 'ff-val-' + idx;
+      span.textContent = faceVals[idx].toFixed(1);
+      span.onclick = () => editFace(idx);
+      inp.replaceWith(span);
+      sendPreview();
     }
+    inp.addEventListener('blur', save);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
+  }
+
+  /* Sex toggle */
+  let currentSex = 'Male';
+  function setSex(sex) {
+    currentSex = sex;
+    document.getElementById('sex-male').classList.toggle('active',   sex === 'Male');
+    document.getElementById('sex-female').classList.toggle('active', sex === 'Female');
+    document.getElementById('char-sex-icon').textContent = sex === 'Male' ? '🧍‍♂️' : '🧍‍♀️';
+    document.getElementById('prev-sex').textContent = sex === 'Male' ? 'Masculin' : 'Feminin';
+    sendPreview();
+  }
+
+  /* Text change */
+  function onTextChange() {
+    const first = document.getElementById('inp-firstname').value.trim();
+    const last  = document.getElementById('inp-lastname').value.trim();
+    document.getElementById('prev-name').textContent = (first || '—') + ' ' + (last || '—');
+    sendPreview();
+  }
+
+  /* Refresh left panel */
+  function refreshPreview() {
+    document.getElementById('prev-age').textContent      = ATTRS.age.val;
+    document.getElementById('prev-hair').textContent     = ATTRS.hairStyle.val;
+    document.getElementById('prev-haircolor').textContent= ATTRS.hairColor.val;
+    document.getElementById('prev-eye').textContent      = ATTRS.eyeColor.val;
+  }
+
+  /* Build data object */
+  function buildData() {
+    return {
+      firstName:    document.getElementById('inp-firstname').value.trim(),
+      lastName:     document.getElementById('inp-lastname').value.trim(),
+      age:          ATTRS.age.val,
+      sex:          currentSex,
+      father:       ATTRS.father.val,
+      mother:       ATTRS.mother.val,
+      shapeMix:     ATTRS.shapeMix.val,
+      skinMix:      ATTRS.skinMix.val,
+      hairStyle:    ATTRS.hairStyle.val,
+      hairColor:    ATTRS.hairColor.val,
+      eyeColor:     ATTRS.eyeColor.val,
+      faceFeatures: [...faceVals],
+    };
+  }
+
+  function sendPreview() {
+    if (typeof mp !== 'undefined')
+      mp.trigger('character:browserPreviewUpdate', JSON.stringify(buildData()));
+  }
+
+  /* Create character */
+  function doCreate() {
+    const data = buildData();
+    if (!data.firstName || !data.lastName) {
+      showError('Introdu prenumele si numele de familie!');
+      return;
+    }
+    if (typeof mp !== 'undefined')
+      mp.trigger('character:browserCreate', JSON.stringify(data));
   }
 
   function showError(msg) {
-    const el = document.getElementById('errorMsg');
-    el.textContent = msg; el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 4000);
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 5000);
   }
 
-  // ── Camera controls ──
-  function setCam(mode) {
-    document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('cam-' + mode).classList.add('active');
-    mp.trigger('character:setCamMode', mode);
-  }
-
-  function nextStep() {
-    if (curStep === 0 && data.sex === -1) return showError('Selecteaza genul.');
-    if (curStep === 5) return finalCreate();
-
-    curStep++;
-    showStep(curStep);
-  }
-
-  function prevStep() {
-    if (curStep > 0) { curStep--; showStep(curStep); }
-  }
-
-  function finalCreate() {
-    const fname = document.getElementById('firstName').value.trim();
-    const lname = document.getElementById('lastName').value.trim();
-    const age   = parseInt(document.getElementById('ageSlider').value);
-
-    if (!fname || fname.length < 2) return showError('Prenumele trebuie sa aiba minim 2 caractere.');
-    if (!lname || lname.length < 2) return showError('Numele trebuie sa aiba minim 2 caractere.');
-
-    data.firstname = fname;
-    data.lastname  = lname;
-    data.age       = age;
-
-    mp.trigger('character:browserCreate', JSON.stringify(data));
-  }
+  /* Init */
+  refreshPreview();
 </script>
 </body>
 </html>
